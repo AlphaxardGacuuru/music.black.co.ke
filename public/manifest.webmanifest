@@ -5,7 +5,7 @@
 	"display": "standalone",
 	"theme_color": "#232323",
 	"background_color": "#FFD700",
-	"orientation": "portrait-primary",
+	"orientation": "standalone",
 	"description": "A Music streaming app",
 	"icons": [
 	{
