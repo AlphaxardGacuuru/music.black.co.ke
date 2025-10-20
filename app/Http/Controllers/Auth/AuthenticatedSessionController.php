@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -27,7 +28,11 @@ class AuthenticatedSessionController extends Controller
      */
     public function handleProviderCallback($website)
     {
-        $user = Socialite::driver($website)->user();
+		try {
+			$user = Socialite::driver($website)->stateless()->user();
+		} catch (Exception $e) {
+			return redirect('/#/socialite/' . $e->getMessage() . '/failed');
+		}
 
         $name = $user->getName() ? $user->getName() : " ";
 
