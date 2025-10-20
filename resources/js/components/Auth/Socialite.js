@@ -19,7 +19,7 @@ const Socialite = (props) => {
 		props.setLocalStorage("sanctumToken", encryptedToken(token))
 
 		// Redirect to index page
-		window.location.href = "/"
+		setTimeout(() => window.location.href = "/", 3000)
 	}, [])
 
 	return (
