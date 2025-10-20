@@ -52,7 +52,7 @@ class AuthenticatedSessionController extends Controller
                     ->createToken("deviceName")
                     ->plainTextToken;
 
-                return redirect("/#/socialite/Logged in/" . $token);
+                return redirect("/#/socialite/LoggedIn/" . $token);
 
             } else {
                 // Remove forward slashes
