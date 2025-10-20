@@ -7,6 +7,7 @@ const Socialite = (props) => {
 
 	useEffect(() => {
 		props.setMessages([message])
+		console.info(message)
 
 		// Encrypt Token
 		const encryptedToken = (token) => {
