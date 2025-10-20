@@ -31,10 +31,10 @@ class AuthenticatedSessionController extends Controller
 		try {
 			$user = Socialite::driver($website)->stateless()->user();
 		} catch (Exception $e) {
-			return redirect('/#/socialite/' . $e->getMessage() . '/failed');
+			return redirect('/#/socialite/' . urlencode($e->getMessage()) . '/failed');
 		}
 
-        $name = $user->getName() ? $user->getName() : " ";
+        $name = $user->getName() ? trim(preg_replace('/[\r\n]+/', ' ', $user->getName())) : " ";
 
         $email = $user->getEmail() ? $user->getEmail() : redirect('/');
 
@@ -55,16 +55,16 @@ class AuthenticatedSessionController extends Controller
                 return redirect("/#/socialite/LoggedIn/" . $token);
 
             } else {
-                // Remove forward slashes
+                // Remove forward slashes and URL encode
                 $avatar = str_replace("/", " ", $avatar);
 
-                return redirect('/#/register/' . $name . '/' . $email . '/' . $avatar);
+                return redirect('/#/register/' . urlencode($name) . '/' . urlencode($email) . '/' . urlencode($avatar));
             }
         } else {
-            // Remove forward slashes
+            // Remove forward slashes and URL encode
             $avatar = str_replace("/", " ", $avatar);
 
-            return redirect('/#/register/' . $name . '/' . $email . '/' . $avatar);
+            return redirect('/#/register/' . urlencode($name) . '/' . urlencode($email) . '/' . urlencode($avatar));
         }
     }
 
