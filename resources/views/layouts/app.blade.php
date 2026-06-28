@@ -21,8 +21,9 @@
 	<title>{{ config('app.name', 'Black Music') }}</title>
 
 	<!-- Favicon  -->
-	<link rel="icon"
-		  href="storage/img/musical-note.png">
+	<link rel="icon" type="image/x-icon" href="{{ asset('img/favicon.ico') }}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{ asset('img/favicon-16x16.png') }}">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{ asset('img/favicon-32x32.png') }}">
 
 	<!-- Fonts -->
 	<link rel="dns-prefetch"
@@ -53,8 +54,7 @@
 	</script> --}}
 
 	{{-- IOS support --}}
-	<link rel="apple-touch-icon"
-		  href="storage/img/musical-note.png">
+	<link rel="apple-touch-icon" href="{{ asset('img/apple-touch-icon.png') }}">
 	<meta name="apple-mobile-web-app-status-bar"
 		  content="#aa7700">
 
