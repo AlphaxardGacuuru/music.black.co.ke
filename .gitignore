@@ -32,3 +32,11 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# laravel
+/vendor
+/storage/*.key
+.env.backup
+Homestead.yaml
+Homestead.json
+auth.json
