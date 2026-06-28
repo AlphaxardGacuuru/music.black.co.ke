@@ -14,7 +14,7 @@ Route::post('/register', [RegisteredUserController::class, 'store'])
 
 Route::post('/store', [AuthenticatedSessionController::class, 'store'])
     ->middleware('guest')
-    ->name('login');
+    ->name('login.session');
 
 Route::post('/login', [AuthenticatedSessionController::class, 'token'])
     ->middleware('guest')
