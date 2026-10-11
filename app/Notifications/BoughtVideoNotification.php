@@ -5,60 +5,41 @@ namespace App\Notifications;
 use App\Models\Video;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class BoughtVideoNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
-    public $video;
-
-    /**
-     * Create a new notification instance.
-     *
-     * @return void
-     */
-    public function __construct(Video $video)
-    {
-        $this->video = $video;
-    }
-
-    /**
-     * Get the notification's delivery channels.
-     *
-     * @param  mixed  $notifiable
-     * @return array
-     */
-    public function via($notifiable)
-    {
-        return ['database', 'broadcast'];
-    }
-
-    /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
+    public function __construct(public Video $video)
     {
         //
     }
 
     /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
+    {
+        return ['database', 'broadcast'];
+    }
+
+    /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * OLD wording kept as is: it names the artist, not the buyer.
+     *
+     * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/profile/show/' . $this->video->user->username,
+            'url' => '/profile/show/'.$this->video->user->username,
             'from' => $this->video->user->username,
-            'id' => $this->video->username,
-            'message' => $this->video->user->username . ' bought ' . $this->video->name,
+            'id' => $this->video->user->username,
+            'message' => $this->video->user->username.' bought '.$this->video->name,
         ];
     }
 }

@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\AudioAlbum;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AudioAlbum>
+ * @extends Factory<AudioAlbum>
  */
 class AudioAlbumFactory extends Factory
 {
@@ -15,13 +16,13 @@ class AudioAlbumFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-        'name' => fake()->word(),
-        'cover' => 'audio-album-covers/' . rand(1, 5) . '.jpg',
-        'released' => fake()->dateTime(),
-        'username' => User::all()->random()->username,
+            'name' => fake()->word(),
+            'cover' => 'audio-album-covers/' . rand(1, 5) . '.jpg',
+            'released' => fake()->dateTime(),
+            'user_id' => User::factory(),
         ];
     }
 }

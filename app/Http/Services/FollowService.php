@@ -2,59 +2,52 @@
 
 namespace App\Http\Services;
 
-use App\Models\BoughtAudio;
-use App\Models\BoughtVideo;
 use App\Models\Follow;
+use App\Models\User;
+use Illuminate\Http\Request;
 
 class FollowService extends Service
 {
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Follow or unfollow a musician. Only fans who bought at least one of
+     * the musician's songs (or @blackmusic itself) may follow.
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-		$follow = "data";
+        $follow = 'data';
+
+        $musicianUsername = $request->input('musician');
+
+        $musician = User::where('username', $musicianUsername)->firstOrFail();
+
+        $isBlackMusic = auth('sanctum')->user()?->username == '@blackmusic';
 
         // Check if user has bought video or audio
-        $hasBoughtVideo = BoughtVideo::where("username", auth("sanctum")->user()->username)
-            ->where("artist", $request->input("musician"))
-            ->exists();
-
-        $hasBoughtAudio = BoughtAudio::where("username", auth("sanctum")->user()->username)
-            ->where("artist", $request->input("musician"))
-            ->exists();
-
-        if ($hasBoughtVideo || $hasBoughtAudio || $this->username == "@blackmusic") {
+        if ($musician->hasBought1($this->id) || $isBlackMusic) {
             // Check if user has followed
-            $hasFollowed = Follow::where('followed', $request->musician)
-                ->where('username', auth('sanctum')->user()->username)
-                ->exists();
+            $query = Follow::where('followed_id', $musician->id)
+                ->where('user_id', $this->id);
 
-            if ($hasFollowed) {
-                Follow::where('followed', $request->musician)
-                    ->where('username', auth('sanctum')->user()->username)
-                    ->delete();
+            if ($query->exists()) {
+                $query->delete();
 
-                $message = 'You Unfollowed ' . $request->musician;
+                $message = 'You Unfollowed '.$musicianUsername;
                 $added = false;
             } else {
                 $follow = new Follow;
-                $follow->followed = $request->input('musician');
-                $follow->username = auth('sanctum')->user()->username;
-                $follow->muted = ["posts" => false, "stories" => false];
+                $follow->followed_id = $musician->id;
+                $follow->user_id = $this->id;
+                $follow->muted = ['posts' => false, 'stories' => false];
                 $follow->save();
 
-                $message = 'You Followed ' . $request->musician;
+                $message = 'You Followed '.$musicianUsername;
                 $added = true;
             }
 
             return [$added, $message, $follow];
         }
 
-        $message = "You must have bought atleast one song by " . $request->musician;
+        $message = 'You must have bought atleast one song by '.$musicianUsername;
 
         return [false, $message, $follow];
     }

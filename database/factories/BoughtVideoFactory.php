@@ -2,12 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\BoughtVideo;
 use App\Models\User;
 use App\Models\Video;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BoughtVideo>
+ * @extends Factory<BoughtVideo>
  */
 class BoughtVideoFactory extends Factory
 {
@@ -16,16 +17,15 @@ class BoughtVideoFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
-	$video = Video::all()->random();
-
-    return [
-        "video_id" => $video->id,
-        "price" => "10",
-		"username" => User::all()->random()->username,
-		"name" => $video->name,
-		"artist" => $video->user->username
-    ];
+        return [
+            'video_id' => fn () => Video::factory(),
+            'price' => (string) BoughtVideo::PRICE,
+            // The buyer
+            'user_id' => User::factory(),
+            // The video's owner
+            'artist_id' => fn (array $attributes) => Video::find($attributes['video_id'])->user_id,
+        ];
     }
 }

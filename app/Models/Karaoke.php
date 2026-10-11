@@ -4,74 +4,91 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Karaoke extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     /**
-     * Accesors.
+     * The attributes that are mass assignable.
      *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'karaoke',
+        'user_id',
+        'audio_id',
+        'description',
+    ];
+
+    /**
+     * Accessors.
      */
     protected function karaoke(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => '/storage/' . $value,
+            get: fn($value) => "/storage/" . $value,
         );
     }
 
     protected function createdAt(): Attribute
     {
         return Attribute::make(
-            get: fn ($value) => Carbon::parse($value)->format('d M Y'),
+            get: fn($value) => Carbon::parse($value)->format('d M Y'),
         );
     }
 
-    public function user()
+    /*
+     * Relationships
+     */
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'username', 'username');
+        return $this->belongsTo(User::class);
     }
 
-    public function audio()
+    public function audio(): BelongsTo
     {
         return $this->belongsTo(Audio::class);
     }
 
-    public function savedKaraokes()
+    public function savedKaraokes(): HasMany
     {
         return $this->hasMany(SavedKaraoke::class);
     }
 
-    public function likes()
+    public function likes(): HasMany
     {
         return $this->hasMany(KaraokeLike::class);
     }
 
-    public function comments()
+    public function comments(): HasMany
     {
         return $this->hasMany(KaraokeComment::class);
     }
 
     /*
-     *    Custom Functions
+     * Custom functions
      */
 
-    // Check if user has liked karaoke
-    public function hasLiked($username)
+    /**
+     * Whether the given user has liked this karaoke.
+     */
+    public function hasLiked(?string $userId): bool
     {
-        return $this->likes
-            ->where('username', $username)
-            ->count() > 0 ? true : false;
+        return $this->likes->where('user_id', $userId)->isNotEmpty();
     }
 
-    // Check if user has saved karaoke
-    public function hasSaved($username)
+    /**
+     * Whether the given user has saved this karaoke.
+     */
+    public function hasSaved(?string $userId): bool
     {
-        return $this->savedKaraokes
-            ->where('username', $username)
-            ->count() > 0 ? true : false;
+        return $this->savedKaraokes->where('user_id', $userId)->isNotEmpty();
     }
 }

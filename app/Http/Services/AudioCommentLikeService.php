@@ -3,43 +3,41 @@
 namespace App\Http\Services;
 
 use App\Models\AudioCommentLike;
+use Illuminate\Http\Request;
 
 class AudioCommentLikeService extends Service
 {
     /**
-     * Store a newly created resource in storage.
+     * Like or unlike an audio comment.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return array{0: bool, 1: string, 2: AudioCommentLike}
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         $query = AudioCommentLike::where('audio_comment_id', $request->input('comment'))
-            ->where('username', auth('sanctum')->user()->username);
+            ->where('user_id', $this->id);
 
-        $hasLiked = $query->exists();
+        $audioCommentLike = $query->first();
 
-        if ($hasLiked) {
-			// Get Like
-            $audioCommentLike = $query->first();
+        if ($audioCommentLike) {
             // Delete Like
             $query->delete();
-			// Set Message
-            $message = "Like removed";
+
+            $message = 'Like removed';
             $added = false;
         } else {
             $audioCommentLike = new AudioCommentLike;
             $audioCommentLike->audio_comment_id = $request->input('comment');
-            $audioCommentLike->username = auth('sanctum')->user()->username;
+            $audioCommentLike->user_id = $this->id;
             $audioCommentLike->save();
 
-            $message = "Comment liked";
+            $message = 'Comment liked';
             $added = true;
         }
 
         // Check if user is owner of audio comment
-        $notCurrentUser = $audioCommentLike->comment->username != $this->username;
-        // Dispatch if comment is saved successfully and user is not owner of audio comment
+        $notCurrentUser = $audioCommentLike->comment->user_id != $this->id;
+        // Dispatch if like is saved successfully and user is not owner of audio comment
         $canDispatch = $notCurrentUser && $added;
 
         return [$canDispatch, $message, $audioCommentLike];

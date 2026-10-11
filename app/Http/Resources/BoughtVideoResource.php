@@ -2,40 +2,39 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * Wraps a BoughtVideo (or, for purchase receipts, the CartVideo it was bought
+ * from). Both have a video() relation.
+ */
 class BoughtVideoResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
-        // Check if user is logged in
-        $username = auth('sanctum')->user()
-        ? auth('sanctum')->user()->username
-        : '@guest';
-
         return [
-            "id" => $this->video->id,
-            "video" => $this->video->video,
-            "name" => $this->video->name,
-            "artistName" => $this->video->user->name,
-            "username" => $this->video->username,
-            "avatar" => $this->video->user->avatar,
-            "artistDecos" => $this->video->user->decos,
-            "ft" => $this->video->ft,
-            "videoAlbumId" => $this->video->video_album_id,
-            "album" => $this->video->album->name,
-            "genre" => $this->video->genre,
-            "thumbnail" => $this->video->thumbnail,
-            "description" => $this->video->description,
-            "released" => $this->video->released,
-            "hasBoughtVideo" => true,
-            "createdAt" => $this->video->created_at,
+            'id' => $this->video->id,
+            'video' => $this->video->video,
+            'name' => $this->video->name,
+            'artistName' => $this->video->user->name,
+            'username' => $this->video->user->username,
+            'avatar' => $this->video->user->avatar,
+            'artistDecos' => $this->video->user->decos,
+            'ft' => $this->video->ft?->username,
+            'videoAlbumId' => $this->video->video_album_id,
+            'album' => $this->video->album?->name,
+            'genre' => $this->video->genre,
+            'thumbnail' => $this->video->thumbnail,
+            'description' => $this->video->description,
+            'released' => $this->video->released,
+            'hasBoughtVideo' => true,
+            'createdAt' => $this->video->created_at,
         ];
     }
 }

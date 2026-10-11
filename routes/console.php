@@ -1,30 +1,24 @@
 <?php
 
+use App\Jobs\DeleteStaleTemporaryUploadsJob;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
-
-/*
-|--------------------------------------------------------------------------
-| Console Routes
-|--------------------------------------------------------------------------
-|
-| This file is where you may define all of your Closure based console
-| commands. Each Closure is bound to a command instance allowing a
-| simple approach to interacting with each command's IO methods.
-|
- */
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schedule;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Clear logs
-Artisan::command('logs:clear', function () {
+// Prune Telescope entries older than 30 days
+Schedule::command('telescope:prune --hours=720')->daily();
 
-    exec('rm -f ' . storage_path('logs/*.log'));
+// TODO: `websockets:clean` came from the old laravel-websockets package,
+// which this project no longer uses (replaced by Reverb). Remove or swap
+// in a Reverb-equivalent cleanup task, then re-enable.
+// Schedule::command('websockets:clean')->weekly();
 
-    exec('rm -f ' . base_path('*.log'));
+Schedule::job(new DeleteStaleTemporaryUploadsJob)
+    // ->everyMinute();
+    ->dailyAt("01:00");
 
-    $this->comment('Logs have been cleared!');
-
-})->describe('Clear log files');

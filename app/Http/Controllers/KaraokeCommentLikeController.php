@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Services\KaraokeCommentLikeService;
 use App\Models\KaraokeCommentLike;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class KaraokeCommentLikeController extends Controller
 {
@@ -15,8 +16,6 @@ class KaraokeCommentLikeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -24,25 +23,19 @@ class KaraokeCommentLikeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Store a newly created resource in storage (toggles the like).
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
         [$saved, $message] = $this->service->store($request);
 
         return response([
-            "message" => $message,
+            'message' => $message,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\KaraokeCommentLike  $karaokeCommentLike
-     * @return \Illuminate\Http\Response
      */
     public function show(KaraokeCommentLike $karaokeCommentLike)
     {
@@ -51,10 +44,6 @@ class KaraokeCommentLikeController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\KaraokeCommentLike  $karaokeCommentLike
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, KaraokeCommentLike $karaokeCommentLike)
     {
@@ -63,9 +52,6 @@ class KaraokeCommentLikeController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\KaraokeCommentLike  $karaokeCommentLike
-     * @return \Illuminate\Http\Response
      */
     public function destroy(KaraokeCommentLike $karaokeCommentLike)
     {

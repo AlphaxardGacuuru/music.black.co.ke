@@ -3,46 +3,37 @@
 namespace App\Notifications;
 
 use App\Mail\VideoReceiptMail;
+use App\Models\Video;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class VideoReceiptNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
-	public $videos;
-
     /**
-     * Create a new notification instance.
-     *
-     * @return void
+     * @param  array<int, Video>  $videos
      */
-    public function __construct($videos)
+    public function __construct(public array $videos)
     {
-        $this->videos = $videos;
+        //
     }
 
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<int, string>
      */
-    public function via($notifiable)
+    public function via(object $notifiable): array
     {
         return ['database', 'mail', 'broadcast'];
     }
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): VideoReceiptMail
     {
         return (new VideoReceiptMail($this->videos))
             ->to($notifiable->email);
@@ -51,10 +42,9 @@ class VideoReceiptNotification extends Notification implements ShouldBroadcast
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray(object $notifiable): array
     {
         $list = [];
 
@@ -64,15 +54,15 @@ class VideoReceiptNotification extends Notification implements ShouldBroadcast
 
         // Check proper grammar
         if (count($this->videos) > 1) {
-            $numberOfVideos = count($this->videos) . ' videos: ';
+            $numberOfVideos = count($this->videos).' videos: ';
         } else {
-            $numberOfVideos = count($this->videos) . ' video: ';
+            $numberOfVideos = count($this->videos).' video: ';
         }
 
         return [
             'url' => '/library',
             'from' => '@blackmusic',
-            'message' => 'You bought ' . $numberOfVideos . implode(", ", $list),
+            'message' => 'You bought '.$numberOfVideos.implode(', ', $list),
         ];
     }
 }

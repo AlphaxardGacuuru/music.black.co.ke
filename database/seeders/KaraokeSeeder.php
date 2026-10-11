@@ -2,21 +2,17 @@
 
 namespace Database\Seeders;
 
-use App\Models\Audio;
 use App\Models\Karaoke;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class KaraokeSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
-     *
-     * @return void
+     * Run the database seeds. Needs users and audios to exist already
+     * (run after UserSeeder, AudioAlbumSeeder and AudioSeeder).
      */
-    public function run()
+    public function run(): void
     {
-		Karaoke::factory()->count(10)->create();
+        Karaoke::factory()->count(10)->fromExisting()->create();
     }
 }

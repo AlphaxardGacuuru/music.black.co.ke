@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Post;
 use App\Models\PostComment;
-use App\Models\PostCommentLike;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PostComment>
+ * @extends Factory<PostComment>
  */
 class PostCommentFactory extends Factory
 {
@@ -17,30 +17,12 @@ class PostCommentFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'text' => fake()->realText($maxNbChars = 20, $indexSize = 2),
+            'post_id' => Post::factory(),
+            'user_id' => User::factory(),
+            'text' => fake()->realText(20, 2),
         ];
-    }
-
-    /**
-     * Configure the model factory.
-     *
-     * @return $this
-     */
-    public function configure()
-    {
-        // User Follows themselves and Black Music after creation
-        return $this->afterMaking(function (PostComment $comment) {
-            //
-        })->afterCreating(function (PostComment $comment) {
-            PostCommentLike::factory()
-                ->count(1)
-                ->create([
-                    'username' => User::all()->random()->username,
-                    'post_comment_id' => $comment->id,
-                ]);
-        });
     }
 }

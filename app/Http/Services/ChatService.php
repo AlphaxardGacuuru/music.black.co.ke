@@ -5,19 +5,21 @@ namespace App\Http\Services;
 use App\Http\Resources\ChatResource;
 use App\Models\Chat;
 use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class ChatService extends Service
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * The chat threads of the current user: the latest message with every
+     * user they've chatted with.
      */
-    public function index()
+    public function index(): array
     {
-        $getChat = Chat::where('username', $this->username)
-            ->orWhere('to', $this->username)
+        $getChat = Chat::where('user_id', $this->id)
+            ->orWhere('to_id', $this->id)
             ->orderBy('id', 'DESC')
             ->get();
 
@@ -25,58 +27,46 @@ class ChatService extends Service
         $chatThreads = [];
 
         // Get sender and recipient
-        foreach ($getChat as $key => $chatItem) {
-            array_push($chatThreadsZero, $chatItem->username);
-            array_push($chatThreadsZero, $chatItem->to);
+        foreach ($getChat as $chatItem) {
+            $chatThreadsZero[] = $chatItem->user_id;
+            $chatThreadsZero[] = $chatItem->to_id;
         }
 
-        // Get only unique entries
-        $chatThreadsZero = array_unique($chatThreadsZero);
-
-        // Remove auth username
-        $key = array_search($this->username, $chatThreadsZero);
-
-        unset($chatThreadsZero[$key]);
+        // Get only unique entries, without the current user
+        $chatThreadsZero = array_diff(array_unique($chatThreadsZero), [$this->id]);
 
         // Get threads
-        foreach ($chatThreadsZero as $key => $username) {
-            $chat = Chat::where('username', $this->username)
-                ->where('to', $username)
-                ->orWhere('username', $username)
-                ->where('to', $this->username)
+        foreach ($chatThreadsZero as $userId) {
+            $chat = $this->conversation($userId)
                 ->orderBy('id', 'DESC')
                 ->first();
 
             // Get user info
-            $chatUser = User::where('username', $username)->first();
+            $chatUser = User::find($userId);
 
-            array_push($chatThreads, [
+            $chatThreads[] = [
                 'id' => $chat->id,
                 'avatar' => $chatUser->avatar,
                 'name' => $chatUser->name,
-                'username' => $username,
-                'to' => $chat->to,
+                'username' => $chatUser->username,
+                'to' => $chat->to?->username,
                 'text' => $chat->text,
                 'hasMedia' => $chat->media,
                 'createdAt' => $chat->created_at,
-            ]);
+            ];
         }
 
-        return ["data" => $chatThreads];
+        return ['data' => $chatThreads];
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Chat  $chat
-     * @return \Illuminate\Http\Response
+     * The conversation between the current user and the given username.
      */
-    public function show($username)
+    public function show(string $username): AnonymousResourceCollection
     {
-        $getChat = Chat::where("username", $this->username)
-            ->where("to", $username)
-            ->orWhere("username", $username)
-            ->where("to", $this->username)
+        $userId = User::where('username', $username)->value('id');
+
+        $getChat = $this->conversation($userId)
             ->orderBy('id', 'ASC')
             ->paginate(10);
 
@@ -85,41 +75,47 @@ class ChatService extends Service
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-        /* Create new post */
         $chat = new Chat;
-        $chat->username = auth("sanctum")->user()->username;
-        $chat->to = $request->input('to');
+        $chat->user_id = $this->id;
+        $chat->to_id = User::where('username', $request->input('to'))->value('id');
         $chat->text = $request->input('text');
         $chat->media = $request->input('media');
         $saved = $chat->save();
 
-        $message = "Chat sent";
+        $message = 'Chat sent';
 
         return [$saved, $message, $chat];
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Chat  $chat
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id): array
     {
-        $chatItem = Chat::find($id);
+        $chatItem = Chat::findOrFail($id);
 
-        $media = substr($chatItem->media, 9);
+        Gate::authorize('delete', $chatItem);
 
-        Storage::delete('public/' . $media);
+        $media = $chatItem->getRawOriginal('media');
 
-        $deleted = Chat::find($id)->delete();
+        if ($media) {
+            Storage::disk('public')->delete($media);
+        }
 
-        return [$deleted, "Chat deleted"];
+        $deleted = $chatItem->delete();
+
+        return [$deleted, 'Chat deleted'];
+    }
+
+    /**
+     * Messages exchanged between the current user and the given user.
+     */
+    protected function conversation(?string $userId)
+    {
+        return Chat::where(fn ($query) => $query->where('user_id', $this->id)->where('to_id', $userId))
+            ->orWhere(fn ($query) => $query->where('user_id', $userId)->where('to_id', $this->id));
     }
 }

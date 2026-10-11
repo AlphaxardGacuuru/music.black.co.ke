@@ -4,30 +4,29 @@ namespace App\Http\Services;
 
 use App\Http\Resources\VideoCommentResource;
 use App\Models\VideoComment;
+use Illuminate\Support\Facades\Gate;
 
 class VideoCommentService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        $getVideoComments = VideoComment::orderBy('id', 'DESC')->get();
+        $getVideoComments = VideoComment::orderBy('created_at', 'DESC')
+            ->orderBy('id', 'DESC')
+            ->get();
 
         return VideoCommentResource::collection($getVideoComments);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\VideoComment  $videoComment
-     * @return \Illuminate\Http\Response
+     * Display the comments of the given video.
      */
     public function show($id)
     {
-        $getVideoComments = VideoComment::where("video_id", $id)
+        $getVideoComments = VideoComment::where('video_id', $id)
+            ->orderBy('created_at', 'DESC')
             ->orderBy('id', 'DESC')
             ->paginate(10);
 
@@ -36,37 +35,35 @@ class VideoCommentService extends Service
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store($request)
     {
-        /* Create new post */
+        /* Create new comment */
         $videoComment = new VideoComment;
         $videoComment->video_id = $request->input('id');
-        $videoComment->username = auth('sanctum')->user()->username;
+        $videoComment->user_id = $this->id;
         $videoComment->text = $request->input('text');
 
         $saved = $videoComment->save();
-		// Check if commenter is owner of videos
-		$notCurrentUser = $videoComment->video->username != $this->username;
-		// Dispatch if comment is saved successfully and commenter is not owner of audio
-		$canDispatch = $notCurrentUser && $saved;
+        // Check if commenter is owner of video
+        $notCurrentUser = $videoComment->video->user_id != $this->id;
+        // Dispatch if comment is saved successfully and commenter is not owner of video
+        $canDispatch = $notCurrentUser && $saved;
 
-        return [$canDispatch, "Comment posted", $videoComment];
+        return [$canDispatch, 'Comment posted', $videoComment];
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\VideoComments  $videoComments
-     * @return \Illuminate\Http\Response
      */
     public function destroy($id)
     {
-        $deleted = VideoComment::find($id)->delete();
+        $comment = VideoComment::findOrFail($id);
 
-        return [$deleted, "Comment deleted"];
+        Gate::authorize('delete', $comment);
+
+        $deleted = $comment->delete();
+
+        return [$deleted, 'Comment deleted'];
     }
 }

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Events\VideoCommentedEvent;
 use App\Http\Services\VideoCommentService;
-use App\Models\Video;
-use App\Models\VideoComment;
 use Illuminate\Http\Request;
 
 class VideoCommentController extends Controller
@@ -17,8 +15,6 @@ class VideoCommentController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -27,13 +23,11 @@ class VideoCommentController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
+        $request->validate([
+            'id' => 'required|exists:videos,id',
             'text' => 'required',
         ]);
 
@@ -46,44 +40,34 @@ class VideoCommentController extends Controller
         );
 
         return response([
-            "message" => $message,
-            "data" => $videoComment,
+            'message' => $message,
+            'data' => $videoComment,
         ], 200);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\VideoComment  $videoComment
-     * @return \Illuminate\Http\Response
+     * Display the specified resource (the comments of the given video).
      */
-    public function show($id)
+    public function show(string $id)
     {
         return $this->service->show($id);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\VideoComment  $videoComment
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, VideoComment $videoComment)
+    public function update(Request $request, string $id)
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\VideoComment  $videoComment
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id)
     {
         [$deleted, $message] = $this->service->destroy($id);
 
-        return response(["message" => $message], 200);
+        return response(['message' => $message], 200);
     }
 }

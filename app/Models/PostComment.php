@@ -4,17 +4,30 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PostComment extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     /**
-     * Accesors.
+     * The attributes that are mass assignable.
      *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'post_id',
+        'user_id',
+        'text',
+        'media',
+    ];
+
+    /**
+     * Accessors.
      */
     protected function media(): Attribute
     {
@@ -30,17 +43,21 @@ class PostComment extends Model
         );
     }
 
-    public function user()
+    /*
+     * Relationships
+     */
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, "username", "username");
+        return $this->belongsTo(User::class);
     }
 
-    public function post()
+    public function post(): BelongsTo
     {
-        return $this->belongsTo(Post::class, "post_id");
+        return $this->belongsTo(Post::class);
     }
 
-    public function likes()
+    public function likes(): HasMany
     {
         return $this->hasMany(PostCommentLike::class);
     }
@@ -49,12 +66,11 @@ class PostComment extends Model
      * Custom functions
      */
 
-    /*
-     * Check if user has liked post */
-    public function hasLiked($username)
+    /**
+     * Whether the given user has liked this comment.
+     */
+    public function hasLiked(?string $userId): bool
     {
-        return $this->likes
-            ->where('username', $username)
-            ->count() > 0 ? true : false;
+        return $this->likes->where('user_id', $userId)->isNotEmpty();
     }
 }

@@ -9,27 +9,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class PostCommentedListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\PostCommentedEvent  $event
-     * @return void
      */
-    public function handle(PostCommentedEvent $event)
+    public function handle(PostCommentedEvent $event): void
     {
         // Send Notification
-        $event
-            ->post
-            ->user
-            ->notify(new PostCommentedNotification($event->post, $event->user));
+        $event->post->user->notify(new PostCommentedNotification($event->post, $event->user));
     }
 }

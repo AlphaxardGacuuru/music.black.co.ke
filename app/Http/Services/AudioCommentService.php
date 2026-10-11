@@ -4,31 +4,29 @@ namespace App\Http\Services;
 
 use App\Http\Resources\AudioCommentResource;
 use App\Models\AudioComment;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 class AudioCommentService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        $getAudioComments = AudioComment::orderBy('id', 'DESC')->get();
+        $getAudioComments = AudioComment::orderBy('created_at', 'DESC')->get();
 
         return AudioCommentResource::collection($getAudioComments);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\AudioComment  $audioComment
-     * @return \Illuminate\Http\Response
+     * Display the comments of the specified audio.
      */
-    public function show($id)
+    public function show(string $id): AnonymousResourceCollection
     {
-        $getAudioComments = AudioComment::where("audio_id", $id)
-            ->orderBy('id', 'DESC')
+        $getAudioComments = AudioComment::where('audio_id', $id)
+            ->orderBy('created_at', 'DESC')
             ->paginate(10);
 
         return AudioCommentResource::collection($getAudioComments);
@@ -37,36 +35,37 @@ class AudioCommentService extends Service
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return array{0: bool, 1: string, 2: AudioComment}
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-        /* Create new post */
         $audioComment = new AudioComment;
         $audioComment->audio_id = $request->input('id');
-        $audioComment->username = auth('sanctum')->user()->username;
+        $audioComment->user_id = $this->id;
         $audioComment->text = $request->input('text');
 
         $saved = $audioComment->save();
-        // Check if commenter is owner of videos
-        $notCurrentUser = $audioComment->audio->username != $this->username;
+        // Check if commenter is owner of audio
+        $notCurrentUser = $audioComment->audio->user_id != $this->id;
         // Dispatch if comment is saved successfully and commenter is not owner of audio
         $canDispatch = $notCurrentUser && $saved;
 
-        return [$canDispatch, "Comment posted", $audioComment];
+        return [$canDispatch, 'Comment posted', $audioComment];
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\AudioComments  $audioComments
-     * @return \Illuminate\Http\Response
+     * @return array{0: bool, 1: string}
      */
-    public function destroy($id)
+    public function destroy(string $id): array
     {
-        $deleted = AudioComment::find($id)->delete();
+        $comment = AudioComment::findOrFail($id);
 
-        return [$deleted, "Comment deleted"];
+        Gate::authorize('delete', $comment);
+
+        $deleted = $comment->delete();
+
+        return [$deleted, 'Comment deleted'];
     }
 }

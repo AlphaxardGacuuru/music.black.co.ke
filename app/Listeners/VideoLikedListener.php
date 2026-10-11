@@ -9,22 +9,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class VideoLikedListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\VideoLikedEvent  $event
-     * @return void
      */
-    public function handle(VideoLikedEvent $event)
+    public function handle(VideoLikedEvent $event): void
     {
         $event
             ->video

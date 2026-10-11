@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SavedKaraoke;
 use App\Http\Services\SavedKaraokeService;
+use App\Models\SavedKaraoke;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class SavedKaraokeController extends Controller
 {
@@ -15,40 +17,31 @@ class SavedKaraokeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Store a newly created resource in storage (toggles the save).
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
-        // Handle form for karaoke
         $this->validate($request, [
-            'id' => 'required|integer',
+            'id' => 'required|uuid',
         ]);
 
         [$saved, $message, $savedKaraoke] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $savedKaraoke,
+            'message' => $message,
+            'data' => $savedKaraoke,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\SavedKaraoke  $savedKaraoke
-     * @return \Illuminate\Http\Response
      */
     public function show(SavedKaraoke $savedKaraoke)
     {
@@ -57,10 +50,6 @@ class SavedKaraokeController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SavedKaraoke  $savedKaraoke
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, SavedKaraoke $savedKaraoke)
     {
@@ -69,9 +58,6 @@ class SavedKaraokeController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\SavedKaraoke  $savedKaraoke
-     * @return \Illuminate\Http\Response
      */
     public function destroy(SavedKaraoke $savedKaraoke)
     {

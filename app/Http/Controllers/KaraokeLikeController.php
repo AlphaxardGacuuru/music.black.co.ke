@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KaraokeLike;
 use App\Http\Services\KaraokeLikeService;
+use App\Models\KaraokeLike;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class KaraokeLikeController extends Controller
 {
@@ -15,8 +16,6 @@ class KaraokeLikeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -24,25 +23,19 @@ class KaraokeLikeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Store a newly created resource in storage (toggles the like).
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
         [$saved, $message] = $this->service->store($request);
 
         return response([
-            "message" => $message,
+            'message' => $message,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\KaraokeLike  $karaokeLike
-     * @return \Illuminate\Http\Response
      */
     public function show(KaraokeLike $karaokeLike)
     {
@@ -51,10 +44,6 @@ class KaraokeLikeController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\KaraokeLike  $karaokeLike
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, KaraokeLike $karaokeLike)
     {
@@ -63,9 +52,6 @@ class KaraokeLikeController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\KaraokeLike  $karaokeLike
-     * @return \Illuminate\Http\Response
      */
     public function destroy(KaraokeLike $karaokeLike)
     {

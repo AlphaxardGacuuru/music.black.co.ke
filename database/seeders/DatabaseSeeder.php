@@ -6,31 +6,33 @@ use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     *
-     * @return void
-     */
-    public function run()
+    public function run(): void
     {
-        $this->call([
-            // Must be ran in this order since there are some dependancies
-            UserSeeder::class,
-
-            PostSeeder::class,
-            PollSeeder::class,
-
-            VideoAlbumSeeder::class,
-            VideoSeeder::class,
-            // BoughtVideoSeeder::class,
-
-            AudioAlbumSeeder::class,
-            AudioSeeder::class,
-            // BoughtAudioSeeder::class,
-
-            KaraokeSeeder::class,
-			
-            StorySeeder::class,
-        ]);
+        if (config("app.env") == "production") {
+            $this->call([
+                RoleSeeder::class,
+                BlackMusicUserSeeder::class,
+                AdminUserSeeder::class,
+            ]);
+        } else {
+            $this->call([
+                RoleSeeder::class,
+                BlackMusicUserSeeder::class,
+                AdminUserSeeder::class,
+                UserSeeder::class,
+                ReferralSeeder::class,
+                VideoAlbumSeeder::class,
+                VideoSeeder::class,
+                AudioAlbumSeeder::class,
+                AudioSeeder::class,
+                BoughtVideoSeeder::class,
+                BoughtAudioSeeder::class,
+                KaraokeSeeder::class,
+                PostSeeder::class,
+                PollSeeder::class,
+                StorySeeder::class,
+                ChatSeeder::class,
+            ]);
+        }
     }
 }

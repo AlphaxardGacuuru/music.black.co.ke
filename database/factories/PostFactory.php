@@ -2,15 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\Follow;
 use App\Models\Post;
-use App\Models\PostComment;
-use App\Models\PostLike;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Post>
+ * @extends Factory<Post>
  */
 class PostFactory extends Factory
 {
@@ -19,50 +16,17 @@ class PostFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'username' => User::all()->random()->username,
-            'text' => fake()->realText($maxNbChars = 20, $indexSize = 2),
-            'media' => 'post-media/' . rand(1, 5) . '.jpg',
+            'user_id' => User::factory(),
+            'text' => fake()->realText(20, 2),
+            'media' => 'post-media/'.rand(1, 5).'.jpg',
+            'parameter_1' => '',
+            'parameter_2' => '',
+            'parameter_3' => '',
+            'parameter_4' => '',
+            'parameter_5' => '',
         ];
-    }
-
-    /*
-     * Configure */
-    public function configure()
-    {
-        return $this->afterMaking(function (Post $post) {
-            //
-        })->afterCreating(function (Post $post) {
-            // Create Post Likes
-            PostLike::factory()
-                ->create([
-                    'post_id' => $post->id,
-                    'username' => $post->username,
-                ]);
-
-            // Create Post Comments
-            PostComment::factory()
-                ->count(rand(1, 5))
-                ->create([
-                    'post_id' => $post->id,
-                    'username' => User::all()->random()->username,
-                ]);
-
-            // Check if @blackmusic already follows
-            $hasntFollowed = Follow::where("followed", $post->username)
-                ->where("username", "@blackmusic")
-                ->doesntExist();
-
-            if ($hasntFollowed) {
-                Follow::factory()
-                    ->create([
-                        "followed" => $post->username,
-                        "username" => "@blackmusic",
-                        "muted" => ["posts" => false, "stories" => false],
-                    ]);
-            }
-        });
     }
 }

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Events\VideoCommentLikedEvent;
 use App\Http\Services\VideoCommentLikeService;
-use App\Models\VideoComment;
-use App\Models\VideoCommentLike;
 use Illuminate\Http\Request;
 
 class VideoCommentLikeController extends Controller
@@ -17,8 +15,6 @@ class VideoCommentLikeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -27,12 +23,13 @@ class VideoCommentLikeController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'comment' => 'required|exists:video_comments,id',
+        ]);
+
         [$canDispatch, $message, $videoCommentLike] = $this->service->store($request);
 
         VideoCommentLikedEvent::dispatchIf(
@@ -42,41 +39,31 @@ class VideoCommentLikeController extends Controller
         );
 
         return response([
-            "message" => $message,
-            "data" => $videoCommentLike,
+            'message' => $message,
+            'data' => $videoCommentLike,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\VideoCommentLike  $videoCommentLike
-     * @return \Illuminate\Http\Response
      */
-    public function show(VideoCommentLike $videoCommentLike)
+    public function show(string $id)
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\VideoCommentLike  $videoCommentLike
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, VideoCommentLike $videoCommentLike)
+    public function update(Request $request, string $id)
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\VideoCommentLike  $videoCommentLike
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(VideoCommentLike $videoCommentLike)
+    public function destroy(string $id)
     {
         //
     }

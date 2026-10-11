@@ -2,63 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\ReferralService;
 use App\Models\Referral;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ReferralController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function __construct(protected ReferralService $referralService)
     {
         //
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * The current referral reward threshold/amount, so any signed-in user
+     * (not just admins) can see what referring friends earns them.
      */
-    public function store(Request $request)
+    public function settings(): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => $this->referralService->settings(),
+        ]);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Referral  $referral
-     * @return \Illuminate\Http\Response
+     * The authenticated user's own referral history, most recent first.
      */
-    public function show(Referral $referral)
+    public function mine(Request $request): JsonResponse
     {
-        //
-    }
+        $referrals = $this->referralService->mine($request);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Referral  $referral
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Referral $referral)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Referral  $referral
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Referral $referral)
-    {
-        //
+        return response()->json([
+            'data' => $referrals->getCollection()->map(fn(Referral $referral) => [
+                'id' => $referral->id,
+                'referredName' => $referral->referred?->name,
+                'createdAt' => $referral->created_at,
+            ]),
+            'meta' => [
+                'current_page' => $referrals->currentPage(),
+                'last_page' => $referrals->lastPage(),
+                'total' => $referrals->total(),
+            ],
+        ]);
     }
 }

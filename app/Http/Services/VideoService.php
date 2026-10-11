@@ -9,24 +9,25 @@ use App\Models\Video;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class VideoService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
      */
     public function index()
     {
         // Get Videos
-        $getVideos = Video::orderBy('id', 'ASC')->get();
+        $getVideos = Video::orderBy('created_at', 'ASC')
+            ->orderBy('id', 'ASC')
+            ->get();
 
         return VideoResource::collection($getVideos);
     }
 
     /**
      * Display the specified resource.
-     *
      */
     public function show($id)
     {
@@ -38,7 +39,6 @@ class VideoService extends Service
 
     /**
      * Store a newly created resource in storage.
-     *
      */
     public function store($request)
     {
@@ -46,8 +46,8 @@ class VideoService extends Service
         $video = new Video;
         $video->video = $request->input('video');
         $video->name = $request->input('name');
-        $video->username = auth("sanctum")->user()->username;
-        $video->ft = $request->input('ft');
+        $video->user_id = $this->id;
+        $video->ft_id = $this->userId($request->input('ft'));
         $video->video_album_id = $request->input('video_album_id');
         $video->genre = $request->input('genre');
         $video->thumbnail = $request->input('thumbnail');
@@ -55,25 +55,26 @@ class VideoService extends Service
         $video->released = $request->input('released');
         $saved = $video->save();
 
-		$message = "Video " . $video->name . " uploaded";
+        $message = 'Video ' . $video->name . ' uploaded';
 
-		return [$saved, $message, $video];
+        return [$saved, $message, $video];
     }
 
     /**
      * Update the specified resource in storage.
-     *
      */
     public function update($request, $id)
     {
-        $video = Video::find($id);
+        $video = Video::findOrFail($id);
+
+        Gate::authorize('update', $video);
 
         if ($request->filled('name')) {
             $video->name = $request->input('name');
         }
 
         if ($request->filled('ft')) {
-            $video->ft = $request->input('ft');
+            $video->ft_id = $this->userId($request->input('ft'));
         }
 
         if ($request->filled('video_album_id')) {
@@ -93,39 +94,39 @@ class VideoService extends Service
         }
 
         if ($request->filled('thumbnail')) {
-            $video->thumbnail = $request->input('thumbnail');
-
             // Delete thumbnail
-            $oldThumbnail = Video::find($id)->thumbnail;
-            Storage::delete('public/' . $oldThumbnail);
+            Storage::disk('public')->delete(array_filter([$video->getRawOriginal('thumbnail')]));
+
+            $video->thumbnail = $request->input('thumbnail');
         }
 
         if ($request->filled('video')) {
-            $video->video = $request->input('video');
-
             // Delete video
-            $oldVideo = Video::find($id)->video;
-            Storage::delete('public/' . $oldVideo);
+            Storage::disk('public')->delete(array_filter([$video->getRawOriginal('video')]));
+
+            $video->video = $request->input('video');
         }
 
         $saved = $video->save();
 
-		$message = $video->name . " edited";
+        $message = $video->name . ' edited';
 
-		return [$saved, $message, $video];
+        return [$saved, $message, $video];
     }
 
     /**
-     * Download Audio.
-     *
+     * Download Video.
      */
     public function download($id)
     {
-        $video = Video::find($id);
-        // Get file extesion
-        $ext = substr($video->video, -3);
+        $video = Video::findOrFail($id);
 
-        $src = $video->video;
+        $path = $video->getRawOriginal('video');
+
+        // Get file extension
+        $ext = substr($path, -3);
+
+        $src = Storage::disk('public')->path($path);
 
         $name = $video->name . '.' . $ext;
 
@@ -134,25 +135,25 @@ class VideoService extends Service
 
     /**
      * Newly Released Chart
-     *
      */
     public function newlyReleased()
     {
         // Get Videos
-        $newlyReleased = Video::orderBy("id", "desc")->get();
+        $newlyReleased = Video::orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
 
         return response($this->chart($newlyReleased), 200);
     }
 
     /**
      * Trending Chart
-     *
      */
     public function trending()
     {
         $trending = DB::table('bought_videos')
             ->select('video_id', DB::raw('count(*) as bought'))
-            ->where("created_at", ">=", Carbon::now()->subWeek())
+            ->where('created_at', '>=', Carbon::now()->subWeek())
             ->groupBy('video_id')
             ->orderBy('bought', 'DESC')
             ->get();
@@ -162,7 +163,6 @@ class VideoService extends Service
 
     /**
      * Top Downloaded
-     *
      */
     public function topDownloaded()
     {
@@ -177,7 +177,6 @@ class VideoService extends Service
 
     /**
      * Top Liked
-     *
      */
     public function topLiked()
     {
@@ -192,7 +191,6 @@ class VideoService extends Service
 
     /**
      * Structure charts
-     *
      */
     public function chart($list, $loop = false)
     {
@@ -209,15 +207,15 @@ class VideoService extends Service
             }
         }
 
-        // Transform data using resource
-        $videos = VideoResource::collection($videos);
-
         $chartArtists = [];
 
-        // Populate Videos and Artists array
+        // Populate Artists array
         foreach ($videos as $video) {
-            array_push($chartArtists, $video->username);
+            array_push($chartArtists, $video->user_id);
         }
+
+        // Transform data using resource
+        $videos = VideoResource::collection($videos);
 
         // Count occurrences of artists
         $chartArtists = array_count_values($chartArtists);
@@ -225,32 +223,41 @@ class VideoService extends Service
         // Sort artists based on most occurences
         arsort($chartArtists);
 
-        // Get usernames only
+        // Get ids only
         $chartArtists = array_keys($chartArtists);
 
         $artists = [];
 
         // Get Artists
         foreach ($chartArtists as $artist) {
-            $getArtist = User::where("username", $artist)->first();
+            $getArtist = User::find($artist);
 
             $getArtist = new UserResource($getArtist);
 
             array_push($artists, $getArtist);
         }
 
-        return ["data" => [
-            "artists" => $artists,
-            "videos" => $videos,
+        return ['data' => [
+            'artists' => $artists,
+            'videos' => $videos,
         ]];
     }
 
     /*
-     * Artist's Videos */
+     * Artist's Videos
+     */
     public function artistVideos($username)
     {
-        $getArtistVideos = Video::where("username", $username)->get();
-		
-		return VideoResource::collection($getArtistVideos);
+        $getArtistVideos = Video::where('user_id', $this->userId($username))->get();
+
+        return VideoResource::collection($getArtistVideos);
+    }
+
+    /*
+     * Look up a user id from a username sent by the API.
+     */
+    protected function userId(?string $username): ?string
+    {
+        return $username ? User::where('username', $username)->value('id') : null;
     }
 }

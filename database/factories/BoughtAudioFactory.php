@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\Audio;
+use App\Models\BoughtAudio;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BoughtAudio>
+ * @extends Factory<BoughtAudio>
  */
 class BoughtAudioFactory extends Factory
 {
@@ -16,16 +17,15 @@ class BoughtAudioFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
-	$audio = Audio::all()->random();
-
-    return [
-        "audio_id" => $audio->id,
-        "price" => "10",
-		"username" => User::all()->random()->username,
-		"name" => $audio->name,
-		"artist" => $audio->user->username
-    ];
+        return [
+            'audio_id' => fn () => Audio::factory(),
+            'price' => (string) BoughtAudio::PRICE,
+            // The buyer
+            'user_id' => User::factory(),
+            // The audio's owner
+            'artist_id' => fn (array $attributes) => Audio::find($attributes['audio_id'])->user_id,
+        ];
     }
 }

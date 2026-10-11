@@ -9,22 +9,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class AudioCommentLikedListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\AudioCommentLikedEvent  $event
-     * @return void
      */
-    public function handle(AudioCommentLikedEvent $event)
+    public function handle(AudioCommentLikedEvent $event): void
     {
         $event
             ->comment

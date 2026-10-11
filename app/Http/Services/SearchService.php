@@ -3,43 +3,52 @@
 namespace App\Http\Services;
 
 use App\Models\Search;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 
 class SearchService extends Service
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * The current user's searches.
      */
-    public function index()
+    public function index(): Collection
     {
-        return Search::where('username', $this->username)->get();
+        // OLD returned the raw rows, whose "username" column is now user_id
+        return Search::with('user')
+            ->where('user_id', $this->id)
+            ->get()
+            ->map(fn (Search $search) => [
+                'id' => $search->id,
+                'username' => $search->user->username,
+                'keyword' => $search->keyword,
+                'created_at' => $search->created_at,
+                'updated_at' => $search->updated_at,
+            ]);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store($request)
+    public function store(Request $request): void
     {
         $search = new Search;
-        $search->username = auth('sanctum')->user()->username;
+        $search->user_id = $this->id;
         $search->keyword = $request->input('keyword');
         $search->save();
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Search  $search
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id): array
     {
-        $deleted = Search::find($id)->delete();
-		
-		return [$deleted, "Search deleted"];
+        $search = Search::findOrFail($id);
+
+        Gate::authorize('delete', $search);
+
+        $deleted = $search->delete();
+
+        return [$deleted, 'Search deleted'];
     }
 }

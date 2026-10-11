@@ -5,28 +5,18 @@ namespace App\Listeners;
 use App\Events\FollowedEvent;
 use App\Notifications\FollowedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class FollowedListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\FollowedEvent  $event
-     * @return void
      */
-    public function handle(FollowedEvent $event)
+    public function handle(FollowedEvent $event): void
     {
-        $event->user->notify(new FollowedNotification);
+        // OLD called "new FollowedNotification" without the follower, which
+        // threw before anything was sent. The follower is now passed along.
+        if ($event->follower) {
+            $event->user->notify(new FollowedNotification($event->follower->username));
+        }
     }
 }

@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\PostComment;
+use App\Models\PostCommentLike;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PostCommentLike>
+ * @extends Factory<PostCommentLike>
  */
 class PostCommentLikeFactory extends Factory
 {
@@ -14,10 +17,11 @@ class PostCommentLikeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            //
+            'post_comment_id' => PostComment::factory(),
+            'user_id' => User::factory(),
         ];
     }
 }

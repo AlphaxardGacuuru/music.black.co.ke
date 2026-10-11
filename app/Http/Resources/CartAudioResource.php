@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CartAudioResource extends JsonResource
@@ -9,41 +10,38 @@ class CartAudioResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
-        // Check if user is logged in
-        $username = auth('sanctum')->user()
-        ? auth('sanctum')->user()->username
-        : '@guest';
+        // Current user's id, null for guests
+        $userId = auth('sanctum')->id();
 
         return [
-            "cartId" => $this->id,
-            "id" => $this->audio_id,
-            "audio" => $this->audio->audio,
-            "name" => $this->audio->name,
-            "artistName" => $this->audio->user->name,
-            "username" => $this->audio->username,
-            "avatar" => $this->audio->user->avatar,
-            "artistDecos" => $this->audio->user->decos,
-            "ft" => $this->audio->ft,
-            "audioAlbumId" => $this->audio->audio_album_id,
-            "album" => $this->audio->album->name,
-            "genre" => $this->audio->genre,
-            "thumbnail" => $this->audio->thumbnail,
-            "description" => $this->audio->description,
-            "released" => $this->audio->released,
-            "hasLiked" => $this->audio->hasLiked($username),
-            "likes" => $this->audio->likes->count(),
-            "comments" => $this->audio->comments->count(),
-            "inCart" => $this->audio->inCart($username),
-            "hasBoughtAudio" => $this->audio->hasBoughtAudio($username),
-            "hasBought1" => $this->audio->user->hasBought1($username),
-            "hasFollowed" => $this->audio->user->hasFollowed($username),
-            "downloads" => $this->audio->bought->count(),
-            "createdAt" => $this->audio->created_at,
+            'cartId' => $this->id,
+            'id' => $this->audio_id,
+            'audio' => $this->audio->audio,
+            'name' => $this->audio->name,
+            'artistName' => $this->audio->user->name,
+            'username' => $this->audio->user->username,
+            'avatar' => $this->audio->user->avatar,
+            'artistDecos' => $this->audio->user->decos,
+            'ft' => $this->audio->ft?->username,
+            'audioAlbumId' => $this->audio->audio_album_id,
+            'album' => $this->audio->album?->name,
+            'genre' => $this->audio->genre,
+            'thumbnail' => $this->audio->thumbnail,
+            'description' => $this->audio->description,
+            'released' => $this->audio->released,
+            'hasLiked' => $this->audio->hasLiked($userId),
+            'likes' => $this->audio->likes->count(),
+            'comments' => $this->audio->comments->count(),
+            'inCart' => $this->audio->inCart($userId),
+            'hasBoughtAudio' => $this->audio->hasBoughtAudio($userId),
+            'hasBought1' => $this->audio->user->hasBought1($userId),
+            'hasFollowed' => $this->audio->user->hasFollowed($userId),
+            'downloads' => $this->audio->bought->count(),
+            'createdAt' => $this->audio->created_at,
         ];
     }
 }

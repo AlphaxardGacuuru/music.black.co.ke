@@ -2,52 +2,32 @@
 
 namespace App\Http\Services;
 
-use Illuminate\Support\Facades\Notification;
+use App\Http\Resources\NotificationResource;
+use App\Notifications;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class NotificationService extends Service
 {
-
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
         // Check if user is logged in
-        if (auth('sanctum')->check()) {
-            $getNotifications = auth('sanctum')->user()->notifications;
-        } else {
-            $getNotifications = [];
-        }
+        $notifications = auth('sanctum')->user()->notifications;
 
-        $notifications = [];
-
-        foreach ($getNotifications as $notification) {
-
-            // Check if notification is read
-            $isRead = $notification->read_at ? true : false;
-
-            array_push($notifications, [
-                "id" => $notification->id,
-                "type" => explode('\\', $notification->type)[2],
-                "url" => $notification->data['url'],
-                "from" => $notification->data['from'],
-                "message" => $notification->data['message'],
-                "isRead" => $isRead,
-                "created_at" => $notification->created_at->format('d M Y'),
-            ]);
-        }
-
-        return ["data" => $notifications];
+        return NotificationResource::collection($notifications);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Notifications  $notifications
-     * @return \Illuminate\Http\Response
+     * @param  Request  $request
+     * @param  Notifications  $notifications
+     * @return Response
      */
     public function update($request, $id)
     {
@@ -57,15 +37,15 @@ class NotificationService extends Service
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Notifications  $notifications
-     * @return \Illuminate\Http\Response
+     * @param  Notifications  $notifications
+     * @return Response
      */
     public function destroy($id)
     {
-        if ($id == 0) {
+        if ($id === "0") {
             auth('sanctum')->user()->notifications()->delete();
         } else {
-            auth("sanctum")->user()->notifications()->find($id)->delete();
+            auth("sanctum")->user()->notifications()->findOrFail($id)->delete();
         }
     }
 }

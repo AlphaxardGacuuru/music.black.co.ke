@@ -3,46 +3,37 @@
 namespace App\Notifications;
 
 use App\Mail\AudioReceiptMail;
+use App\Models\Audio;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class AudioReceiptNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
-    public $audios;
-
     /**
-     * Create a new notification instance.
-     *
-     * @return void
+     * @param  array<int, Audio>  $audios
      */
-    public function __construct($audios)
+    public function __construct(public array $audios)
     {
-        $this->audios = $audios;
+        //
     }
 
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<int, string>
      */
-    public function via($notifiable)
+    public function via(object $notifiable): array
     {
         return ['database', 'mail', 'broadcast'];
     }
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail(object $notifiable): AudioReceiptMail
     {
         return (new AudioReceiptMail($this->audios))
             ->to($notifiable->email);
@@ -51,10 +42,9 @@ class AudioReceiptNotification extends Notification implements ShouldBroadcast
     /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray(object $notifiable): array
     {
         $list = [];
 
@@ -64,15 +54,15 @@ class AudioReceiptNotification extends Notification implements ShouldBroadcast
 
         // Check proper grammar
         if (count($this->audios) > 1) {
-            $numberOfAudios = count($this->audios) . ' audios: ';
+            $numberOfAudios = count($this->audios).' audios: ';
         } else {
-            $numberOfAudios = count($this->audios) . ' audio: ';
+            $numberOfAudios = count($this->audios).' audio: ';
         }
 
         return [
             'url' => '/library',
             'from' => '@blackmusic',
-            'message' => 'You bought ' . $numberOfAudios . implode(", ", $list),
+            'message' => 'You bought '.$numberOfAudios.implode(', ', $list),
         ];
     }
 }

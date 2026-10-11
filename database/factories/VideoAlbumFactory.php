@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\VideoAlbum;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VideoAlbum>
+ * @extends Factory<VideoAlbum>
  */
 class VideoAlbumFactory extends Factory
 {
@@ -15,13 +16,13 @@ class VideoAlbumFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
             'name' => fake()->word(),
             'cover' => 'video-album-covers/' . rand(1, 5) . '.jpg',
             'released' => fake()->dateTime(),
-            'username' => User::all()->random()->username,
+            'user_id' => User::factory(),
         ];
     }
 }

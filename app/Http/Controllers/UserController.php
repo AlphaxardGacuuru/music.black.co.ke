@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
 use App\Http\Services\UserService;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class UserController extends Controller
 {
@@ -14,89 +18,81 @@ class UserController extends Controller
         //
     }
 
+    // Password reset is now handled via update()
+
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request): AnonymousResourceCollection
     {
-        return $this->service->index();
+        $users = $this->service->index($request);
+
+        return UserResource::collection($users);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreUserRequest $request): UserResource
     {
-        //
+        [$status, $message, $user] = $this->service->store($request);
+
+        return (new UserResource($user))->additional([
+            'status' => $status,
+            'message' => $message,
+        ]);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
      */
-    public function show($username)
+    public function show(int|string $id): UserResource
     {
-        return $this->service->show($username);
+        $user = $this->service->show($id);
+
+        return new UserResource($user);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, int|string $id): Response
     {
-        $this->validate($request, [
-            'name' => 'string|nullable|max:20',
-            'phone' => 'string|nullable|startsWith:0|min:10|max:10',
-            'filepond-profile-pic' => 'nullable|max:9999',
-            'bio' => 'string|nullable|max:50',
-            'withdrawal' => 'string|nullable',
-        ]);
-
         [$saved, $message, $user] = $this->service->update($request, $id);
 
         return response([
-            "message" => $message,
-            "data" => $user,
+            'status' => $saved,
+            'message' => $message,
+            'data' => $user,
         ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(User $user)
+    public function destroy(int|string $id): Response
     {
-        //
+        [$deleted, $message] = $this->service->destroy($id);
+
+        return response([
+            'status' => $deleted,
+            'message' => $message,
+        ], 200);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
+     * Musicians to discover.
      */
-    public function auth()
+    public function artists(): AnonymousResourceCollection
     {
-        return $this->service->auth();
+        return UserResource::collection($this->service->artists());
     }
 
     /*
-     * Artists */
-    public function artists()
+     * Get the Auth User
+     */
+    public function auth(): UserResource|Response
     {
-        return $this->service->artists();
+        return $this->service->auth();
     }
 }

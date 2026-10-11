@@ -2,93 +2,55 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UserCreatedEvent;
 use App\Http\Controllers\Controller;
-use App\Models\Follow;
-use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use App\Http\Services\AuthService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 
 class RegisteredUserController extends Controller
 {
+    public function __construct(protected AuthService $authService)
+    {
+        //
+    }
+
     /**
      * Handle an incoming registration request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'username' => [
-                'required',
-                'string',
-                'startsWith:@',
-                'min:2',
-                'max:15',
-                'unique:users',
-                'regex:/^\S+$/',
-            ],
-            'phone' => [
-                'required',
-                'string',
-                'startsWith:0',
-                'min:10',
-                'max:10',
-                'unique:users',
-            ],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        DB::transaction(function () use ($request) {
-            $user = User::create([
-                'name' => $request->name,
-                'username' => $request->username,
-                'email' => $request->email,
-                'password' => Hash::make($request->phone),
-                'phone' => $request->phone,
-                'avatar' => $request->avatar,
-                'withdrawal' => '1000',
-            ]);
+        $user = $this->authService->register(
+            $request->name,
+            $request->email,
+            $request->password,
+            $request->input('referrerId'),
+        );
 
-            /* User should follow themselves */
-            $follow = new Follow;
-            $follow->followed = $request->username;
-            $follow->username = $request->username;
-            $follow->muted = ["posts" => false, "stories" => false];
-            $follow->save();
+        Auth::login($user);
 
-            /* User should follow @blackmusic */
-            $follow = new Follow;
-            $follow->followed = '@blackmusic';
-            $follow->username = $request->username;
-            $follow->muted = ["posts" => false, "stories" => false];
-            $follow->save();
+        $token = $user
+            ->createToken($request->device_name)
+            ->plainTextToken;
 
-            event(new Registered($user));
+        UserCreatedEvent::dispatch($user);
 
-            Auth::login($user, $remember = true);
-        });
-
-        // return response()->noContent();
-
-        /*
-         * Create Token */
-        $user = User::where('email', $request->email)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
-        }
-
-        return $user->createToken($request->device_name)->plainTextToken;
+        return response([
+            "status" => "success",
+            "message" => "Registered Successfully",
+            "data" => $token,
+        ], 200);
     }
 }

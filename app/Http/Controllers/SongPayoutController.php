@@ -5,59 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\SongPayout;
 use Illuminate\Http\Request;
 
+/**
+ * Empty in OLD as well. Kept so the OLD URLs still resolve.
+ */
 class SongPayoutController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): void
     {
         //
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): void
     {
         //
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\SongPayout  $songPayout
-     * @return \Illuminate\Http\Response
      */
-    public function show(SongPayout $songPayout)
+    public function show(SongPayout $songPayout): void
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\SongPayout  $songPayout
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SongPayout $songPayout)
+    public function update(Request $request, SongPayout $songPayout): void
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\SongPayout  $songPayout
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(SongPayout $songPayout)
+    public function destroy(SongPayout $songPayout): void
     {
         //
     }

@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Audio;
 use App\Models\AudioComment;
-use App\Models\AudioCommentLike;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AudioComment>
+ * @extends Factory<AudioComment>
  */
 class AudioCommentFactory extends Factory
 {
@@ -17,31 +17,12 @@ class AudioCommentFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'text' => fake()->realText($maxNbChars = 20, $indexSize = 2),
-            'username' => User::all()->random()->username,
+            'audio_id' => Audio::factory(),
+            'text' => fake()->realText(20, 2),
+            'user_id' => User::factory(),
         ];
-    }
-
-    /**
-     * Configure the model factory.
-     *
-     * @return $this
-     */
-    public function configure()
-    {
-        // User Follows themselves and Black Music after creation
-        return $this->afterMaking(function (AudioComment $comment) {
-            //
-        })->afterCreating(function (AudioComment $comment) {
-            AudioCommentLike::factory()
-                ->count(1)
-                ->create([
-                    'username' => User::all()->random()->username,
-                    'audio_comment_id' => $comment->id,
-                ]);
-        });
     }
 }

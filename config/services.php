@@ -14,6 +14,10 @@ return [
     |
     */
 
+    'postmark' => [
+        'key' => env('POSTMARK_API_KEY'),
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
@@ -21,8 +25,8 @@ return [
         'scheme' => 'https',
     ],
 
-    'postmark' => [
-        'token' => env('POSTMARK_TOKEN'),
+    'resend' => [
+        'key' => env('RESEND_API_KEY'),
     ],
 
     'ses' => [
@@ -31,14 +35,11 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-	/*
-	* Socialite
-	*/ 
-
-    'github' => [
-        'client_id' => env('GITHUB_CLIENT_ID'),
-        'client_secret' => env('GITHUB_CLIENT_SECRET'),
-        'redirect' => env('GITHUB_CALLBACK_URL'),
+    'slack' => [
+        'notifications' => [
+            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
+            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
+        ],
     ],
 
     'google' => [
@@ -47,15 +48,29 @@ return [
         'redirect' => env('GOOGLE_CALLBACK_URL'),
     ],
 
-    'facebook' => [
-        'client_id' => env('FACEBOOK_CLIENT_ID'),
-        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
-        'redirect' => env('FACEBOOK_CALLBACK_URL'),
+    'vonage' => [
+        'key' => env('VONAGE_KEY'),
+        'secret' => env('VONAGE_SECRET'),
+        'sms_from' => env('VONAGE_SMS_FROM', '254700364446'),
     ],
 
-    'twitter' => [
-        'client_id' => env('TWITTER_CLIENT_ID'),
-        'client_secret' => env('TWITTER_CLIENT_SECRET'),
-        'redirect' => env('TWITTER_CALLBACK_URL'),
+    'kopokopo' => [
+        'environment' => env('KOPOKOPO_ENV', 'live'),
+        // The till/paybill number this app receives payments into (wallet
+        // top-ups for buying songs), not environment-specific like the API
+        // credentials above, so it lives at the top level.
+        'till_number' => env('KOPOKOPO_TILL_NUMBER'),
+        'sandbox' => [
+            'clientId' => env('KOPOKOPO_CLIENT_ID_SANDBOX'),
+            'clientSecret' => env('KOPOKOPO_CLIENT_SECRET_SANDBOX'),
+            'apiKey' => env('KOPOKOPO_API_KEY_SANDBOX'),
+            'baseUrl' => env('KOPOKOPO_BASE_URL_SANDBOX'),
+        ],
+        'live' => [
+            'clientId' => env('KOPOKOPO_CLIENT_ID'),
+            'clientSecret' => env('KOPOKOPO_CLIENT_SECRET'),
+            'apiKey' => env('KOPOKOPO_API_KEY'),
+            'baseUrl' => env('KOPOKOPO_BASE_URL'),
+        ],
     ],
 ];

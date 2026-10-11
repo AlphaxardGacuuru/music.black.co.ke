@@ -4,56 +4,48 @@ namespace App\Http\Services;
 
 use App\Http\Resources\SavedKaraokeResource;
 use App\Models\SavedKaraoke;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class SavedKaraokeService extends Service
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display the current user's saved karaokes (oldest first).
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        // Get saved Karaokes
-        $getSavedKarokes = SavedKaraoke::where('username', $this->username)
-            ->orderBy('id', 'ASC')
+        $getSavedKarokes = SavedKaraoke::where('user_id', $this->id)
+            ->orderBy('created_at', 'ASC')
             ->get();
-			
-			return SavedKaraokeResource::collection($getSavedKarokes);
+
+        return SavedKaraokeResource::collection($getSavedKarokes);
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Toggle the current user's save on a karaoke.
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-		$savedKaraoke = "data";
-        
-		$hasSaved = SavedKaraoke::where('karaoke_id', $request->input('id'))
-            ->where('username', auth('sanctum')->user()->username)
-            ->exists();
+        $savedKaraoke = 'data';
 
-        if ($hasSaved) {
-            SavedKaraoke::where('karaoke_id', $request->input('id'))
-                ->where('username', auth('sanctum')->user()->username)
-                ->delete();
+        $query = SavedKaraoke::where('karaoke_id', $request->input('id'))
+            ->where('user_id', $this->id);
 
-            $message = "Karaoke removed";
-			$added = false;
+        if ($query->exists()) {
+            $query->delete();
+
+            $message = 'Karaoke removed';
+            $added = false;
         } else {
-            /* Create new karaoke song */
             $savedKaraoke = new SavedKaraoke;
             $savedKaraoke->karaoke_id = $request->input('id');
-            $savedKaraoke->username = auth('sanctum')->user()->username;
+            $savedKaraoke->user_id = $this->id;
             $savedKaraoke->save();
 
-            $message = "Karaoke saved";
-			$added = true;
+            $message = 'Karaoke saved';
+            $added = true;
         }
 
-		return [$added, $message, $savedKaraoke];
+        return [$added, $message, $savedKaraoke];
     }
 }

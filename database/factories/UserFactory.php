@@ -2,15 +2,14 @@
 
 namespace Database\Factories;
 
-use App\Models\Follow;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -21,31 +20,44 @@ class UserFactory extends Factory
      */
     public function definition()
     {
-        $accountType = ["normal", "musician"];
+        $email = fake()->unique()->safeEmail();
+
+        $gender = ["male", "female"];
 
         return [
             'name' => fake()->name(),
-            'username' => '@' . fake()->unique()->firstName(),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => $email,
             'email_verified_at' => now(),
-            'avatar' => 'avatars/male-avatar.png',
-            'backdrop' => 'img/headphones.jpg',
-            'phone' => fake()->phoneNumber(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'password' => Hash::make($email),
             'remember_token' => Str::random(10),
+            'phone' => fake()->phoneNumber(),
+            'avatar' => 'avatars/male-avatar.png',
+            'gender' => $gender[rand(0, 1)],
             'bio' => fake()->catchPhrase(),
-            'account_type' => $accountType[rand(0, 1)],
+            'created_at' => Carbon::now()->subDay(rand(3, 12)),
         ];
     }
 
     /**
-     * Add Black Music Account First
+     * A musician, who can upload videos and audios.
+     *
+     * @return static
+     */
+    public function musician()
+    {
+        return $this->state(fn (array $attributes) => [
+            'account_type' => 'musician',
+        ]);
+    }
+
+    /**
+     * The house @blackmusic account every user follows.
      *
      * @return static
      */
     public function black()
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'name' => 'Black Music',
             'username' => '@blackmusic',
             'email' => 'al@black.co.ke',
@@ -54,31 +66,8 @@ class UserFactory extends Factory
             'avatar' => 'avatars/male-avatar.png',
             'backdrop' => 'img/headphones.jpg',
             'phone' => '0700000000',
-            'password' => Hash::make('0700000000'),
+            'password' => Hash::make('al@black.co.ke'),
             'remember_token' => Str::random(10),
-            'bio' => fake()->catchPhrase(),
-        ]);
-    }
-
-    /**
-     * Add Alphaxard Account
-     *
-     * @return static
-     */
-    public function al()
-    {
-        return $this->state(fn(array $attributes) => [
-            'name' => 'Alphaxard Gacuuru',
-            'username' => '@alphaxardG',
-            'email' => 'alphaxardgacuuru47@gmail.com',
-            'email_verified_at' => now(),
-            'account_type' => 'normal',
-            'avatar' => 'avatars/male-avatar.png',
-            'backdrop' => 'img/headphones.jpg',
-            'phone' => '0700364446',
-            'password' => Hash::make('0700364446'),
-            'remember_token' => Str::random(10),
-            'bio' => fake()->catchPhrase(),
         ]);
     }
 
@@ -89,49 +78,84 @@ class UserFactory extends Factory
      */
     public function unverified()
     {
-        return $this->state(fn(array $attributes) => [
+        return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
 
     /**
-     * Configure the model factory.
+     * Add Alphaxard Account
      *
-     * @return $this
+     * @return static
      */
-    public function configure()
+    public function super()
     {
-        // User Follows themselves and Black Music after creation
-        return $this->afterMaking(function (User $user) {
-            //
-        })->afterCreating(function (User $user) {
-            // Check if user is @blackmusic
-            if ($user->username == '@blackmusic') {
-                Follow::factory()
-                    ->create([
-                        'followed' => '@blackmusic',
-                        'username' => $user->username,
-                        'muted' => ["posts" => false, "stories" => false],
-                    ]);
-            } elseif ($user->username == '@alphaxardG') {
-                Follow::factory()
-                    ->create([
-                        'followed' => '@alphaxardG',
-                        'username' => $user->username,
-                        'muted' => ["posts" => false, "stories" => false],
-                    ]);
-            } else {
-                Follow::factory()
-                    ->count(2)
-                    ->state(new Sequence(
-                        ['followed' => $user->username],
-                        ['followed' => '@blackmusic']
-                    ))
-                    ->create([
-                        'username' => $user->username,
-                        'muted' => ["posts" => false, "stories" => false],
-                    ]);
-            }
-        });
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Super Admin',
+            'email' => 'al@property.black.co.ke',
+            'email_verified_at' => now(),
+            'avatar' => 'avatars/male-avatar.png',
+            // 'phone' => '0700364446',
+            'password' => Hash::make('al@property.black.co.ke'),
+            'remember_token' => Str::random(10),
+            'gender' => 'male',
+        ]);
+    }
+
+    /**
+     * Add Al Account
+     *
+     * @return static
+     */
+    public function al()
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Alphaxard Gacuuru',
+            'email' => 'alphaxardgacuuru47@gmail.com',
+            'email_verified_at' => now(),
+            'avatar' => 'avatars/male-avatar.png',
+            'phone' => '0700364446',
+            'password' => Hash::make('alphaxardgacuuru47@gmail.com'),
+            'remember_token' => Str::random(10),
+            'gender' => 'male',
+        ]);
+    }
+
+    /**
+     * Add Gacuuru Account
+     *
+     * @return static
+     */
+    public function gacuuru()
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Gacuuru Wa Karenge',
+            'email' => 'gacuuruwakarenge@gmail.com',
+            'email_verified_at' => now(),
+            'avatar' => 'avatars/male-avatar.png',
+            'phone' => '0722777990',
+            'password' => Hash::make('gacuuruwakarenge@gmail.com'),
+            'remember_token' => Str::random(10),
+            'gender' => 'male',
+        ]);
+    }
+
+    /**
+     * Add Ciku Account
+     *
+     * @return static
+     */
+    public function ciku()
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Wanjiku Muhandi',
+            'email' => 'cikumuhandi@gmail.com',
+            'email_verified_at' => now(),
+            'avatar' => 'avatars/male-avatar.png',
+            'phone' => '0721721357',
+            'password' => Hash::make('cikumuhandi@gmail.com'),
+            'remember_token' => Str::random(10),
+            'gender' => 'female',
+        ]);
     }
 }

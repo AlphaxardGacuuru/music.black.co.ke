@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\AudioComment;
+use App\Models\AudioCommentLike;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AudioCommentLike>
+ * @extends Factory<AudioCommentLike>
  */
 class AudioCommentLikeFactory extends Factory
 {
@@ -14,10 +17,11 @@ class AudioCommentLikeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            //
+            'audio_comment_id' => AudioComment::factory(),
+            'user_id' => User::factory(),
         ];
     }
 }

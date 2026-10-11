@@ -5,26 +5,33 @@ namespace App\Http\Services;
 use App\Http\Resources\PostResource;
 use App\Models\Follow;
 use App\Models\Post;
+use App\Models\User;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class PostService extends Service
 {
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         // Get posts based on whether current user is guest
-        if ($this->username != "@guest") {
-            // Get Posts if user has followed musician and is not muted
-            $getPosts = Post::select("posts.*", "follows.muted->posts as muted", "follows.blocked")
-                ->join("follows", fn($join) =>
-                    $join->on("follows.followed", "=", "posts.username")
-                        ->where("follows.username", "=", "@blackmusic"))
-                ->where("follows.muted->posts", false);
+        if ($this->id) {
+            // Get Posts if the musician is followed (OLD joined on the
+            // follows of @blackmusic, not the current user) and not muted
+            $blackMusicId = User::where('username', '@blackmusic')->value('id');
+
+            $getPosts = Post::select('posts.*', 'follows.muted->posts as muted', 'follows.blocked')
+                ->join('follows', fn (JoinClause $join) => $join->on('follows.followed_id', '=', 'posts.user_id')
+                    ->where('follows.user_id', '=', $blackMusicId))
+                ->where('follows.muted->posts', false);
         } else {
-            $getPosts = Post::where("username", "@blackmusic");
+            $getPosts = Post::whereHas('user', fn ($query) => $query->where('username', '@blackmusic'));
         }
 
         $posts = $getPosts
-            ->orderBy("posts.id", "DESC")
+            ->orderBy('posts.id', 'DESC')
             ->paginate(10);
 
         return PostResource::collection($posts);
@@ -32,82 +39,88 @@ class PostService extends Service
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): PostResource
     {
-        $post = Post::find($id);
+        $post = Post::findOrFail($id);
 
         return new PostResource($post);
     }
 
     /* Create new post */
-    public function store($request)
+    public function store(Request $request): array
     {
         $post = new Post;
-        $post->username = auth('sanctum')->user()->username;
+        $post->user_id = $this->id;
         $post->text = $request->input('text');
         $post->media = $request->input('media');
-        $post->parameter_1 = $request->input('para1') ? $request->input('para1') : "";
-        $post->parameter_2 = $request->input('para2') ? $request->input('para2') : "";
-        $post->parameter_3 = $request->input('para3') ? $request->input('para3') : "";
-        $post->parameter_4 = $request->input('para4') ? $request->input('para4') : "";
-        $post->parameter_5 = $request->input('para5') ? $request->input('para5') : "";
+        $post->parameter_1 = $request->input('para1') ?: '';
+        $post->parameter_2 = $request->input('para2') ?: '';
+        $post->parameter_3 = $request->input('para3') ?: '';
+        $post->parameter_4 = $request->input('para4') ?: '';
+        $post->parameter_5 = $request->input('para5') ?: '';
 
         $saved = $post->save();
 
-        return [$saved, "Post posted", $post];
+        return [$saved, 'Post posted', $post];
     }
 
     // Update Post
-    public function update($request, $id)
+    public function update(Request $request, string $id): array
     {
-        $post = Post::find($id);
+        $post = Post::findOrFail($id);
+
+        Gate::authorize('update', $post);
+
         $post->text = $request->input('text');
         $saved = $post->save();
 
-        return [$saved, "Post edited", $post];
+        return [$saved, 'Post edited', $post];
     }
 
     // Delete Post
-    public function destory($id)
+    public function destory(string $id): array
     {
-        $post = Post::where('id', $id)->first();
+        $post = Post::findOrFail($id);
 
-        $media = substr($post->media, 9);
+        Gate::authorize('delete', $post);
 
-        Storage::delete("public/" . $media);
+        $media = $post->getRawOriginal('media');
 
-        $deleted = Post::find($id)->delete();
+        if ($media) {
+            Storage::disk('public')->delete($media);
+        }
 
-        return [$deleted, "Post deleted"];
+        $deleted = $post->delete();
+
+        return [$deleted, 'Post deleted'];
     }
 
     /*
      * Mute */
-    public function mute($username)
+    public function mute(string $username): array
     {
+        $followedId = User::where('username', $username)->value('id');
+
         // Get follow
-        $follow = Follow::where("followed", $username)
-            ->where("username", $this->username)
-            ->first();
+        $follow = Follow::where('followed_id', $followedId)
+            ->where('user_id', $this->id)
+            ->firstOrFail();
+
+        $muted = $follow->muted ?? ['posts' => false, 'stories' => false];
 
         // Check if Posts are muted
-        if ($follow->muted["posts"]) {
-            $muted = $follow->muted;
-            $muted["posts"] = false;
-            $follow->muted = $muted;
+        if ($muted['posts'] ?? false) {
+            $muted['posts'] = false;
 
-            $message = "You unmuted posts from " . $username;
+            $message = 'You unmuted posts from '.$username;
         } else {
-            $muted = $follow->muted;
-            $muted["posts"] = true;
-            $follow->muted = $muted;
+            $muted['posts'] = true;
 
-            $message = "You muted posts from " . $username;
+            $message = 'You muted posts from '.$username;
         }
+
+        $follow->muted = $muted;
 
         $saved = $follow->save();
 
@@ -116,15 +129,16 @@ class PostService extends Service
 
     /*
      * Artist's Posts */
-    public function artistPosts($username)
+    public function artistPosts(string $username): AnonymousResourceCollection
     {
+        $artistId = User::where('username', $username)->value('id');
+
         // Get Artist's Posts with muted info
-        $getArtistPosts = Post::select("posts.*", "follows.muted->posts as muted", "follows.blocked")
-            ->join("follows", fn($join) =>
-                $join->on("follows.followed", "=", "posts.username")
-                    ->where("follows.username", "=", $this->username))
-            ->where("posts.username", $username)
-            ->orderBy("posts.id", "DESC")
+        $getArtistPosts = Post::select('posts.*', 'follows.muted->posts as muted', 'follows.blocked')
+            ->join('follows', fn (JoinClause $join) => $join->on('follows.followed_id', '=', 'posts.user_id')
+                ->where('follows.user_id', '=', $this->id))
+            ->where('posts.user_id', $artistId)
+            ->orderBy('posts.id', 'DESC')
             ->get();
 
         return PostResource::collection($getArtistPosts);

@@ -4,21 +4,25 @@ namespace Database\Seeders;
 
 use App\Models\Story;
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class StorySeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        // Create one post for @blackmusic
-        Story::factory()->create(["username" => "@blackmusic"]);
+        // Create one story for @blackmusic
+        $blackMusicId = User::where('username', '@blackmusic')->value('id');
 
-        Story::factory()->count(10)->create();
+        if ($blackMusicId) {
+            Story::factory()->create(['user_id' => $blackMusicId]);
+        }
+
+        // Ten stories by random existing users
+        for ($i = 0; $i < 10; $i++) {
+            Story::factory()->create(['user_id' => User::inRandomOrder()->value('id')]);
+        }
     }
 }

@@ -2,11 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Models\Chat;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Chat>
+ * @extends Factory<Chat>
  */
 class ChatFactory extends Factory
 {
@@ -15,13 +16,13 @@ class ChatFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-        "username" => User::all()->random()->username,
-        "to" => User::all()->random()->username,
-        "text" => fake()->realText($maxNbChars = 20, $indexSize = 2),
-        "media" => "chat-media/" . rand(1, 5) . "jpg"
+            'user_id' => User::factory(),
+            'to_id' => User::factory(),
+            'text' => fake()->realText(20, 2),
+            'media' => 'chat-media/'.rand(1, 5).'.jpg',
         ];
     }
 }

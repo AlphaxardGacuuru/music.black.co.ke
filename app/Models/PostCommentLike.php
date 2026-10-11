@@ -2,20 +2,36 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PostCommentLike extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
-    public function user()
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'post_comment_id',
+        'user_id',
+    ];
+
+    /*
+     * Relationships
+     */
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, "username", "username");
+        return $this->belongsTo(User::class);
     }
 
-    public function comment()
+    public function comment(): BelongsTo
     {
-        return $this->belongsTo(PostComment::class, "post_comment_id");
+        return $this->belongsTo(PostComment::class, 'post_comment_id');
     }
 }

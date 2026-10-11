@@ -13,25 +13,22 @@ class ChatDeletedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $chat;
-
     /**
      * Create a new event instance.
-     *
-     * @return void
      */
-    public function __construct($chat)
-    {
-        $this->chat = $chat;
-    }
+    public function __construct(
+        public string $chat,
+    ) {}
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return array<int, Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('chat-deleted');
+        return [
+            new PrivateChannel('chat-deleted'),
+        ];
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,26 +12,19 @@ class DecoMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-	public $username;
-	public $artist;
-
     /**
-     * Create a new message instance.
-     *
-     * @return void
+     * @param  string  $username  the decorated fan
+     * @param  string  $artist  the artist's username
      */
-    public function __construct($username, $artist)
+    public function __construct(public string $username, public string $artist)
     {
-        $this->username = $username;
-        $this->artist = $artist;
+        //
     }
 
     /**
      * Get the message envelope.
-     *
-     * @return \Illuminate\Mail\Mailables\Envelope
      */
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Deco',
@@ -41,10 +33,8 @@ class DecoMail extends Mailable
 
     /**
      * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
      */
-    public function content()
+    public function content(): Content
     {
         return new Content(
             markdown: 'emails.deco',
@@ -54,9 +44,9 @@ class DecoMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array
+     * @return array<int, mixed>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [];
     }

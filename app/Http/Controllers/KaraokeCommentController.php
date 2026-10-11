@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KaraokeComment;
 use App\Http\Services\KaraokeCommentService;
+use App\Models\KaraokeComment;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class KaraokeCommentController extends Controller
 {
@@ -15,21 +17,16 @@ class KaraokeCommentController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
         $this->validate($request, [
             'text' => 'required',
@@ -38,28 +35,21 @@ class KaraokeCommentController extends Controller
         [$saved, $message, $karaokeComment] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $karaokeComment,
+            'message' => $message,
+            'data' => $karaokeComment,
         ], 200);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\KaraokeComment  $karaokeComment
-     * @return \Illuminate\Http\Response
+     * Display the specified resource (the comments of a karaoke).
      */
-    public function show($id)
+    public function show(string $id): AnonymousResourceCollection
     {
         return $this->service->show($id);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\KaraokeComment  $karaokeComment
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, KaraokeComment $karaokeComment)
     {
@@ -68,14 +58,11 @@ class KaraokeCommentController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\KaraokeComment  $karaokeComment
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id): Response
     {
         [$deleted, $message] = $this->service->destroy($id);
 
-        return response(["message" => $message], 200);
+        return response(['message' => $message], 200);
     }
 }

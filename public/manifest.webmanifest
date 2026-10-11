@@ -1,24 +1,29 @@
 {
 	"name": "Black Music",
 	"short_name": "Black Music",
-	"start_url": ".",
+	"description": "Stream and buy music, and support the artists you love.",
+	"start_url": "/",
+	"scope": "/",
 	"display": "standalone",
-	"theme_color": "#232323",
 	"background_color": "#FFD700",
-	"orientation": "standalone",
-	"description": "A Music streaming app",
+	"theme_color": "#232323",
 	"icons": [
-	{
-            "src": "img/android-chrome-192x192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-			"purpose": "any"
-	},
-	{
-            "src": "img/android-chrome-512x512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-			"purpose": "maskable"
-	}
-]
+		{
+			"src": "/android-chrome-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/android-chrome-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "any maskable"
+		},
+		{
+			"src": "/apple-touch-icon.png",
+			"sizes": "180x180",
+			"type": "image/png"
+		}
+	]
 }

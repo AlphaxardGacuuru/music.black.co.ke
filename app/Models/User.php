@@ -2,17 +2,30 @@
 
 namespace App\Models;
 
+use App\Enums\EmailNotificationCategory;
 use Carbon\Carbon;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
+use Laragear\TwoFactor\TwoFactorAuthentication;
 use Laravel\Sanctum\HasApiTokens;
+use NotificationChannels\WebPush\HasPushSubscriptions;
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+#[Fillable(['name', 'username', 'email', 'phone', 'password', 'settings', 'gender', 'google_id', 'account_type', 'avatar', 'backdrop', 'bio', 'dob', 'location', 'withdrawal', 'email_verified_at'])]
+#[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
+class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasPushSubscriptions, HasRoles, HasUuids, Notifiable, TwoFactorAuthentication;
 
     /**
      * The attributes that are mass assignable.
@@ -23,13 +36,11 @@ class User extends Authenticatable
         'name',
         'username',
         'email',
-        'email_verified_at',
-        'password',
-        'remember_token',
         'phone',
+        'password',
+        'settings',
         'gender',
         'account_type',
-        'account_type_2',
         'avatar',
         'backdrop',
         'bio',
@@ -54,18 +65,59 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'settings' => 'object',
         'email_verified_at' => 'datetime',
+        'verified' => 'boolean',
+        'updated_at' => 'datetime:d M Y',
+        'created_at' => 'datetime:d M Y h:i:s',
     ];
+
+    protected string $guard_name = 'web';
+
+    /**
+     * Get the name of the guard associated with the user model.
+     */
+    public function getDefaultGuardName(): string
+    {
+        return 'web';
+    }
+
+    protected static function booted(): void
+    {
+        // Every account needs a public "@handle", whichever way it signed up.
+        static::creating(function (User $user) {
+            if (! $user->username) {
+                $user->username = static::uniqueUsernameFor($user->name ?: $user->email);
+            }
+        });
+
+        // Users follow themselves (so their own posts show in their feed) and
+        // the @blackmusic account.
+        static::created(function (User $user) {
+            $user->follows()->create(['followed_id' => $user->id, 'muted' => ['posts' => false, 'stories' => false]]);
+
+            $blackMusic = static::query()->where('username', '@blackmusic')->first();
+
+            if ($blackMusic && $blackMusic->isNot($user)) {
+                $user->follows()->create(['followed_id' => $blackMusic->id, 'muted' => ['posts' => false, 'stories' => false]]);
+            }
+        });
+
+        static::saving(function (User $user) {
+            if ($user->phone && $user->isDirty('phone')) {
+                $normalized = substr_replace($user->phone, '254', 0, -9);
+                $user->hashed_phone = hash('sha256', $normalized);
+            }
+        });
+    }
 
     /**
      * Accesors.
-     *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
      */
     protected function avatar(): Attribute
     {
         return Attribute::make(
-            get: fn($value) => preg_match("/http/", $value) ? $value : "/storage/" . $value
+            get: fn($value) => preg_match("/https/", $value) ? $value : "/storage/" . $value
         );
     }
 
@@ -73,6 +125,13 @@ class User extends Authenticatable
     {
         return Attribute::make(
             get: fn($value) => "/storage/" . $value
+        );
+    }
+
+    protected function emailVerifiedAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn($value) => $value ? Carbon::parse($value)->format('d M Y') : null,
         );
     }
 
@@ -86,252 +145,320 @@ class User extends Authenticatable
     protected function createdAt(): Attribute
     {
         return Attribute::make(
-            get: fn($value) => Carbon::parse($value)->format('d M Y'),
+            get: fn($value) => Carbon::parse($value)->format('d M Y h:i:s'),
         );
     }
 
     /**
-     * Relationships.
-     *
+     * Other users this user referred, who signed up via their referral link.
+     */
+    public function referralsMade(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'referrer_id');
+    }
+
+    /**
+     * Who referred this user, if anyone (a user can only be referred once).
+     */
+    public function referral(): HasOne
+    {
+        return $this->hasOne(Referral::class, 'referred_id');
+    }
+
+    public function audios(): HasMany
+    {
+        return $this->hasMany(Audio::class);
+    }
+
+    public function audioAlbums(): HasMany
+    {
+        return $this->hasMany(AudioAlbum::class);
+    }
+
+    public function audioComments(): HasMany
+    {
+        return $this->hasMany(AudioComment::class);
+    }
+
+    public function audioCommentLikes(): HasMany
+    {
+        return $this->hasMany(AudioCommentLike::class);
+    }
+
+    public function audioLikes(): HasMany
+    {
+        return $this->hasMany(AudioLike::class);
+    }
+
+    public function boughtAudios(): HasMany
+    {
+        return $this->hasMany(BoughtAudio::class);
+    }
+
+    public function boughtVideos(): HasMany
+    {
+        return $this->hasMany(BoughtVideo::class);
+    }
+
+    public function cartAudios(): HasMany
+    {
+        return $this->hasMany(CartAudio::class);
+    }
+
+    public function cartVideos(): HasMany
+    {
+        return $this->hasMany(CartVideo::class);
+    }
+
+    public function chats(): HasMany
+    {
+        return $this->hasMany(Chat::class);
+    }
+
+    public function decorations(): HasMany
+    {
+        return $this->hasMany(Deco::class);
+    }
+
+    public function follows(): HasMany
+    {
+        return $this->hasMany(Follow::class);
+    }
+
+    public function karaokes(): HasMany
+    {
+        return $this->hasMany(Karaoke::class);
+    }
+
+    public function karaokeAudios(): HasMany
+    {
+        return $this->hasMany(KaraokeAudio::class);
+    }
+
+    public function karaokeComments(): HasMany
+    {
+        return $this->hasMany(KaraokeComment::class);
+    }
+
+    public function karaokeCommentLikes(): HasMany
+    {
+        return $this->hasMany(KaraokeCommentLike::class);
+    }
+
+    public function karaokeLikes(): HasMany
+    {
+        return $this->hasMany(KaraokeLike::class);
+    }
+
+    public function mpesaTransactions(): HasMany
+    {
+        return $this->hasMany(MPESATransaction::class);
+    }
+
+    public function kopokopoRecipients(): HasMany
+    {
+        return $this->hasMany(KopokopoRecipient::class);
+    }
+
+    public function polls(): HasMany
+    {
+        return $this->hasMany(Poll::class);
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function postComments(): HasMany
+    {
+        return $this->hasMany(PostComment::class);
+    }
+
+    public function postCommentLikes(): HasMany
+    {
+        return $this->hasMany(PostCommentLike::class);
+    }
+
+    public function postLikes(): HasMany
+    {
+        return $this->hasMany(PostLike::class);
+    }
+
+    public function savedKaraokes(): HasMany
+    {
+        return $this->hasMany(SavedKaraoke::class);
+    }
+
+    public function searches(): HasMany
+    {
+        return $this->hasMany(Search::class);
+    }
+
+    public function songPayouts(): HasMany
+    {
+        return $this->hasMany(SongPayout::class);
+    }
+
+    public function stories(): HasMany
+    {
+        return $this->hasMany(Story::class);
+    }
+
+    public function videos(): HasMany
+    {
+        return $this->hasMany(Video::class);
+    }
+
+    public function videoAlbums(): HasMany
+    {
+        return $this->hasMany(VideoAlbum::class);
+    }
+
+    public function videoComments(): HasMany
+    {
+        return $this->hasMany(VideoComment::class);
+    }
+
+    public function videoCommentLikes(): HasMany
+    {
+        return $this->hasMany(VideoCommentLike::class);
+    }
+
+    public function videoLikes(): HasMany
+    {
+        return $this->hasMany(VideoLike::class);
+    }
+
+    /**
+     * Sales of this artist's audios.
+     */
+    public function artistsBoughtAudios(): HasMany
+    {
+        return $this->hasMany(BoughtAudio::class, 'artist_id');
+    }
+
+    /**
+     * Sales of this artist's videos.
+     */
+    public function artistsBoughtVideos(): HasMany
+    {
+        return $this->hasMany(BoughtVideo::class, 'artist_id');
+    }
+
+    /**
+     * Follow rows where someone follows this user.
+     */
+    public function followers(): HasMany
+    {
+        return $this->hasMany(Follow::class, 'followed_id');
+    }
+
+    /*
+     * Custom functions
      */
 
-    public function audios()
-    {
-        return $this->hasMany(Audio::class, 'username', 'username');
-    }
-
-    public function audioAlbums()
-    {
-        return $this->hasMany(AudioAlbum::class, 'username', 'username');
-    }
-
-    public function audioComments()
-    {
-        return $this->hasMany(AudioComment::class, 'username', 'username');
-    }
-
-    public function audioCommentLikes()
-    {
-        return $this->hasMany(AudioCommentLike::class, 'username', 'username');
-    }
-
-    public function audioLikes()
-    {
-        return $this->hasMany(AudioLike::class, 'username', 'username');
-    }
-
-    public function boughtAudios()
-    {
-        return $this->hasMany(BoughtAudio::class, 'username', 'username');
-    }
-
-    public function artistsBoughtAudios()
-    {
-        return $this->hasMany(BoughtAudio::class, 'artist', 'username');
-    }
-
-    public function boughtVideos()
-    {
-        return $this->hasMany(BoughtVideo::class, 'username', 'username');
-    }
-
-    public function artistsBoughtVideos()
-    {
-        return $this->hasMany(BoughtVideo::class, 'artist', 'username');
-    }
-
-    public function cartAudios()
-    {
-        return $this->hasMany(CartAudio::class, 'username', 'username');
-    }
-
-    public function cartVideos()
-    {
-        return $this->hasMany(CartVideo::class, 'username', 'username');
-    }
-
-    public function chats()
-    {
-        return $this->hasMany(Chat::class, 'username', 'username');
-    }
-
-    public function decorations()
-    {
-        return $this->hasMany(Deco::class, 'username', 'username');
-    }
-
-    public function follows()
-    {
-        return $this->hasMany(Follow::class, 'username', 'username');
-    }
-
-    public function karaokes()
-    {
-        return $this->hasMany(Karaoke::class, 'username', 'username');
-    }
-
-    public function karaokeAudios()
-    {
-        return $this->hasMany(KaraokeAudio::class, 'username', 'username');
-    }
-
-    public function karaokeComment()
-    {
-        return $this->hasMany(KaraokeComment::class, 'username', 'username');
-    }
-
-    public function karaokeCommentLikes()
-    {
-        return $this->hasMany(KaraokeCommentLike::class, 'username', 'username');
-    }
-
-    public function karaokeLikes()
-    {
-        return $this->hasMany(KaraokeLike::class, 'username', 'username');
-    }
-
-    public function kopokopos()
-    {
-        return $this->hasMany(Kopokopo::class, 'username', 'username');
-    }
-
-    public function kopokopoRecipients()
-    {
-        return $this->hasMany(KopokopoRecipient::class, 'username', 'username');
-    }
-
-    public function polls()
-    {
-        return $this->hasMany(Poll::class, 'username', 'username');
-    }
-
-    public function posts()
-    {
-        return $this->hasMany(Post::class, 'username', 'username');
-    }
-
-    public function postComments()
-    {
-        return $this->hasMany(PostComment::class, 'username', 'username');
-    }
-
-    public function postCommentLikes()
-    {
-        return $this->hasMany(PostCommentLike::class, 'username', 'username');
-    }
-
-    public function postLikes()
-    {
-        return $this->hasMany(PostLike::class, 'username', 'username');
-    }
-
-    public function referrals()
-    {
-        return $this->hasMany(Referral::class, 'username', 'username');
-    }
-
-    public function savedKaraokes()
-    {
-        return $this->hasMany(SavedKaraoke::class, 'username', 'username');
-    }
-
-    public function searches()
-    {
-        return $this->hasMany(Search::class, 'username', 'username');
-    }
-
-    public function songPayouts()
-    {
-        return $this->hasMany(SongPayout::class, 'username', 'username');
-    }
-
-    public function stories()
-    {
-        return $this->hasMany(Story::class, 'username', 'username');
-    }
-
-    public function videos()
-    {
-        return $this->hasMany(Video::class, 'username', 'username');
-    }
-
-    public function videoAlbums()
-    {
-        return $this->hasMany(VideoAlbum::class, 'username', 'username');
-    }
-
-    public function videoComments()
-    {
-        return $this->hasMany(VideoComment::class, 'username', 'username');
-    }
-
-    public function videoCommentLikes()
-    {
-        return $this->hasMany(VideoCommentLike::class, 'username', 'username');
-    }
-
-    public function videoLikes()
-    {
-        return $this->hasMany(VideoLike::class, 'username', 'username');
-    }
-
-    /*
-     *    Custom Functions
+    /**
+     * A unique "@handle" built from a display name or email, e.g. "@janedoe"
+     * or "@janedoe2" when that one is taken. Usernames max out at 15 chars.
      */
-
-    /*
-     * Check if user has followed User */
-    public function hasFollowed($username)
+    public static function uniqueUsernameFor(string $source): string
     {
-        return Follow::where('username', $username)
-            ->where('followed', $this->username)
-            ->count() > 0 ? true : false;
+        $base = Str::of(Str::before($source, '@') ?: $source)
+            ->ascii()
+            ->lower()
+            ->replaceMatches('/[^a-z0-9_]/', '')
+            ->limit(10, '')
+            ->toString();
+
+        $base = '@' . ($base !== '' ? $base : 'user');
+        $username = $base;
+        $suffix = 1;
+
+        while (static::query()->where('username', $username)->exists()) {
+            $suffix++;
+            $username = $base . $suffix;
+        }
+
+        return $username;
     }
 
-    /*
-     * Get user's fans */
-    public function fans()
+    /**
+     * Whether the given user follows this user.
+     */
+    public function hasFollowed(?string $userId): bool
     {
-        return Follow::where('followed', $this->username)->count() - 1;
+        return $userId !== null && Follow::query()
+            ->where('followed_id', $this->id)
+            ->where('user_id', $userId)
+            ->exists();
     }
 
-    /*
-     * Check if auth user has bought user's video */
-    public function hasBoughtVideo($username)
+    /**
+     * How many people follow this user, not counting themselves.
+     */
+    public function fans(): int
     {
-        return $this->artistsBoughtVideos->where('username', $username)
-            ->count();
+        return Follow::query()->where('followed_id', $this->id)->count() - 1;
     }
 
-    /*
-     * Check if auth user has bought user's audio */
-    public function hasBoughtAudio($username)
+    /**
+     * Whether the given user has bought one of this artist's videos.
+     */
+    public function hasBoughtVideo(?string $userId): bool
     {
-        return $this->artistsBoughtAudios->where('username', $username)
-            ->count();
+        return $this->artistsBoughtVideos->where('user_id', $userId)->isNotEmpty();
     }
 
-    /*
-     * Check if user has bought atleast 1 song */
-    public function hasBought1($username)
+    /**
+     * Whether the given user has bought one of this artist's audios.
+     */
+    public function hasBoughtAudio(?string $userId): bool
     {
-        $hasBoughtVideo = $this->hasBoughtVideo($username);
-        $hasBoughtAudio = $this->hasBoughtAudio($username);
-
-        return $hasBoughtVideo + $hasBoughtAudio > 0 ? true : false;
+        return $this->artistsBoughtAudios->where('user_id', $userId)->isNotEmpty();
     }
 
-    /*
-     * Get balance */
-    public function balance()
+    /**
+     * Whether the given user has bought at least one song from this artist,
+     * which is what lets fans follow an artist.
+     */
+    public function hasBought1(?string $userId): bool
     {
-        // Get Cost of Bought Videos at each price
-        $totalVideos = $this->boughtVideos->count() * 20;
-        $totalAudios = $this->boughtAudios->count() * 10;
+        return $this->hasBoughtVideo($userId) || $this->hasBoughtAudio($userId);
+    }
 
-        // Get Total Cash paid
-        $kopokopo = $this->kopokopos->sum('amount');
+    /**
+     * Wallet balance: everything paid in via M-Pesa, less the cost of every
+     * song bought (videos are KES 20, audios KES 10).
+     */
+    public function balance(): int
+    {
+        $spent = $this->boughtVideos->count() * BoughtVideo::PRICE
+            + $this->boughtAudios->count() * BoughtAudio::PRICE;
 
-        return $kopokopo - ($totalVideos + $totalAudios);
+        return (int) $this->mpesaTransactions->sum('amount') - $spent;
+    }
+
+    /**
+     * Whether this user still wants emails for the given category — opt-out
+     * by default (true) so users created before a category existed, or who
+     * never touched their preferences, keep receiving it.
+     */
+    public function wantsEmail(EmailNotificationCategory $category): bool
+    {
+        return (bool) ($this->settings?->{$category->settingsKey()} ?? true);
+    }
+
+    /**
+     * A signed, no-login-required link that turns the given category off —
+     * embedded in every email of that category so it can be unsubscribed
+     * from with one click.
+     */
+    public function unsubscribeUrlFor(EmailNotificationCategory $category): string
+    {
+        return URL::signedRoute('unsubscribe.show', [
+            'user' => $this->getKey(),
+            'category' => $category->value,
+        ]);
     }
 }

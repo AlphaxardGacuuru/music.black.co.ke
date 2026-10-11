@@ -3,12 +3,12 @@
 namespace Database\Factories;
 
 use App\Models\User;
+use App\Models\Video;
 use App\Models\VideoComment;
-use App\Models\VideoCommentLike;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VideoComment>
+ * @extends Factory<VideoComment>
  */
 class VideoCommentFactory extends Factory
 {
@@ -17,30 +17,12 @@ class VideoCommentFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'text' => fake()->realText($maxNbChars = 20, $indexSize = 2),
-            'username' => User::all()->random()->username,
+            'video_id' => Video::factory(),
+            'text' => fake()->realText(20, 2),
+            'user_id' => User::factory(),
         ];
-    }
-
-    /**
-     * Configure the model factory.
-     *
-     * @return $this
-     */
-    public function configure()
-    {
-        // User Follows themselves and Black Music after creation
-        return $this->afterMaking(function (VideoComment $comment) {
-            //
-        })->afterCreating(function (VideoComment $comment) {
-            VideoCommentLike::factory()
-                ->create([
-                    'username' => User::all()->random()->username,
-                    'video_comment_id' => $comment->id,
-                ]);
-        });
     }
 }

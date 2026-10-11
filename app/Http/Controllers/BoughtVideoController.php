@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\VideoBoughtEvent;
-use App\Models\BoughtVideo;
 use App\Http\Services\BoughtVideoService;
+use App\Models\BoughtVideo;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BoughtVideoController extends Controller
 {
@@ -16,10 +16,8 @@ class BoughtVideoController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
@@ -27,58 +25,42 @@ class BoughtVideoController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Buying happens when an M-Pesa payment lands (see BuyCartListener),
+     * this endpoint did nothing in OLD either.
      */
-    public function store(Request $request)
+    public function store(Request $request): void
     {
-        // [$structuredBoughtVideos, $boughtVideos, $decoArtists] = $this->service->store();
-
-        // $hasBought = count($boughtVideos) > 0;
-
-        // VideoBoughtEvent::dispatchIf($hasBought, $boughtVideos, $decoArtists);
-
-        // return response(["data" => $structuredBoughtVideos], 200);
+        //
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\BoughtVideo  $boughtVideo
-     * @return \Illuminate\Http\Response
      */
-    public function show(BoughtVideo $boughtVideo)
+    public function show(BoughtVideo $boughtVideo): void
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\BoughtVideo  $boughtVideo
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, BoughtVideo $boughtVideo)
+    public function update(Request $request, BoughtVideo $boughtVideo): void
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\BoughtVideo  $boughtVideo
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(BoughtVideo $boughtVideo)
+    public function destroy(BoughtVideo $boughtVideo): void
     {
         //
     }
 
-	/*
-	* Artist's Bought Videos */
-	public function artistBoughtVideos($username)
-	{
-		return $this->service->artistBoughtVideos($username);
-	} 
+    /*
+     * Artist's Bought Videos */
+    public function artistBoughtVideos(string $username): AnonymousResourceCollection
+    {
+        return $this->service->artistBoughtVideos($username);
+    }
 }

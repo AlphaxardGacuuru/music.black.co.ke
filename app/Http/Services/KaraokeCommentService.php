@@ -4,32 +4,29 @@ namespace App\Http\Services;
 
 use App\Http\Resources\KaraokeCommentResource;
 use App\Models\KaraokeComment;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Gate;
 
 class KaraokeCommentService extends Service
 {
-
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Display a listing of the resource (newest first).
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        $getKaraokeComments = KaraokeComment::orderBy('id', 'DESC')->get();
+        $getKaraokeComments = KaraokeComment::orderBy('created_at', 'DESC')->get();
 
         return KaraokeCommentResource::collection($getKaraokeComments);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\KaraokeComment  $karaokeComment
-     * @return \Illuminate\Http\Response
+     * Display the comments of the given karaoke.
      */
-    public function show($id)
+    public function show(string $id): AnonymousResourceCollection
     {
-        $getKaraokeComments = KaraokeComment::where("karaoke_id", $id)
-            ->orderBy("id", "DESC")
+        $getKaraokeComments = KaraokeComment::where('karaoke_id', $id)
+            ->orderBy('created_at', 'DESC')
             ->paginate(10);
 
         return KaraokeCommentResource::collection($getKaraokeComments);
@@ -37,37 +34,29 @@ class KaraokeCommentService extends Service
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-        /* Create new post */
         $karaokeComment = new KaraokeComment;
         $karaokeComment->karaoke_id = $request->input('id');
-        $karaokeComment->username = auth('sanctum')->user()->username;
+        $karaokeComment->user_id = $this->id;
         $karaokeComment->text = $request->input('text');
         $saved = $karaokeComment->save();
 
-        // Show notification
-        // $karaoke = Karaokes::where('id', $request->input('id'))->first();
-        // $karaoke->users->username != auth()->user()->username &&
-        // $karaoke->users->notify(new KaraokeCommentNotifications($karaoke->name));
-
-        return [$saved, "Comment posted", $karaokeComment];
+        return [$saved, 'Comment posted', $karaokeComment];
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\KaraokeComments  $karaokeComments
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id): array
     {
-        $deleted = KaraokeComment::find($id)->delete();
+        $comment = KaraokeComment::findOrFail($id);
 
-        return [$deleted, "Comment deleted"];
+        Gate::authorize('delete', $comment);
+
+        $deleted = $comment->delete();
+
+        return [$deleted, 'Comment deleted'];
     }
 }

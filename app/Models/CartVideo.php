@@ -2,14 +2,35 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CartVideo extends Model
 {
-    use HasFactory;
+    use HasFactory, HasUuids;
 
-    public function video()
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'video_id',
+        'user_id',
+    ];
+
+    /*
+     * Relationships
+     */
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function video(): BelongsTo
     {
         return $this->belongsTo(Video::class);
     }

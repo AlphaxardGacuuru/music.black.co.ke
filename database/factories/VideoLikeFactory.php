@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
+use App\Models\Video;
+use App\Models\VideoLike;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VideoLike>
+ * @extends Factory<VideoLike>
  */
 class VideoLikeFactory extends Factory
 {
@@ -14,10 +17,11 @@ class VideoLikeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            //
+            'video_id' => Video::factory(),
+            'user_id' => User::factory(),
         ];
     }
 }

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Events\VideoLikedEvent;
 use App\Http\Services\VideoLikeService;
-use App\Models\Video;
-use App\Models\VideoLike;
 use Illuminate\Http\Request;
 
 class VideoLikeController extends Controller
@@ -17,8 +15,6 @@ class VideoLikeController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -27,12 +23,13 @@ class VideoLikeController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
+        $request->validate([
+            'video' => 'required|exists:videos,id',
+        ]);
+
         [$canDispatch, $message, $videoLike] = $this->service->store($request);
 
         VideoLikedEvent::dispatchIf(
@@ -42,41 +39,31 @@ class VideoLikeController extends Controller
         );
 
         return response([
-            "message" => $message,
-            "data" => $videoLike,
+            'message' => $message,
+            'data' => $videoLike,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\VideoLike  $videoLike
-     * @return \Illuminate\Http\Response
      */
-    public function show(VideoLike $videoLike)
+    public function show(string $id)
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\VideoLike  $videoLike
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, VideoLike $videoLike)
+    public function update(Request $request, string $id)
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\VideoLike  $videoLike
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(VideoLike $videoLike)
+    public function destroy(string $id)
     {
         //
     }

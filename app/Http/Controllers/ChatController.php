@@ -4,22 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Events\ChatDeletedEvent;
 use App\Events\NewChatEvent;
-use App\Models\Chat;
-use App\Models\User;
 use App\Http\Services\ChatService;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
 {
-    public function __construct(protected ChatService $service)
-    {
-        //
-    }
+    public function __construct(protected ChatService $service) {}
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -28,63 +22,43 @@ class ChatController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        $this->validate($request, [
+        $request->validate([
             'text' => 'required',
+            'to' => 'required|exists:users,username',
         ]);
 
-        [$saved, $message, $chat] =$this->service->store($request);
+        [$saved, $message, $chat] = $this->service->store($request);
 
-        $user = User::where("username", $request->input("to"))->get()->first();
+        $user = User::where('username', $request->input('to'))->first();
 
         NewChatEvent::dispatchIf($saved, $chat, $user);
 
         return response([
-            "message" => $message,
-            "data" => $chat,
+            'message' => $message,
+            'data' => $chat,
         ], 200);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Chat  $chat
-     * @return \Illuminate\Http\Response
+     * The conversation with the given username.
      */
-    public function show($username)
+    public function show(string $username)
     {
         return $this->service->show($username);
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Chat  $chat
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, Chat $chat)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Chat  $chat
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id)
     {
         [$deleted, $message] = $this->service->destroy($id);
 
-		ChatDeletedEvent::dispatchIf($deleted, $id);
+        ChatDeletedEvent::dispatchIf($deleted, $id);
 
-        return response(["message" => $message], 200);
+        return response(['message' => $message], 200);
     }
 }

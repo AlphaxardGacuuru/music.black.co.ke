@@ -4,46 +4,56 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Story extends Model
 {
-    use HasFactory;
-
-	protected $casts = [
-		"media" => "array"
-	];
+    use HasFactory, HasUuids;
 
     /**
-     * Accesors.
+     * The attributes that are mass assignable.
      *
-     * @return \Illuminate\Database\Eloquent\Casts\Attribute
+     * @var array<int, string>
      */
-    protected function media(): Attribute
-    {
-        return Attribute::make(
-            // get:fn($value) => $value ? "/storage/" . $value : $value,
-        );
-    }
+    protected $fillable = [
+        'user_id',
+        'text',
+        'media',
+    ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'media' => 'array',
+    ];
+
+    /**
+     * Accessors.
+     */
     protected function createdAt(): Attribute
     {
         return Attribute::make(
-            get:fn($value) => Carbon::parse($value)->format('d M Y'),
+            get: fn($value) => Carbon::parse($value)->format('d M Y'),
         );
     }
 
-    /**
-     * Relationships.
-     *
+    /*
+     * Relationships
      */
-    public function user()
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, "username", "username");
+        return $this->belongsTo(User::class);
     }
 
-    public function seen()
+    public function seen(): HasMany
     {
         return $this->hasMany(SeenStory::class);
     }
@@ -52,10 +62,11 @@ class Story extends Model
      * Custom functions
      */
 
-    public function hasSeen($username)
+    /**
+     * Whether the given user has seen this story.
+     */
+    public function hasSeen(?string $userId): bool
     {
-        return $this->seen
-            ->where("username", $username)
-            ->count() > 0 ? true : false;
+        return $this->seen->where('user_id', $userId)->isNotEmpty();
     }
 }

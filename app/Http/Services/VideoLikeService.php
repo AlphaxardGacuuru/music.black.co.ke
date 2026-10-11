@@ -7,15 +7,12 @@ use App\Models\VideoLike;
 class VideoLikeService extends Service
 {
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Toggle the current user's like on a video.
      */
     public function store($request)
     {
         $query = VideoLike::where('video_id', $request->input('video'))
-            ->where('username', auth('sanctum')->user()->username);
+            ->where('user_id', $this->id);
 
         $hasLiked = $query->exists();
 
@@ -25,20 +22,20 @@ class VideoLikeService extends Service
             // Delete Like
             $query->delete();
             // Set Message
-            $message = "Like removed";
+            $message = 'Like removed';
             $added = false;
         } else {
             $videoLike = new VideoLike;
             $videoLike->video_id = $request->input('video');
-            $videoLike->username = auth('sanctum')->user()->username;
+            $videoLike->user_id = $this->id;
             $videoLike->save();
 
-            $message = "Video liked";
+            $message = 'Video liked';
             $added = true;
         }
 
         // Check if user is owner of video
-        $notCurrentUser = $videoLike->video->username != $this->username;
+        $notCurrentUser = $videoLike->video->user_id != $this->id;
         // Dispatch if like is saved successfully and user is not owner of video
         $canDispatch = $notCurrentUser && $added;
 

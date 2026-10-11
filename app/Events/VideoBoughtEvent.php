@@ -2,9 +2,9 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\User;
+use App\Models\Video;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -14,30 +14,25 @@ class VideoBoughtEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-	public $structuredVideos;
-	public $videos;
-	public $decoArtists;
-	public $user;
-
     /**
-     * Create a new event instance.
-     *
-     * @return void
+     * @param  mixed  $structuredVideos  BoughtVideoResource collection for the receipt
+     * @param  array<int, Video>  $videos  the videos just bought
+     * @param  array<int, string>  $decoArtists  usernames of artists that decorated the buyer
+     * @param  User  $user  the buyer
      */
-    public function __construct($structuredVideos, $videos, $decoArtists, $user)
-    {
-        $this->structuredVideos = $structuredVideos;
-        $this->videos = $videos;
-		$this->decoArtists = $decoArtists;
-		$this->user = $user;
+    public function __construct(
+        public $structuredVideos,
+        public array $videos,
+        public array $decoArtists,
+        public User $user,
+    ) {
+        //
     }
 
     /**
      * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
      */
-    public function broadcastOn()
+    public function broadcastOn(): PrivateChannel
     {
         return new PrivateChannel('video-bought');
     }

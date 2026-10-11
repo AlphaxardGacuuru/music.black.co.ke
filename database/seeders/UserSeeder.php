@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
@@ -15,32 +14,20 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // Check if @blackmusic exists
-        $blackDoesntExist = User::where('username', '@blackmusic')
+        $gacuuruDoesntExist = User::where('email', 'gacuuruwakarenge@gmail.com')
             ->doesntExist();
 
-        // Check if @alphaxardG exists
-        $alDoesntExist = User::where('username', '@alphaxardG')
+        $cikuDoesntExist = User::where('email', 'cikumuhandi@gmail.com')
             ->doesntExist();
 
-        if ($blackDoesntExist) {
-            User::factory()
-                ->black()
-                ->hasKopokopos(1)
-                ->create();
+        if ($gacuuruDoesntExist) {
+            User::factory()->gacuuru()->create();
         }
 
-        if ($alDoesntExist) {
-            User::factory()
-                ->al()
-                ->hasKopokopos(1)
-                ->create();
+        if ($cikuDoesntExist) {
+            User::factory()->ciku()->create();
         }
 
-        User::factory()
-            ->count(10)
-            ->unverified()
-            ->hasKopokopos(1)
-            ->create();
+        User::factory()->count(50)->create();
     }
 }

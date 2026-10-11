@@ -4,43 +4,39 @@ namespace App\Http\Services;
 
 use App\Http\Resources\KaraokeAudioResource;
 use App\Models\KaraokeAudio;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\Request;
 
 class KaraokeAudioService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): Collection
     {
         return KaraokeAudio::all();
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): KaraokeAudioResource
     {
-        $getKaraokeAudio = KaraokeAudio::find($id);
+        $getKaraokeAudio = KaraokeAudio::findOrFail($id);
 
-        return KaraokeAudioResource::collection($getKaraokeAudio);
+        return new KaraokeAudioResource($getKaraokeAudio);
     }
 
-    /*
-     * Store Karaoke Audio
+    /**
+     * Store Karaoke Audio.
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         $karaokeAudio = new KaraokeAudio;
-        $karaokeAudio->audio_id = $request->input("audio_id");
-        $karaokeAudio->username = $this->username;
+        $karaokeAudio->audio_id = $request->input('audio_id');
+        $karaokeAudio->user_id = $this->id;
         $saved = $karaokeAudio->save();
 
-        return [$saved, "Audio saved", $karaokeAudio];
+        return [$saved, 'Audio saved', $karaokeAudio];
     }
 }

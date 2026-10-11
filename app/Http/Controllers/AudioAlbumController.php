@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AudioAlbumResource;
 use App\Http\Services\AudioAlbumService;
-use App\Models\AudioAlbum;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class AudioAlbumController extends Controller
 {
@@ -15,23 +17,18 @@ class AudioAlbumController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
-        $this->validate($request, [
+        $request->validate([
             'name' => 'required|string',
             'released' => 'required',
             'cover' => 'required|image|max:1999',
@@ -40,57 +37,39 @@ class AudioAlbumController extends Controller
         [$saved, $message, $audioAlbum] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $audioAlbum,
+            'message' => $message,
+            'data' => $audioAlbum,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): AudioAlbumResource
     {
         return $this->service->show($id);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id): Response
     {
-        $this->validate($request, [
+        $request->validate([
             'cover' => 'nullable|image|max:1999',
         ]);
 
         [$saved, $message, $audioAlbum] = $this->service->update($request, $id);
 
         return response([
-            "message" => $message,
-            "data" => $audioAlbum,
+            'message' => $message,
+            'data' => $audioAlbum,
         ], 200);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(AudioAlbum $audioAlbum)
-    {
-        //
     }
 
     /*
      * Artist's Audio Albums */
-    public function artistAudioAlbums($username)
+    public function artistAudioAlbums(string $username): AnonymousResourceCollection
     {
         return $this->service->artistAudioAlbums($username);
     }

@@ -2,11 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\Audio;
+use App\Models\AudioLike;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\AudioLike>
+ * @extends Factory<AudioLike>
  */
 class AudioLikeFactory extends Factory
 {
@@ -15,10 +17,11 @@ class AudioLikeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'username' => User::all()->random()->username,
+            'audio_id' => Audio::factory(),
+            'user_id' => User::factory(),
         ];
     }
 }

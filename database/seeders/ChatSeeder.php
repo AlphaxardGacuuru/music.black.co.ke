@@ -3,17 +3,28 @@
 namespace Database\Seeders;
 
 use App\Models\Chat;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class ChatSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     *
-     * @return void
      */
-    public function run()
+    public function run(): void
     {
-        Chat::factory()->count(5)->create(["username" => "@blackmusic"]);
+        $blackMusicId = User::where('username', '@blackmusic')->value('id');
+
+        if (! $blackMusicId) {
+            return;
+        }
+
+        // Five chats from @blackmusic to random existing users
+        for ($i = 0; $i < 5; $i++) {
+            Chat::factory()->create([
+                'user_id' => $blackMusicId,
+                'to_id' => User::inRandomOrder()->value('id'),
+            ]);
+        }
     }
 }

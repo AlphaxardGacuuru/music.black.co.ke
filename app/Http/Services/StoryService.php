@@ -6,32 +6,36 @@ use App\Http\Resources\StoryResource;
 use App\Models\Follow;
 use App\Models\SeenStory;
 use App\Models\Story;
+use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class StoryService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        if ($this->username != "@guest") {
-            // Get Posts if user has followed musician and is not muted
-            $getStories = Story::select("stories.*", "follows.muted->stories as muted", "follows.blocked")
-                ->join("follows", function ($join) {
-                    $join->on("follows.followed", "=", "stories.username")
-                        ->where("follows.username", "=", "@blackmusic");
-                })
-                ->where("follows.muted->stories", false);
+        if ($this->id) {
+            // Get Stories if the musician is followed (OLD joined on the
+            // follows of @blackmusic, not the current user) and not muted
+            $blackMusicId = User::where('username', '@blackmusic')->value('id');
+
+            $getStories = Story::select('stories.*', 'follows.muted->stories as muted', 'follows.blocked')
+                ->join('follows', fn (JoinClause $join) => $join->on('follows.followed_id', '=', 'stories.user_id')
+                    ->where('follows.user_id', '=', $blackMusicId))
+                ->where('follows.muted->stories', false);
         } else {
-            $getStories = Story::where("username", "@blackmusic");
+            $getStories = Story::whereHas('user', fn ($query) => $query->where('username', '@blackmusic'));
         }
 
         $stories = $getStories
-            ->orderBy("stories.id", "DESC")
+            ->orderBy('stories.id', 'DESC')
             ->paginate(10);
 
         return StoryResource::collection($stories);
@@ -39,102 +43,102 @@ class StoryService extends Service
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-        // Remove outer quotes
-        $stringifiedMedia = explode(",", $request->input("media"));
+        // The media field is a comma separated list of JSON objects, e.g.
+        // {"image":"stories/a.jpg"},{"video":"stories/b.mp4"}
+        $stringifiedMedia = explode(',', $request->input('media'));
 
         $arrayAndJsonMedia = [];
 
         foreach ($stringifiedMedia as $item) {
-            $jsonMediaItem = json_decode($item);
-            array_push($arrayAndJsonMedia, $jsonMediaItem);
+            $arrayAndJsonMedia[] = json_decode($item);
         }
 
         $story = new Story;
-        $story->username = $this->username;
+        $story->user_id = $this->id;
         $story->media = $arrayAndJsonMedia;
-        $story->text = $request->input("text");
+        $story->text = $request->input('text');
         $saved = $story->save();
 
-        return [$saved, "Story posted", $story];
+        return [$saved, 'Story posted', $story];
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Story  $story
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): StoryResource
     {
-        $getStory = Story::find($id);
+        $getStory = Story::findOrFail($id);
 
         return new StoryResource($getStory);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Story  $story
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id): array
     {
-        $story = Story::find($id);
-        // Delete media
-        foreach ($story->media as $media) {
-            Storage::delete('public/' . $media["image"]);
+        $story = Story::findOrFail($id);
+
+        Gate::authorize('delete', $story);
+
+        // Delete media (every file of every item, images and videos)
+        foreach ($story->media ?? [] as $media) {
+            foreach ((array) $media as $path) {
+                if (is_string($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
         }
 
         $deleted = $story->delete();
 
-        return [$deleted, "Story deleted"];
+        return [$deleted, 'Story deleted'];
     }
 
     /*
      * Seen */
-    public function seen($id)
+    public function seen(string $id): array
     {
         $seenStory = new SeenStory;
         $seenStory->story_id = $id;
-        $seenStory->username = $this->username;
+        $seenStory->user_id = $this->id;
         $seenStory->seen_at = Carbon::now();
         $saved = $seenStory->save();
 
-        return [$saved, "Story seen", $seenStory];
+        return [$saved, 'Story seen', $seenStory];
     }
 
     /*
      * Mute */
-    public function mute($username)
+    public function mute(string $username): array
     {
+        $followedId = User::where('username', $username)->value('id');
+
         // Get follow
-        $follow = Follow::where("followed", $username)
-            ->where("username", $this->username)
-            ->first();
+        $follow = Follow::where('followed_id', $followedId)
+            ->where('user_id', $this->id)
+            ->firstOrFail();
+
+        $muted = $follow->muted ?? ['posts' => false, 'stories' => false];
 
         // Check if Stories are muted
-        if ($follow->muted["stories"]) {
-            $muted = $follow->muted;
-            $muted["stories"] = false;
-            $follow->muted = $muted;
+        if ($muted['stories'] ?? false) {
+            $muted['stories'] = false;
 
-            $message = "Stories from " . $username . " unmuted";
+            $message = 'Stories from '.$username.' unmuted';
         } else {
-            $muted = $follow->muted;
-            $muted["stories"] = true;
-            $follow->muted = $muted;
+            $muted['stories'] = true;
 
-            $message = "Stories from " . $username . " muted";
+            $message = 'Stories from '.$username.' muted';
         }
+
+        $follow->muted = $muted;
 
         $saved = $follow->save();
 
-        return [$saved, $message];
+        return [$saved, $message, null];
     }
 }

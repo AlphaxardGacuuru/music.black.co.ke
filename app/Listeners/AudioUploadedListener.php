@@ -4,27 +4,16 @@ namespace App\Listeners;
 
 use App\Events\AudioUploadedEvent;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
 
 class AudioUploadedListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
      *
-     * @param  \App\Events\AudioUploadedEvent  $event
-     * @return void
+     * OLD left this listener empty (and never dispatched the event), so
+     * there is nothing to do yet.
      */
-    public function handle(AudioUploadedEvent $event)
+    public function handle(AudioUploadedEvent $event): void
     {
         //
     }

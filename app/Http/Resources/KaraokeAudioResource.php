@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class KaraokeAudioResource extends JsonResource
@@ -9,18 +10,17 @@ class KaraokeAudioResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
         return [
-            "id" => $this->id,
-            "audioId" => $this->audio_id,
-            "username" => $this->username,
-            "name" => $this->audio->name,
-            "thumbnail" => $this->audio->thumbnail,
-            "createdAt" => $this->created_at,
+            'id' => $this->id,
+            'audioId' => $this->audio_id,
+            'username' => $this->user->username,
+            'name' => $this->audio->name,
+            'thumbnail' => $this->audio->thumbnail,
+            'createdAt' => $this->created_at,
         ];
     }
 }

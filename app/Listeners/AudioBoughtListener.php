@@ -11,22 +11,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class AudioBoughtListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\AudioBoughtEvent  $event
-     * @return void
      */
-    public function handle(AudioBoughtEvent $event)
+    public function handle(AudioBoughtEvent $event): void
     {
         // Notify Artist
         foreach ($event->audios as $audio) {

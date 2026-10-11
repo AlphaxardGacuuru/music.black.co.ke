@@ -3,29 +3,47 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\UserService;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class NewPasswordController extends Controller
 {
+    public function __construct(protected UserService $userService)
+    {
+        //
+    }
+
+    /**
+     * Display the password reset view.
+     */
+    public function create(Request $request): RedirectResponse
+    {
+        return redirect(config("app.url")."/#/reset-password/{$request->token}?email={$request->email}");
+
+        return Inertia::render('Auth/ResetPassword', [
+            'email' => $request->email,
+            'token' => $request->route('token'),
+        ]);
+    }
+
     /**
      * Handle an incoming new password request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'token' => ['required'],
-            'email' => ['required', 'email'],
+            'token' => 'required',
+            'email' => 'required|email',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -35,21 +53,27 @@ class NewPasswordController extends Controller
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function ($user) use ($request) {
-                $user->forceFill([
-                    'password' => Hash::make($request->password),
-                    'remember_token' => Str::random(60),
-                ])->save();
+                $this->userService->resetPassword($user, $request->password);
 
                 event(new PasswordReset($user));
             }
         );
 
-        if ($status != Password::PASSWORD_RESET) {
-            throw ValidationException::withMessages([
-                'email' => [__($status)],
-            ]);
+        // If the password was successfully reset, we will redirect the user back to
+        // the application's home authenticated view. If there is an error we can
+        // redirect them back to where they came from with their error message.
+        if ($status == Password::PASSWORD_RESET) {
+            return response()
+                ->json([
+                    "status" => $status,
+                    "message" => "Password Reset Successfully",
+                ], 200);
+
+            // return redirect()->route('login')->with('status', __($status));
         }
 
-        return response()->json(['status' => __($status)]);
+        throw ValidationException::withMessages([
+            'email' => [trans($status)],
+        ]);
     }
 }

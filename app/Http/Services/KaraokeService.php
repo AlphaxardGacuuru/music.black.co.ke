@@ -4,51 +4,43 @@ namespace App\Http\Services;
 
 use App\Http\Resources\KaraokeResource;
 use App\Models\Karaoke;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class KaraokeService extends Service
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
+     * Display a listing of the resource (oldest first, like OLD's id ASC).
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        // Get Karaokes
-        $getKaraokes = Karaoke::orderBy('id', 'ASC')->get();
+        $getKaraokes = Karaoke::orderBy('created_at', 'ASC')->get();
 
-		return KaraokeResource::collection($getKaraokes);
+        return KaraokeResource::collection($getKaraokes);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Karaoke  $karaoke
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): KaraokeResource
     {
-        $getKaraoke = Karaoke::find($id);
+        $getKaraoke = Karaoke::findOrFail($id);
 
-		return new KaraokeResource($getKaraoke);
+        return new KaraokeResource($getKaraoke);
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         $karaoke = new Karaoke;
-        $karaoke->karaoke = $request->input("karaoke");
-        $karaoke->username = auth("sanctum")->user()->username;
-        $karaoke->audio_id = $request->input("audio_id");
-        $karaoke->description = $request->input("description");
+        $karaoke->karaoke = $request->input('karaoke');
+        $karaoke->user_id = $this->id;
+        $karaoke->audio_id = $request->input('audio_id');
+        $karaoke->description = $request->input('description');
         $saved = $karaoke->save();
 
-		return [$saved, "Karaoke posted", $karaoke];
+        return [$saved, 'Karaoke posted', $karaoke];
     }
 }

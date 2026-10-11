@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class CartVideoResource extends JsonResource
@@ -9,41 +10,38 @@ class CartVideoResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
-        // Check if user is logged in
-        $username = auth('sanctum')->user()
-        ? auth('sanctum')->user()->username
-        : '@guest';
+        // Current user's id, null for guests
+        $userId = auth('sanctum')->id();
 
-		return [
-                "cartId" => $this->id,
-                "id" => $this->video_id,
-                "video" => $this->video->video,
-                "name" => $this->video->name,
-                "artistName" => $this->video->user->name,
-                "username" => $this->video->username,
-                "avatar" => $this->video->user->avatar,
-                "artistDecos" => $this->video->user->decos,
-                "ft" => $this->video->ft,
-                "videoAlbumId" => $this->video->video_album_id,
-                "album" => $this->video->album->name,
-                "genre" => $this->video->genre,
-                "thumbnail" => $this->video->thumbnail,
-                "description" => $this->video->description,
-                "released" => $this->video->released,
-                "hasLiked" => $this->video->hasLiked($username),
-                "likes" => $this->video->likes->count(),
-                "comments" => $this->video->comments->count(),
-                "inCart" => $this->video->inCart($username),
-                "hasBoughtVideo" => $this->video->hasBoughtVideo($username),
-                "hasBought1" => $this->video->user->hasBought1($username),
-                "hasFollowed" => $this->video->user->hasFollowed($username),
-                "downloads" => $this->video->bought->count(),
-                "createdAt" => $this->video->created_at,
-		];
+        return [
+            'cartId' => $this->id,
+            'id' => $this->video_id,
+            'video' => $this->video->video,
+            'name' => $this->video->name,
+            'artistName' => $this->video->user->name,
+            'username' => $this->video->user->username,
+            'avatar' => $this->video->user->avatar,
+            'artistDecos' => $this->video->user->decos,
+            'ft' => $this->video->ft?->username,
+            'videoAlbumId' => $this->video->video_album_id,
+            'album' => $this->video->album?->name,
+            'genre' => $this->video->genre,
+            'thumbnail' => $this->video->thumbnail,
+            'description' => $this->video->description,
+            'released' => $this->video->released,
+            'hasLiked' => $this->video->hasLiked($userId),
+            'likes' => $this->video->likes->count(),
+            'comments' => $this->video->comments->count(),
+            'inCart' => $this->video->inCart($userId),
+            'hasBoughtVideo' => $this->video->hasBoughtVideo($userId),
+            'hasBought1' => $this->video->user->hasBought1($userId),
+            'hasFollowed' => $this->video->user->hasFollowed($userId),
+            'downloads' => $this->video->bought->count(),
+            'createdAt' => $this->video->created_at,
+        ];
     }
 }

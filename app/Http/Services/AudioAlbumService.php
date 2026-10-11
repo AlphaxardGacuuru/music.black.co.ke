@@ -4,31 +4,30 @@ namespace App\Http\Services;
 
 use App\Http\Resources\AudioAlbumResource;
 use App\Models\AudioAlbum;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class AudioAlbumService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         $getAudioAlbums = AudioAlbum::all();
-		
-		return AudioAlbumResource::collection($getAudioAlbums);
+
+        return AudioAlbumResource::collection($getAudioAlbums);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): AudioAlbumResource
     {
-        $audioAlbum = AudioAlbum::find($id);
+        $audioAlbum = AudioAlbum::findOrFail($id);
 
         return new AudioAlbumResource($audioAlbum);
     }
@@ -36,62 +35,48 @@ class AudioAlbumService extends Service
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return array{0: bool, 1: string, 2: AudioAlbum}
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         /* Handle file upload */
-        if ($request->hasFile('cover')) {
-            $aCover = $request->file('cover')->store('public/audio-album-covers');
-            $aCover = substr($aCover, 7);
-        }
+        $aCover = $request->file('cover')->store('audio-album-covers', 'public');
 
         /* Create new audio album */
         $aAlbum = new AudioAlbum;
         $aAlbum->name = $request->input('name');
-        $aAlbum->username = auth('sanctum')->user()->username;
+        $aAlbum->user_id = $this->id;
         $aAlbum->cover = $aCover;
         $aAlbum->released = $request->input('released');
         $saved = $aAlbum->save();
 
-		// Message
-		$message = "Audio Album " . $aAlbum->name . " created.";
+        $message = 'Audio Album ' . $aAlbum->name . ' created.';
 
-		return [$saved, $message, $aAlbum];
+        return [$saved, $message, $aAlbum];
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\AudioAlbum  $audioAlbum
-     * @return \Illuminate\Http\Response
+     * @return array{0: bool, 1: string, 2: AudioAlbum}
      */
-    public function update($request, $id)
+    public function update(Request $request, string $id): array
     {
-        /* Handle file upload */
-        if ($request->hasFile('cover')) {
-            $cover = $request->file('cover')->store('public/audio-album-covers');
-            // Format for saving in DB
-            $cover = substr($cover, 7);
+        $aAlbum = AudioAlbum::findOrFail($id);
 
-            // Get old cover and delete it
-            $oldCover = AudioAlbum::where('id', $id)->first()->cover;
-
-            $oldCover = substr($oldCover, 9);
-
-            Storage::disk("public")->delete($oldCover);
-        }
-
-        /* Find new audio album */
-        $aAlbum = AudioAlbum::find($id);
+        Gate::authorize('update', $aAlbum);
 
         if ($request->filled('name')) {
             $aAlbum->name = $request->input('name');
         }
 
+        /* Handle file upload */
         if ($request->hasFile('cover')) {
+            $cover = $request->file('cover')->store('audio-album-covers', 'public');
+
+            // Delete old cover
+            Storage::disk('public')->delete($aAlbum->getRawOriginal('cover'));
+
             $aAlbum->cover = $cover;
         }
 
@@ -101,18 +86,19 @@ class AudioAlbumService extends Service
 
         $saved = $aAlbum->save();
 
-		// Message
-		$message = $aAlbum->name . " updated";
+        $message = $aAlbum->name . ' updated';
 
-		return [$saved, $message, $aAlbum];
+        return [$saved, $message, $aAlbum];
     }
 
     /*
      * Artist's Audio Albums */
-    public function artistAudioAlbums($username)
+    public function artistAudioAlbums(string $username): AnonymousResourceCollection
     {
-        $getArtistAudioAlbums = AudioAlbum::where("username", $username)->get();
-		
-		return AudioAlbumResource::collection($getArtistAudioAlbums);
+        $userId = User::where('username', $username)->value('id');
+
+        $getArtistAudioAlbums = AudioAlbum::where('user_id', $userId)->get();
+
+        return AudioAlbumResource::collection($getArtistAudioAlbums);
     }
 }

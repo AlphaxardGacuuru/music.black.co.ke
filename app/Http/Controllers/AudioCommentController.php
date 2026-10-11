@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Events\AudioCommentedEvent;
 use App\Http\Services\AudioCommentService;
-use App\Models\Audio;
-use App\Models\AudioComment;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class AudioCommentController extends Controller
 {
@@ -17,73 +17,51 @@ class AudioCommentController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
-        $this->validate($request, [
+        $request->validate([
+            'id' => 'required|exists:audios,id',
             'text' => 'required',
         ]);
 
         [$canDispatch, $message, $audioComment] = $this->service->store($request);
 
         AudioCommentedEvent::dispatchIf(
-			$canDispatch, 
-			$audioComment->audio, 
-			$audioComment->user
-		);
+            $canDispatch,
+            $audioComment->audio,
+            $audioComment->user
+        );
 
         return response([
-            "message" => $message,
-            "data" => $audioComment,
+            'message' => $message,
+            'data' => $audioComment,
         ], 200);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\AudioComment  $audioComment
-     * @return \Illuminate\Http\Response
+     * Display the comments of the specified audio (paginated).
      */
-    public function show($id)
+    public function show(string $id): AnonymousResourceCollection
     {
         return $this->service->show($id);
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\AudioComment  $audioComment
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, AudioComment $audioComment)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\AudioComment  $audioComment
-     * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(string $id): Response
     {
         [$deleted, $message] = $this->service->destroy($id);
 
-        return response(["message" => $message], 200);
+        return response(['message' => $message], 200);
     }
 }

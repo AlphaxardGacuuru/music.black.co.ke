@@ -2,8 +2,8 @@
 
 namespace App\Mail;
 
+use App\Models\Audio;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,24 +13,18 @@ class AudioReceiptMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-	public $audios;
-
     /**
-     * Create a new message instance.
-     *
-     * @return void
+     * @param  iterable<int, Audio>  $audios
      */
-    public function __construct($audios)
+    public function __construct(public $audios)
     {
-        $this->audios = $audios;
+        //
     }
 
     /**
      * Get the message envelope.
-     *
-     * @return \Illuminate\Mail\Mailables\Envelope
      */
-    public function envelope()
+    public function envelope(): Envelope
     {
         return new Envelope(
             subject: 'Audio Receipt',
@@ -39,10 +33,8 @@ class AudioReceiptMail extends Mailable
 
     /**
      * Get the message content definition.
-     *
-     * @return \Illuminate\Mail\Mailables\Content
      */
-    public function content()
+    public function content(): Content
     {
         return new Content(
             markdown: 'emails.audio-receipt',
@@ -52,9 +44,9 @@ class AudioReceiptMail extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array
+     * @return array<int, mixed>
      */
-    public function attachments()
+    public function attachments(): array
     {
         return [];
     }

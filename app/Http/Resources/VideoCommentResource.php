@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class VideoCommentResource extends JsonResource
@@ -9,26 +10,23 @@ class VideoCommentResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
-        // Check if user is logged in
-        $username = auth('sanctum')->user()
-        ? auth('sanctum')->user()->username
-        : '@guest';
+        // Current user's id, null for guests
+        $userId = auth('sanctum')->user()?->id;
 
-		 return [
-                "id" => $this->id,
-                "videoId" => $this->video_id,
-                "text" => $this->text,
-                "username" => $this->username,
-                "name" => $this->user->name,
-                "avatar" => $this->user->avatar,
-                "hasLiked" => $this->hasLiked($username),
-                "likes" => $this->likes->count(),
-                "createdAt" => $this->created_at,
-		 ];
+        return [
+            'id' => $this->id,
+            'videoId' => $this->video_id,
+            'text' => $this->text,
+            'username' => $this->user->username,
+            'name' => $this->user->name,
+            'avatar' => $this->user->avatar,
+            'hasLiked' => $this->hasLiked($userId),
+            'likes' => $this->likes->count(),
+            'createdAt' => $this->created_at,
+        ];
     }
 }

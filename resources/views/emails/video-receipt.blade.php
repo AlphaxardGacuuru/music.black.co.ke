@@ -6,7 +6,7 @@ Thank you for supporting Kenyan artists, here's your receipt.
 @component('mail::panel')
 @foreach ($videos as $video)
 	{{ $video['name'] }}<br>
-	{{ $video['username'], $video['ft'] }}<br><br>
+	{{ $video->user?->username }}<br><br>
 	@endforeach
 @endcomponent
 

@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Video;
 use App\Http\Services\VideoService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VideoController extends Controller
 {
@@ -16,8 +15,6 @@ class VideoController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
@@ -26,14 +23,11 @@ class VideoController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
         // Handle form for video
-        $this->validate($request, [
+        $request->validate([
             'video' => 'required|string',
             'name' => 'required|string',
             'thumbnail' => 'required',
@@ -42,35 +36,28 @@ class VideoController extends Controller
 
         [$saved, $message, $video] = $this->service->store($request);
 
-        // VideoUploadedEvent::dispatchIf($response["saved"], $response["video"]);
+        // VideoUploadedEvent::dispatchIf($saved, $video);
 
         return response([
-            "message" => $message,
-            "data" => $video,
+            'message' => $message,
+            'data' => $video,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Video  $video
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id)
     {
         return $this->service->show($id);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Video  $video
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $this->validate($request, [
+        $request->validate([
             'name' => 'nullable|string',
             'ft' => 'nullable|exists:users,username',
         ]);
@@ -78,60 +65,59 @@ class VideoController extends Controller
         [$saved, $message, $video] = $this->service->update($request, $id);
 
         return response([
-            "message" => $message,
-            "data" => $video,
+            'message' => $message,
+            'data' => $video,
         ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Video  $video
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(Video $video, $id)
+    public function destroy(string $id)
     {
         //
     }
 
     /*
-     * Download Audio
+     * Download Video
      */
-    public function download($id)
+    public function download(Request $request, ?string $id = null): BinaryFileResponse
     {
+        $id ??= $request->query('id');
+
         [$src, $name] = $this->service->download($id);
 
-		return response()->download($src, $name);
+        return response()->download($src, $name);
     }
 
     /*
      * Display a listing of the charts.
-     *
      */
-    public function newlyReleased(VideoService $service)
+    public function newlyReleased()
     {
-        return $service->newlyReleased();
+        return $this->service->newlyReleased();
     }
 
-    public function trending(VideoService $service)
+    public function trending()
     {
-        return $service->trending();
+        return $this->service->trending();
     }
 
-    public function topDownloaded(VideoService $service)
+    public function topDownloaded()
     {
-		return $service->topDownloaded();
+        return $this->service->topDownloaded();
     }
 
-    public function topLiked(VideoService $service)
+    public function topLiked()
     {
-		return $service->topLiked();
+        return $this->service->topLiked();
     }
 
-	/*
-	* Artist's Videos */
-	public function artistVideos($username, VideoService $service)
-	{
-		return $service->artistVideos($username);
-	} 
+    /*
+     * Artist's Videos
+     */
+    public function artistVideos(string $username)
+    {
+        return $this->service->artistVideos($username);
+    }
 }

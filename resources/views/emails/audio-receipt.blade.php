@@ -6,7 +6,7 @@ Thank you for supporting Kenyan artists, here's your receipt.
 @component('mail::panel')
 @foreach ($audios as $audio)
 	{{ $audio['name'] }}<br>
-	{{ $audio['username'], $audio['ft'] }}<br><br>
+	{{ $audio->user?->username }}<br><br>
 	@endforeach
 @endcomponent
 

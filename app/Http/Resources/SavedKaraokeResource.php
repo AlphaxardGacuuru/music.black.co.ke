@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class SavedKaraokeResource extends JsonResource
@@ -9,32 +10,30 @@ class SavedKaraokeResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @return array<string, mixed>
      */
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
-        // Check if user is logged in
-        $username = auth('sanctum')->user()
-        ? auth('sanctum')->user()->username
-        : '@guest';
+        $userId = auth('sanctum')->id();
+
+        $karaoke = $this->karaoke;
 
         return [
-            "id" => $this->karaoke->id,
-            "karaoke" => $this->karaoke->karaoke,
-            "audioId" => $this->karaoke->audio_id,
-            "audioName" => $this->karaoke->audio->name,
-            "audioThumbnail" => $this->karaoke->audio->thumbnail,
-            "name" => $this->karaoke->user->name,
-            "username" => $this->karaoke->user->username,
-            "avatar" => $this->karaoke->user->avatar,
-            "decos" => $this->karaoke->user->decos,
-            "description" => $this->karaoke->description,
-            "hasLiked" => $this->karaoke->hasLiked($username),
-            "hasSaved" => $this->karaoke->hasSaved($username),
-            "likes" => $this->karaoke->likes->count(),
-            "comments" => $this->karaoke->comments->count(),
-            "createdAt" => $this->karaoke->created_at,
+            'id' => $karaoke->id,
+            'karaoke' => $karaoke->karaoke,
+            'audioId' => $karaoke->audio_id,
+            'audioName' => $karaoke->audio->name,
+            'audioThumbnail' => $karaoke->audio->thumbnail,
+            'name' => $karaoke->user->name,
+            'username' => $karaoke->user->username,
+            'avatar' => $karaoke->user->avatar,
+            'decos' => $karaoke->user->decos,
+            'description' => $karaoke->description,
+            'hasLiked' => $karaoke->hasLiked($userId),
+            'hasSaved' => $karaoke->hasSaved($userId),
+            'likes' => $karaoke->likes->count(),
+            'comments' => $karaoke->comments->count(),
+            'createdAt' => $karaoke->created_at,
         ];
     }
 }

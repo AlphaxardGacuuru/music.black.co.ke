@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\KaraokeAudio;
+use App\Http\Resources\KaraokeAudioResource;
 use App\Http\Services\KaraokeAudioService;
+use App\Models\KaraokeAudio;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class KaraokeAudioController extends Controller
 {
@@ -15,47 +18,39 @@ class KaraokeAudioController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): Collection
     {
         return $this->service->index();
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
+        $this->validate($request, [
+            'audio_id' => 'required|exists:audios,id',
+        ]);
+
         [$saved, $message, $karaokeAudio] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $karaokeAudio,
+            'message' => $message,
+            'data' => $karaokeAudio,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\KaraokeAudio  $karaokeAudio
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): KaraokeAudioResource
     {
         return $this->service->show($id);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\KaraokeAudio  $karaokeAudio
-     * @return \Illuminate\Http\Response
      */
     public function update(Request $request, KaraokeAudio $karaokeAudio)
     {
@@ -64,9 +59,6 @@ class KaraokeAudioController extends Controller
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\KaraokeAudio  $karaokeAudio
-     * @return \Illuminate\Http\Response
      */
     public function destroy(KaraokeAudio $karaokeAudio)
     {

@@ -3,18 +3,39 @@
 namespace Database\Seeders;
 
 use App\Models\BoughtVideo;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
+use App\Models\Video;
 use Illuminate\Database\Seeder;
 
 class BoughtVideoSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
-     *
-     * @return void
+     * Seed 10 purchases of random videos by random users. Needs users and
+     * videos to be seeded first.
      */
-    public function run()
+    public function run(): void
     {
-        BoughtVideo::factory()->count(10)->create();
+        $videos = Video::all();
+        $users = User::all();
+
+        if ($videos->isEmpty() || $users->isEmpty()) {
+            return;
+        }
+
+        foreach (range(1, 10) as $i) {
+            $video = $videos->random();
+
+            // Each user can only buy a video once
+            BoughtVideo::firstOrCreate(
+                [
+                    'video_id' => $video->id,
+                    'user_id' => $users->random()->id,
+                ],
+                [
+                    'price' => (string) BoughtVideo::PRICE,
+                    'artist_id' => $video->user_id,
+                ],
+            );
+        }
     }
 }

@@ -3,19 +3,17 @@
 namespace App\Http\Services;
 
 use App\Models\PostCommentLike;
+use Illuminate\Http\Request;
 
 class PostCommentLikeService extends Service
 {
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Like or unlike a post comment.
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         $query = PostCommentLike::where('post_comment_id', $request->input('comment'))
-            ->where('username', auth('sanctum')->user()->username);
+            ->where('user_id', $this->id);
 
         $hasLiked = $query->exists();
 
@@ -30,16 +28,16 @@ class PostCommentLikeService extends Service
         } else {
             $postCommentLike = new PostCommentLike;
             $postCommentLike->post_comment_id = $request->input('comment');
-            $postCommentLike->username = auth('sanctum')->user()->username;
+            $postCommentLike->user_id = $this->id;
             $postCommentLike->save();
 
             $message = 'Comment liked';
             $added = true;
         }
 
-        // Check if current user is owner of post
-        $notCurrentUser = $postCommentLike->comment->username != $this->username;
-        // Dispatch if comment is saved successfully and current user is not owner of audio
+        // Check if current user is owner of comment
+        $notCurrentUser = $postCommentLike->comment->user_id != $this->id;
+        // Dispatch if like is added and current user is not owner of comment
         $canDispatch = $notCurrentUser && $added;
 
         return [$canDispatch, $message, $postCommentLike];

@@ -5,59 +5,47 @@ namespace App\Http\Controllers;
 use App\Models\Deco;
 use Illuminate\Http\Request;
 
+/**
+ * Empty in OLD as well. Kept so the OLD URLs still resolve.
+ */
 class DecoController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): void
     {
         //
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): void
     {
         //
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Deco  $deco
-     * @return \Illuminate\Http\Response
      */
-    public function show(Deco $deco)
+    public function show(Deco $deco): void
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Deco  $deco
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Deco $deco)
+    public function update(Request $request, Deco $deco): void
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Deco  $deco
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(Deco $deco)
+    public function destroy(Deco $deco): void
     {
         //
     }

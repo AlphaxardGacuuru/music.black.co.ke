@@ -2,67 +2,44 @@
 
 namespace App\Notifications;
 
+use App\Models\Story;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class StoryCreatedNotification extends Notification implements ShouldBroadcast
 {
     use Queueable;
 
-	public $story;
-	public $username;
-
     /**
      * Create a new notification instance.
-     *
-     * @return void
      */
-    public function __construct($story, $username)
-    {
-        $this->story;
-        $this->username = $username;
-    }
+    public function __construct(
+        public Story $story,
+        public string $username,
+    ) {}
 
     /**
      * Get the notification's delivery channels.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<int, string>
      */
-    public function via($notifiable)
+    public function via(object $notifiable): array
     {
         return ['database', 'broadcast'];
     }
 
     /**
-     * Get the mail representation of the notification.
-     *
-     * @param  mixed  $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
-    {
-        return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
-    }
-
-    /**
      * Get the array representation of the notification.
      *
-     * @param  mixed  $notifiable
-     * @return array
+     * @return array<string, mixed>
      */
-    public function toArray($notifiable)
+    public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/story/show/' . $this->story->id,
+            'url' => '/story/show/'.$this->story->id,
             'from' => $this->username,
-            'message' => $this->username . ' posted a story.',
+            'message' => $this->username.' posted a story.',
         ];
     }
 }

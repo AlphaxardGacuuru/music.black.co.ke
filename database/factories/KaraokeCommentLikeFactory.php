@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\KaraokeCommentLike;
+use App\Models\KaraokeComment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\KaraokeCommentLike>
+ * @extends Factory<KaraokeCommentLike>
  */
 class KaraokeCommentLikeFactory extends Factory
 {
@@ -14,10 +17,11 @@ class KaraokeCommentLikeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            //
+            'karaoke_comment_id' => KaraokeComment::factory(),
+            'user_id' => User::factory(),
         ];
     }
 }

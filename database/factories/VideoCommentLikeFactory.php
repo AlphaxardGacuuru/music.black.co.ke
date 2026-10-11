@@ -2,10 +2,13 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
+use App\Models\VideoComment;
+use App\Models\VideoCommentLike;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\VideoCommentLike>
+ * @extends Factory<VideoCommentLike>
  */
 class VideoCommentLikeFactory extends Factory
 {
@@ -14,10 +17,11 @@ class VideoCommentLikeFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            //
+            'video_comment_id' => VideoComment::factory(),
+            'user_id' => User::factory(),
         ];
     }
 }

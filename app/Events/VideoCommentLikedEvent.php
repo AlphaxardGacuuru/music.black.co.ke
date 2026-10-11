@@ -2,7 +2,8 @@
 
 namespace App\Events;
 
-use Illuminate\Broadcasting\Channel;
+use App\Models\User;
+use App\Models\VideoComment;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -12,26 +13,18 @@ class VideoCommentLikedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $comment;
-    public $user;
-
     /**
      * Create a new event instance.
-     *
-     * @return void
      */
-    public function __construct($comment, $user)
+    public function __construct(public VideoComment $comment, public User $user)
     {
-        $this->comment = $comment;
-        $this->user = $user;
+        //
     }
 
     /**
      * Get the channels the event should broadcast on.
-     *
-     * @return \Illuminate\Broadcasting\Channel|array
      */
-    public function broadcastOn()
+    public function broadcastOn(): PrivateChannel
     {
         return new PrivateChannel('channel-name');
     }

@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
+use App\Models\Karaoke;
 use App\Models\KaraokeComment;
 use App\Models\KaraokeCommentLike;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\KaraokeComment>
+ * @extends Factory<KaraokeComment>
  */
 class KaraokeCommentFactory extends Factory
 {
@@ -17,29 +18,26 @@ class KaraokeCommentFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    public function definition()
+    public function definition(): array
     {
         return [
-            'text' => fake()->realText($maxNbChars = 20, $indexSize = 2),
+            'karaoke_id' => Karaoke::factory(),
+            'user_id' => User::factory(),
+            'text' => fake()->realText(20, 2),
         ];
     }
 
     /**
-     * Configure the model factory.
-     *
-     * @return $this
+     * Add a like from a random existing user after creation (what the OLD
+     * factory always did in configure()).
      */
-    public function configure()
+    public function withLike(): static
     {
-        // User Follows themselves and Black Music after creation
-        return $this->afterMaking(function (KaraokeComment $comment) {
-            //
-        })->afterCreating(function (KaraokeComment $comment) {
-            KaraokeCommentLike::factory()
-                ->create([
-                    'username' => User::all()->random()->username,
-                    'karaoke_comment_id' => $comment->id,
-                ]);
+        return $this->afterCreating(function (KaraokeComment $comment) {
+            KaraokeCommentLike::factory()->create([
+                'user_id' => User::inRandomOrder()->value('id'),
+                'karaoke_comment_id' => $comment->id,
+            ]);
         });
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Events;
 
+use App\Models\Post;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -14,25 +14,22 @@ class PostedEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-	public $post;
-
     /**
      * Create a new event instance.
-     *
-     * @return void
      */
-    public function __construct($post)
-    {
-        $this->post = $post;
-    }
+    public function __construct(
+        public Post $post,
+    ) {}
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return array<int, Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('post-created');
+        return [
+            new PrivateChannel('post-created'),
+        ];
     }
 }

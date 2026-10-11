@@ -2,12 +2,12 @@
 
 namespace App\Events;
 
+use App\Models\Post;
 use App\Models\PostComment;
+use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
@@ -15,29 +15,24 @@ class PostCommentLikedEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-	public $comment;
-	public $post;
-	public $user;
-
     /**
      * Create a new event instance.
-     *
-     * @return void
      */
-    public function __construct($comment, $post, $user)
-    {
-		$this->comment = $comment;
-		$this->post = $post;
-		$this->user = $user;
-    }
+    public function __construct(
+        public PostComment $comment,
+        public Post $post,
+        public User $user,
+    ) {}
 
     /**
      * Get the channels the event should broadcast on.
      *
-     * @return \Illuminate\Broadcasting\Channel|array
+     * @return array<int, Channel>
      */
-    public function broadcastOn()
+    public function broadcastOn(): array
     {
-        return new PrivateChannel('channel-name');
+        return [
+            new PrivateChannel('channel-name'),
+        ];
     }
 }

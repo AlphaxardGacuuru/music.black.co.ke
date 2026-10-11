@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AudioResource;
 use App\Http\Services\AudioService;
-use App\Models\Audio;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AudioController extends Controller
 {
@@ -15,119 +18,104 @@ class AudioController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
-        // Handle form for audio
-        $this->validate($request, [
+        $request->validate([
             'audio' => 'required|string',
             'name' => 'required|string',
             'thumbnail' => 'required',
             'ft' => 'nullable|exists:users,username',
+            'audio_album_id' => 'required|exists:audio_albums,id',
+            'genre' => 'required|string',
         ]);
 
         [$saved, $message, $audio] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $audio,
+            'message' => $message,
+            'data' => $audio,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Audio  $audio
-     * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(string $id): AudioResource
     {
         return $this->service->show($id);
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Audio  $audio
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id): Response
     {
-        $this->validate($request, [
+        $request->validate([
             'name' => 'nullable|string',
             'ft' => 'nullable|exists:users,username',
+            'audio_album_id' => 'nullable|exists:audio_albums,id',
         ]);
 
         [$saved, $message, $audio] = $this->service->update($request, $id);
 
         return response([
-            "message" => $message,
-            "data" => $audio,
+            'message' => $message,
+            'data' => $audio,
         ], 200);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Audio  $audio
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Audio $audio, $id)
-    {
-        //
     }
 
     /*
      * Download Audio
+     *
+     * The OLD frontend calls "audios/download/{id}"; "audios/download?id="
+     * is accepted too.
      */
-    public function download($id)
+    public function download(Request $request, ?string $id = null): BinaryFileResponse
     {
+        $id ??= $request->query('id');
+
+        abort_unless(is_string($id) && $id !== '', 404);
+
         [$src, $name] = $this->service->download($id);
 
-		return response()->download($src, $name);
+        return response()->download($src, $name);
     }
 
     /*
      * Display a listing of the charts.
-     *
      */
-    public function newlyReleased()
+    public function newlyReleased(): Response
     {
         return $this->service->newlyReleased();
     }
 
-    public function trending()
+    public function trending(): Response
     {
         return $this->service->trending();
     }
 
-    public function topDownloaded()
+    public function topDownloaded(): Response
     {
         return $this->service->topDownloaded();
     }
 
-    public function topLiked()
+    public function topLiked(): Response
     {
         return $this->service->topLiked();
     }
 
     /*
      * Artist's Audios */
-    public function artistAudios($username)
+    public function artistAudios(string $username): AnonymousResourceCollection
     {
         return $this->service->artistAudios($username);
     }

@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CartVideo;
 use App\Http\Services\CartVideoService;
+use App\Models\CartVideo;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class CartVideoController extends Controller
 {
@@ -15,60 +17,49 @@ class CartVideoController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Add the video to the cart, or remove it if it is already there.
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
+        $request->validate([
+            'video' => 'required|exists:videos,id',
+        ]);
+
         [$saved, $message, $cartVideo] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $cartVideo,
+            'message' => $message,
+            'data' => $cartVideo,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\CartVideo  $cartVideo
-     * @return \Illuminate\Http\Response
      */
-    public function show(CartVideo $cartVideo)
+    public function show(CartVideo $cartVideo): void
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\CartVideo  $cartVideo
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, CartVideo $cartVideo)
+    public function update(Request $request, CartVideo $cartVideo): void
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\CartVideo  $cartVideo
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(CartVideo $cartVideo)
+    public function destroy(CartVideo $cartVideo): void
     {
         //
     }

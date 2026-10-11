@@ -3,42 +3,40 @@
 namespace App\Http\Services;
 
 use App\Models\AudioLike;
+use Illuminate\Http\Request;
 
 class AudioLikeService extends Service
 {
     /**
-     * Store a newly created resource in storage.
+     * Like or unlike an audio.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return array{0: bool, 1: string, 2: AudioLike}
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         $query = AudioLike::where('audio_id', $request->input('audio'))
-            ->where('username', auth('sanctum')->user()->username);
+            ->where('user_id', $this->id);
 
-        $hasLiked = $query->exists();
+        $audioLike = $query->first();
 
-        if ($hasLiked) {
-			// Get Like
-            $audioLike = $query->first();
-			// Delete Like
+        if ($audioLike) {
+            // Delete Like
             $query->delete();
-			// Set Message
-            $message = "Like removed";
+
+            $message = 'Like removed';
             $added = false;
         } else {
             $audioLike = new AudioLike;
             $audioLike->audio_id = $request->input('audio');
-            $audioLike->username = auth('sanctum')->user()->username;
+            $audioLike->user_id = $this->id;
             $audioLike->save();
 
-            $message = "Audio liked";
+            $message = 'Audio liked';
             $added = true;
         }
 
-        // Check if user is owner of audios
-        $notCurrentUser = $audioLike->audio->username != $this->username;
+        // Check if user is owner of audio
+        $notCurrentUser = $audioLike->audio->user_id != $this->id;
         // Dispatch if like is saved successfully and user is not owner of audio
         $canDispatch = $notCurrentUser && $added;
 

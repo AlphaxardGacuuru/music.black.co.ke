@@ -11,22 +11,9 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 class VideoBoughtListener implements ShouldQueue
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\VideoBoughtEvent  $event
-     * @return void
      */
-    public function handle(VideoBoughtEvent $event)
+    public function handle(VideoBoughtEvent $event): void
     {
         // Notify Artist
         foreach ($event->videos as $video) {

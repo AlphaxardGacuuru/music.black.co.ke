@@ -2,21 +2,36 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AudioLike extends Model
 {
-    use HasFactory;
-	
-    public function user()
+    use HasFactory, HasUuids;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'audio_id',
+        'user_id',
+    ];
+
+    /*
+     * Relationships
+     */
+
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class, "username", "username");
+        return $this->belongsTo(User::class);
     }
 
-	public function audio()
-	{
-		return $this->belongsTo(Audio::class);
-	}
+    public function audio(): BelongsTo
+    {
+        return $this->belongsTo(Audio::class);
+    }
 }

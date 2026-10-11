@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Services\CartAudioService;
 use App\Models\CartAudio;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 
 class CartAudioController extends Controller
 {
@@ -15,60 +17,49 @@ class CartAudioController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Add the audio to the cart, or remove it if it is already there.
      */
-    public function store(Request $request)
+    public function store(Request $request): Response
     {
+        $request->validate([
+            'audio' => 'required|exists:audios,id',
+        ]);
+
         [$saved, $message, $cartAudio] = $this->service->store($request);
 
         return response([
-            "message" => $message,
-            "data" => $cartAudio,
+            'message' => $message,
+            'data' => $cartAudio,
         ], 200);
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\CartAudio  $cartAudio
-     * @return \Illuminate\Http\Response
      */
-    public function show(CartAudio $cartAudio)
+    public function show(CartAudio $cartAudio): void
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\CartAudio  $cartAudio
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, CartAudio $cartAudio)
+    public function update(Request $request, CartAudio $cartAudio): void
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\CartAudio  $cartAudio
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(CartAudio $cartAudio)
+    public function destroy(CartAudio $cartAudio): void
     {
         //
     }

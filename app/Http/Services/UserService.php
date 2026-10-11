@@ -2,122 +2,257 @@
 
 namespace App\Http\Services;
 
+use App\Enums\EmailNotificationCategory;
 use App\Http\Resources\UserResource;
-use App\Models\AudioAlbum;
+use App\Models\Role;
 use App\Models\User;
-use App\Models\VideoAlbum;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Collection;
 
 class UserService extends Service
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        $getUsers = User::all();
+	public function index(Request $request): LengthAwarePaginator|Collection
+	{
+		if ($request->filled('idAndName')) {
+			return User::query()
+				->select('id', 'name')
+				->orderBy('id', 'DESC')
+				->get();
+		}
 
-        return UserResource::collection($getUsers);
-    }
+		$query = $this->search(User::query(), $request);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function show($username)
-    {
-        $getUser = User::where("username", $username)->first();
+		if ($request->boolean('excludeSelf') && auth()->check()) {
+			$query = $query->whereKeyNot(auth()->id());
+		}
 
-        return new UserResource($getUser);
-    }
+		return $query
+			->withCount(['referralsMade', 'pushSubscriptions'])
+			->with('referral.referrer:id,name')
+			->orderBy('id', 'DESC')
+			->paginate($request->integer('per_page', 15));
+	}
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function update($request, $id)
-    {
-        /* Update profile */
-        $user = User::find($id);
+	/**
+	 * Profiles are addressed by "@username" (the music app's profile URLs) or
+	 * by id (the admin screens).
+	 */
+	public function show(int|string $id): User
+	{
+		if (is_string($id) && str_starts_with($id, '@')) {
+			return User::query()->where('username', $id)->firstOrFail();
+		}
 
-        if ($request->filled('name')) {
-            $user->name = $request->input('name');
-        }
+		return User::query()->findOrFail($id);
+	}
 
-        if ($request->filled('phone')) {
-            $user->phone = $request->input('phone');
-            $user->password = Hash::make($request->input('phone'));
-        }
+	public function store(Request $request): array
+	{
+		$user = User::query()->create([
+			'name' => $request->string('name')->toString(),
+			'email' => $request->string('email')->toString(),
+			'password' => Hash::make($request->string('password')->toString()),
+			'phone' => $request->input('phone'),
+			'settings' => $request->input('settings'),
+		]);
 
-        if ($request->filled('accountType') && $user->account_type == "normal") {
+		if ($request->filled('userRoles')) {
+			$user->syncRoles($request->input('userRoles'));
+		}
 
-            $user->account_type = $request->input('accountType');
+		return [true, 'Account Created', $user->fresh()];
+	}
 
-            DB::transaction(function () {
+	public function update(Request $request, int|string $id): array
+	{
+		$user = User::query()->findOrFail($id);
 
-                /* Create new video album */
-                $vAlbum = new VideoAlbum;
-                $vAlbum->name = "Singles";
-                $vAlbum->username = auth('sanctum')->user()->username;
-                $vAlbum->cover = "video-album-covers/musical-note.png";
-                $vAlbum->released = Carbon::now();
-                $vAlbum->save();
+		if ($request->filled('name')) {
+			$user->name = $request->string('name')->toString();
+		}
 
-                /* Create new audio album */
-                $aAlbum = new AudioAlbum;
-                $aAlbum->name = "Singles";
-                $aAlbum->username = auth('sanctum')->user()->username;
-                $aAlbum->cover = "audio-album-covers/musical-note.png";
-                $vAlbum->released = Carbon::now();
-                $aAlbum->save();
+		if ($request->filled('email')) {
+			$user->email = $request->string('email')->toString();
+		}
 
-            });
-        }
+		if ($request->filled('phone')) {
+			$user->phone = $request->input('phone');
+		}
 
-        if ($request->filled('bio')) {
-            $user->bio = $request->input('bio');
-        }
+		if ($request->filled('password')) {
+			$user->password = Hash::make($request->string('password')->toString());
+		}
 
-        if ($request->filled('withdrawal')) {
-            $user->withdrawal = $request->input('withdrawal');
-        }
+		if ($request->exists('settings')) {
+			$user->settings = $request->input('settings');
+		}
 
-        $saved = $user->save();
+		if ($request->has('verified')) {
+			$user->verified = $request->boolean('verified');
+		}
 
-        return [$saved, "Account updated", $user];
-    }
+		if ($request->filled('bio')) {
+			$user->bio = $request->input('bio');
+		}
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function auth()
-    {
-        $auth = auth('sanctum')->user();
+		if ($request->filled('withdrawal')) {
+			$user->withdrawal = $request->input('withdrawal');
+		}
 
-        return new UserResource($auth);
-    }
+		// Becoming a musician is one-way, and starts the artist off with a
+		// "Singles" album for both videos and audios.
+		$becameMusician = $request->filled('accountType') && $user->account_type === 'normal';
 
-    /*
-     * Artists */
-    public function artists()
-    {
-        $getArtists = User::where("account_type", "musician")
-            ->where("username", "!=", $this->username)
-            ->where("username", "!=", "@blackmusic")
-            ->paginate(10);
+		if ($becameMusician) {
+			$user->account_type = $request->input('accountType');
+		}
 
-        return UserResource::collection($getArtists);
-    }
+		$saved = DB::transaction(function () use ($user, $becameMusician) {
+			$saved = $user->save();
+
+			if ($becameMusician) {
+				$user->videoAlbums()->create([
+					'name' => 'Singles',
+					'cover' => 'video-album-covers/musical-note.png',
+					'released' => now(),
+				]);
+
+				$user->audioAlbums()->create([
+					'name' => 'Singles',
+					'cover' => 'audio-album-covers/musical-note.png',
+					'released' => now(),
+				]);
+			}
+
+			return $saved;
+		});
+
+		if ($request->filled('userRoles')) {
+			$user->syncRoles($request->input('userRoles'));
+		}
+
+		return [$saved, 'Account Updated', $user->fresh()];
+	}
+
+	public function destroy(int|string $id): array
+	{
+		$user = User::query()->findOrFail($id);
+		$deleted = $user->delete();
+
+		return [$deleted, $user->name . ' deleted'];
+	}
+
+	/**
+	 * Merge email preferences into the same users.settings blob that also
+	 * holds onboarding progress, leaving the other keys untouched.
+	 *
+	 * @param  array<string, bool>  $preferences
+	 */
+	public function updateNotificationPreferences(User $user, array $preferences): void
+	{
+		$user->settings = array_merge((array) ($user->settings ?? []), $preferences);
+		$user->save();
+	}
+
+	/**
+	 * Turn a single email category off, from a signed unsubscribe link.
+	 */
+	public function unsubscribe(User $user, EmailNotificationCategory $category): void
+	{
+		$settings = (array) ($user->settings ?? []);
+		$settings[$category->settingsKey()] = false;
+		$user->update(['settings' => $settings]);
+	}
+
+	/**
+	 * Update the user's own profile, resetting email verification when the
+	 * email address changes.
+	 *
+	 * @param  array<string, mixed>  $attributes
+	 */
+	public function updateProfile(User $user, array $attributes): void
+	{
+		$user->fill($attributes);
+
+		if ($user->isDirty('email')) {
+			$user->email_verified_at = null;
+		}
+
+		$user->save();
+	}
+
+	public function updatePassword(User $user, string $password): void
+	{
+		$user->update(['password' => $password]);
+	}
+
+	/**
+	 * Set a new password from a reset link, rotating the remember token so
+	 * any "remember me" sessions on other devices are signed out.
+	 */
+	public function resetPassword(User $user, string $password): void
+	{
+		$user->forceFill([
+			'password' => Hash::make($password),
+			'remember_token' => Str::random(60),
+		])->save();
+	}
+
+	/**
+	 * Replace a user's avatar with an already-stored file, deleting the old
+	 * one unless it's the default.
+	 */
+	public function updateAvatar(int|string $id, string $avatarPath): void
+	{
+		$user = User::findOrFail($id);
+
+		if ($user->avatar != '/storage/avatars/male_avatar.png') {
+			Storage::disk('public')->delete(substr($user->avatar, 9));
+		}
+
+		$user->avatar = $avatarPath;
+		$user->save();
+	}
+
+	/**
+	 * Musicians to discover, 10 per page, leaving out the viewer and the
+	 * house @blackmusic account.
+	 */
+	public function artists(): LengthAwarePaginator
+	{
+		return User::query()
+			->where('account_type', 'musician')
+			->when($this->id, fn($query) => $query->whereKeyNot($this->id))
+			->where('username', '!=', '@blackmusic')
+			->paginate(10);
+	}
+
+	public function auth(): UserResource|Response
+	{
+		if (! auth('sanctum')->check()) {
+			return response(['message' => 'Not Authenticated'], 401);
+		}
+
+		return new UserResource(auth('sanctum')->user());
+	}
+
+	protected function search($query, Request $request)
+	{
+		if ($request->filled('roleId')) {
+			$roleName = Role::query()->findOrFail($request->input('roleId'))->name;
+			$query = $query->role($roleName);
+		}
+
+		if ($request->filled('name')) {
+			$query = $query->where('name', 'LIKE', '%' . $request->input('name') . '%');
+		}
+
+		return $query;
+	}
 }

@@ -3,28 +3,16 @@
 namespace App\Listeners;
 
 use App\Events\StoryCreatedEvent;
-use App\Notifications\StoryCreatedNotification;
 
 class StoryCreatedListener
 {
     /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        //
-    }
-
-    /**
      * Handle the event.
-     *
-     * @param  \App\Events\StoryCreatedEvent  $event
-     * @return void
      */
-    public function handle(StoryCreatedEvent $event)
+    public function handle(StoryCreatedEvent $event): void
     {
-        new StoryCreatedNotification($event->story);
+        // OLD only instantiated a StoryCreatedNotification (with a missing
+        // argument) and never sent it to anyone, so no notification goes out.
+        // StoryCreatedNotification is kept ready for when recipients are decided.
     }
 }

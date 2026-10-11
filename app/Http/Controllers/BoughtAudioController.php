@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\AudioBoughtEvent;
-use App\Models\BoughtAudio;
 use App\Http\Services\BoughtAudioService;
+use App\Models\BoughtAudio;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class BoughtAudioController extends Controller
 {
@@ -16,10 +16,8 @@ class BoughtAudioController extends Controller
 
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         return $this->service->index();
     }
@@ -27,58 +25,42 @@ class BoughtAudioController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Buying happens when an M-Pesa payment lands (see BuyCartListener),
+     * this endpoint did nothing in OLD either.
      */
-    public function store(Request $request)
+    public function store(Request $request): void
     {
-        // [$boughtAudios, $decoArtists] = $this->service->store();
-
-        // $hasBought = count($boughtAudios) > 0;
-
-        // AudioBoughtEvent::dispatchIf($hasBought, $boughtAudios, $decoArtists);
-
-        // return response(["data" => $boughtAudios], 200);
+        //
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\BoughtAudio  $boughtAudio
-     * @return \Illuminate\Http\Response
      */
-    public function show(BoughtAudio $boughtAudio)
+    public function show(BoughtAudio $boughtAudio): void
     {
         //
     }
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\BoughtAudio  $boughtAudio
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, BoughtAudio $boughtAudio)
+    public function update(Request $request, BoughtAudio $boughtAudio): void
     {
         //
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\BoughtAudio  $boughtAudio
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(BoughtAudio $boughtAudio)
+    public function destroy(BoughtAudio $boughtAudio): void
     {
         //
     }
 
-	/*
-	* Artist's Bought Audios */
-	public function artistBoughtAudios($username)
-	{
-		return $this->service->artistBoughtAudios($username);
-	} 
+    /*
+     * Artist's Bought Audios */
+    public function artistBoughtAudios(string $username): AnonymousResourceCollection
+    {
+        return $this->service->artistBoughtAudios($username);
+    }
 }

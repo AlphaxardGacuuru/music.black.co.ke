@@ -3,46 +3,35 @@
 namespace App\Http\Services;
 
 use App\Models\KaraokeCommentLike;
+use Illuminate\Http\Request;
 
 class KaraokeCommentLikeService extends Service
 {
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Toggle the current user's like on a karaoke comment.
      */
-    public function store($request)
+    public function store(Request $request): array
     {
-		$karaokeCommentLike = "data";
-		
-        $hasLiked = KaraokeCommentLike::where('karaoke_comment_id', $request->input('comment'))
-            ->where('username', auth('sanctum')->user()->username)
-            ->exists();
+        $karaokeCommentLike = 'data';
 
-        if ($hasLiked) {
-            KaraokeCommentLike::where('karaoke_comment_id', $request->input('comment'))
-                ->where('username', auth('sanctum')->user()->username)
-                ->delete();
+        $query = KaraokeCommentLike::where('karaoke_comment_id', $request->input('comment'))
+            ->where('user_id', $this->id);
 
-            $message = "Like removed";
-			$added = false;
+        if ($query->exists()) {
+            $query->delete();
+
+            $message = 'Like removed';
+            $added = false;
         } else {
-			$karaokeCommentLike = new KaraokeCommentLike;
+            $karaokeCommentLike = new KaraokeCommentLike;
             $karaokeCommentLike->karaoke_comment_id = $request->input('comment');
-            $karaokeCommentLike->username = auth('sanctum')->user()->username;
+            $karaokeCommentLike->user_id = $this->id;
             $karaokeCommentLike->save();
 
-            $message = "Comment liked";
-			$added = true;
-
-            // Show notification
-            // $karaokeComment = KaraokeComments::where('id', $request->input('comment'))->first();
-            // $karaoke = $karaokeComment->karaokes;
-            // $karaoke->users->username != auth()->user()->username &&
-            // $karaoke->users->notify(new KaraokeCommentLikeNotifications($karaoke->name));
+            $message = 'Comment liked';
+            $added = true;
         }
 
-		return [$added, $message, $karaokeCommentLike];
+        return [$added, $message, $karaokeCommentLike];
     }
 }

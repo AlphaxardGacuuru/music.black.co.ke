@@ -7,30 +7,31 @@ use App\Http\Resources\UserResource;
 use App\Models\Audio;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Gate;
 
 class AudioService extends Service
 {
     /**
      * Display a listing of the resource.
-     *
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        $getAudios = Audio::orderBy('id', 'ASC')->get();
+        $getAudios = Audio::orderBy('created_at', 'ASC')->get();
 
         return AudioResource::collection($getAudios);
     }
 
     /**
      * Display the specified resource.
-     *
      */
-    public function show($id)
+    public function show(string $id): AudioResource
     {
-        // Get Audio
-        $getAudio = Audio::find($id);
+        $getAudio = Audio::findOrFail($id);
 
         return new AudioResource($getAudio);
     }
@@ -38,15 +39,16 @@ class AudioService extends Service
     /**
      * Store a newly created resource in storage.
      *
+     * @return array{0: bool, 1: string, 2: Audio}
      */
-    public function store($request)
+    public function store(Request $request): array
     {
         /* Create new audio song */
         $audio = new Audio;
         $audio->audio = $request->input('audio');
         $audio->name = $request->input('name');
-        $audio->username = auth('sanctum')->user()->username;
-        $audio->ft = $request->input('ft');
+        $audio->user_id = $this->id;
+        $audio->ft_id = $this->userIdFor($request->input('ft'));
         $audio->audio_album_id = $request->input('audio_album_id');
         $audio->genre = $request->input('genre');
         $audio->thumbnail = $request->input('thumbnail');
@@ -54,23 +56,26 @@ class AudioService extends Service
         $audio->released = $request->input('released');
         $saved = $audio->save();
 
-		return [$saved, "Audio Uploaded", $audio];
+        return [$saved, 'Audio Uploaded', $audio];
     }
 
     /**
      * Update the specified resource in storage.
      *
+     * @return array{0: bool, 1: string, 2: Audio}
      */
-    public function update($request, $id)
+    public function update(Request $request, string $id): array
     {
-        $audio = Audio::find($id);
+        $audio = Audio::findOrFail($id);
+
+        Gate::authorize('update', $audio);
 
         if ($request->filled('name')) {
             $audio->name = $request->input('name');
         }
 
         if ($request->filled('ft')) {
-            $audio->ft = $request->input('ft');
+            $audio->ft_id = $this->userIdFor($request->input('ft'));
         }
 
         if ($request->filled('audio_album_id')) {
@@ -90,66 +95,64 @@ class AudioService extends Service
         }
 
         if ($request->filled('thumbnail')) {
-            $audio->thumbnail = $request->input('thumbnail');
+            // Delete old thumbnail
+            Storage::disk('public')->delete($audio->getRawOriginal('thumbnail'));
 
-            // Delete thumbnail
-            $oldThumbnail = Audio::find($id)->thumbnail;
-            Storage::delete('public/' . $oldThumbnail);
+            $audio->thumbnail = $request->input('thumbnail');
         }
 
         if ($request->filled('audio')) {
-            $audio->audio = $request->input('audio');
+            // Delete old audio
+            Storage::disk('public')->delete($audio->getRawOriginal('audio'));
 
-            // Delete audio
-            $oldAudio = Audio::find($id)->audio;
-            Storage::delete('public/' . $oldAudio);
+            $audio->audio = $request->input('audio');
         }
 
         $saved = $audio->save();
 
-		$message = $audio->name . " edited";
+        $message = $audio->name . ' edited';
 
-		return [$saved, $message, $audio];
+        return [$saved, $message, $audio];
     }
 
     /**
      * Download Audio.
      *
+     * @return array{0: string, 1: string}
      */
-    public function download($id)
+    public function download(string $id): array
     {
-        $audio = Audio::find($id);
-        // Get file extesion
-        $ext = substr($audio->audio, -3);
+        $audio = Audio::findOrFail($id);
 
-        $src = $audio->audio;
+        $path = $audio->getRawOriginal('audio');
 
-        $name = $audio->name . '.' . $ext;
+        abort_unless(Storage::disk('public')->exists($path), 404);
+
+        $src = Storage::disk('public')->path($path);
+
+        $name = $audio->name . '.' . pathinfo($path, PATHINFO_EXTENSION);
 
         return [$src, $name];
     }
 
     /**
      * Newly Released Chart
-     *
      */
-    public function newlyReleased()
+    public function newlyReleased(): Response
     {
-        // Get Audios
-        $newlyReleased = Audio::orderBy("id", "desc")->get();
+        $newlyReleased = Audio::orderBy('created_at', 'desc')->get();
 
         return response($this->chart($newlyReleased), 200);
     }
 
     /**
      * Trending Chart
-     *
      */
-    public function trending()
+    public function trending(): Response
     {
         $trending = DB::table('bought_audios')
             ->select('audio_id', DB::raw('count(*) as bought'))
-            ->where("created_at", ">=", Carbon::now()->subWeek())
+            ->where('created_at', '>=', Carbon::now()->subWeek())
             ->groupBy('audio_id')
             ->orderBy('bought', 'DESC')
             ->get();
@@ -159,9 +162,8 @@ class AudioService extends Service
 
     /**
      * Top Downloaded
-     *
      */
-    public function topDownloaded()
+    public function topDownloaded(): Response
     {
         $topDownloaded = DB::table('bought_audios')
             ->select('audio_id', DB::raw('count(*) as bought'))
@@ -174,9 +176,8 @@ class AudioService extends Service
 
     /**
      * Top Liked
-     *
      */
-    public function topLiked()
+    public function topLiked(): Response
     {
         $topLiked = DB::table('audio_likes')
             ->select('audio_id', DB::raw('count(*) as likes'))
@@ -190,8 +191,9 @@ class AudioService extends Service
     /**
      * Structure charts
      *
+     * @return array{data: array{artists: array<int, UserResource>, audios: AnonymousResourceCollection}}
      */
-    public function chart($list, $loop = false)
+    public function chart(iterable $list, bool $loop = false): array
     {
         $audios = $list;
 
@@ -202,18 +204,17 @@ class AudioService extends Service
             foreach ($list as $item) {
                 $audio = Audio::find($item->audio_id);
 
-                array_push($audios, $audio);
+                if ($audio) {
+                    $audios[] = $audio;
+                }
             }
         }
 
-        // Transform data using resource
-        $audios = AudioResource::collection($audios);
-
         $chartArtists = [];
 
-        // Populate Audios and Artists array
+        // Populate Artists array
         foreach ($audios as $audio) {
-            array_push($chartArtists, $audio->username);
+            $chartArtists[] = $audio->user_id;
         }
 
         // Count occurrences of artists
@@ -222,32 +223,35 @@ class AudioService extends Service
         // Sort artists based on most occurences
         arsort($chartArtists);
 
-        // Get usernames only
-        $chartArtists = array_keys($chartArtists);
-
         $artists = [];
 
         // Get Artists
-        foreach ($chartArtists as $artist) {
-            $getArtist = User::where("username", $artist)->first();
-
-            $getArtist = new UserResource($getArtist);
-
-            array_push($artists, $getArtist);
+        foreach (array_keys($chartArtists) as $artistId) {
+            $artists[] = new UserResource(User::find($artistId));
         }
 
-        return ["data" => [
-            "artists" => $artists,
-            "audios" => $audios,
+        return ['data' => [
+            'artists' => $artists,
+            'audios' => AudioResource::collection($audios),
         ]];
     }
 
     /*
      * Artist's Audios */
-    public function artistAudios($username)
+    public function artistAudios(string $username): AnonymousResourceCollection
     {
-        $getArtistAudios = Audio::where("username", $username)->get();
+        $userId = User::where('username', $username)->value('id');
+
+        $getArtistAudios = Audio::where('user_id', $userId)->get();
 
         return AudioResource::collection($getArtistAudios);
+    }
+
+    /**
+     * Resolve an API username to a user id.
+     */
+    protected function userIdFor(?string $username): ?string
+    {
+        return $username ? User::where('username', $username)->value('id') : null;
     }
 }

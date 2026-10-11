@@ -1,33 +1,47 @@
 {
-    "name": "laravel/laravel",
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "laravel/react-starter-kit",
     "type": "project",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "description": "The skeleton application for the Laravel framework.",
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
-        "php": "^8.0.2",
-        "beyondcode/laravel-websockets": "^1.14",
-        "doctrine/dbal": "^3.5",
-        "fabianmuema/kopokopo": "dev-main",
-        "guzzlehttp/guzzle": "^7.2",
-        "laravel/framework": "^9.19",
-        "laravel/sanctum": "^3.0",
-        "laravel/socialite": "5.3.0",
-        "laravel/tinker": "^2.7",
-        "laravel/ui": "^4.0.0",
-        "pbmedia/laravel-ffmpeg": "^8.2",
-        "symfony/http-client": "^6.0",
-        "symfony/mailgun-mailer": "^6.0"
+        "php": "^8.3",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "cknow/laravel-money": "^8.5",
+        "ezyang/htmlpurifier": "^4.19",
+        "fakerphp/faker": "^1.24",
+        "inertiajs/inertia-laravel": "^3.0",
+        "intervention/image": "^4.3",
+        "kopokopo/k2-connect-php": "^2.0",
+        "laragear/two-factor": "^4.0",
+        "laravel-notification-channels/webpush": "^11.0",
+        "laravel/ai": "^0.7.2",
+        "laravel/fortify": "^1.37",
+        "laravel/framework": "^13.0",
+        "laravel/horizon": "^5.48",
+        "laravel/reverb": "^1.0",
+        "laravel/sanctum": "^4.0",
+        "laravel/socialite": "^5.26",
+        "laravel/telescope": "^5.20",
+        "laravel/tinker": "^3.0",
+        "laravel/wayfinder": "^0.1.14",
+        "pbmedia/laravel-ffmpeg": "^8.9",
+        "spatie/laravel-permission": "^7.4",
+        "symfony/http-client": "^8.0",
+        "symfony/mailgun-mailer": "^8.0"
     },
     "require-dev": {
-        "fakerphp/faker": "^1.9.1",
-        "laravel/breeze": "^1.14",
-        "laravel/pint": "^1.0",
-        "laravel/sail": "^1.0.1",
-        "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^6.1",
-        "phpunit/phpunit": "^9.5.10",
-        "spatie/laravel-ignition": "^1.0"
+        "laravel/boost": "^2.2",
+        "laravel/pail": "^1.2.5",
+        "laravel/pint": "^1.27",
+        "laravel/sail": "^1.53",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.9",
+        "phpunit/phpunit": "^12.5.12"
     },
     "autoload": {
         "psr-4": {
@@ -42,18 +56,54 @@
         }
     },
     "scripts": {
+        "setup": [
+            "composer install",
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
+            "@php artisan key:generate",
+            "@php artisan migrate --force",
+            "npm install",
+            "npm run build"
+        ],
+        "dev": [
+            "Composer\\Config::disableProcessTimeout",
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74,#86efac\" \"php artisan horizon:listen\" \"php artisan schedule:work\" \"php artisan pail --timeout=0\" \"npm run dev\" \"php artisan reverb:start\" --names=horizon,schedule,logs,vite,reverb --kill-others"
+        ],
+        "lint": [
+            "pint --parallel"
+        ],
+        "lint:check": [
+            "pint --parallel --test"
+        ],
+        "ci:check": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run lint:check",
+            "npm run format:check",
+            "npm run types:check",
+            "@test"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
+            "@lint:check",
+            "@php artisan test"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
-            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
+            "@php artisan boost:update --ansi"
         ],
         "post-root-package-install": [
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
         ],
         "post-create-project-cmd": [
-            "@php artisan key:generate --ansi"
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
+        ],
+        "pre-package-uninstall": [
+            "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
     "extra": {
@@ -66,9 +116,9 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
-            "pestphp/pest-plugin": true
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "minimum-stability": "stable"
 }
