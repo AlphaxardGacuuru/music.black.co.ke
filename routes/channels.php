@@ -17,7 +17,7 @@ Broadcast::channel('chat', function ($user) {
     ];
 });
 
-Broadcast::channel('post.created', fn() => true);
+Broadcast::channel('post-created', fn() => true);
 Broadcast::channel('post.commented', fn() => true);
 Broadcast::channel('kopokopo-created', fn() => true);
 Broadcast::channel('video-bought', fn() => true);

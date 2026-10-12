@@ -1,5 +1,5 @@
 import { Link } from "@/components/ui/link"
-import { Download } from "lucide-react"
+import { Download, House } from "lucide-react"
 import { AdminNav } from "@/components/admin/AdminNav"
 import AppLogo from "@/components/app-logo"
 import { NavFooter } from "@/components/nav-footer"
@@ -26,7 +26,13 @@ import type { NavItem } from "@/types"
 
 // The music pages (feed, charts, library, ...) are added here as they're
 // rebuilt on the new frontend.
-export const mainNavItems: NavItem[] = []
+export const mainNavItems: NavItem[] = [
+	{
+		title: "Home",
+		href: "/home",
+		icon: House,
+	},
+]
 
 // Sibling routes can share a path prefix (e.g. /video and /video/charts),
 // so a plain prefix match would leave both nav items active. Picking the

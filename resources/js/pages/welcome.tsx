@@ -80,7 +80,7 @@ export default function Welcome() {
 	const { auth } = useApp()
 
 	const primaryCta = auth
-		? { href: "/settings/profile", label: "Your account" }
+		? { href: "/home", label: "Go to your feed" }
 		: { href: "/login", label: "Join Black Music" }
 
 	return (
@@ -110,9 +110,9 @@ export default function Welcome() {
 					</Link>
 					{auth ? (
 						<Link
-							href="/settings/profile"
+							href="/home"
 							variant="solid">
-							Your account
+							Home
 						</Link>
 					) : (
 						<Link
@@ -253,7 +253,7 @@ export default function Welcome() {
 							</h2>
 						</div>
 						<Link
-							href={auth ? "/settings/profile" : "/login"}
+							href={auth ? "/home" : "/login"}
 							variant="solid"
 							size="lg"
 							className="gap-2 self-start rounded-full px-6 sm:self-auto">

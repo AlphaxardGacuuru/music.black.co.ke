@@ -19,7 +19,7 @@ class AdminUserControllerTest extends TestCase
     {
         $installed = User::factory()->create([
             'name' => 'Ivy Installed',
-            'settings' => ['pwaInstalledAt' => '2026-01-01T00:00:00Z', 'competitionWonNotification' => false],
+            'settings' => ['pwaInstalledAt' => '2026-01-01T00:00:00Z', 'referralSignupNotification' => false],
         ]);
         $installed->updatePushSubscription('https://push.example.com/a', 'key', 'token');
 
@@ -32,7 +32,7 @@ class AdminUserControllerTest extends TestCase
         $byId = collect($response->json('data'))->keyBy('id');
 
         $this->assertNotEmpty($byId[$installed->id]['settings']['pwaInstalledAt']);
-        $this->assertFalse($byId[$installed->id]['settings']['competitionWonNotification']);
+        $this->assertFalse($byId[$installed->id]['settings']['referralSignupNotification']);
         $this->assertSame(1, $byId[$installed->id]['pushSubscriptionsCount']);
 
         $this->assertEmpty($byId[$notInstalled->id]['settings'] ?? []);

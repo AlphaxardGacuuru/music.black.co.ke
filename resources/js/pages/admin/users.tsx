@@ -47,18 +47,9 @@ function nameParts(name: string): { firstName: string; lastName?: string } {
 // categories are opt-out (default on when the settings key is absent),
 // see EmailNotificationCategory/User::wantsEmail().
 const NOTIFICATION_LABELS: {
-	key:
-		| "competitionStartedNotification"
-		| "competitionWonNotification"
-		| "referralSignupNotification"
-		| "photoLikedNotification"
+	key: "referralSignupNotification"
 	label: string
-}[] = [
-	{ key: "competitionStartedNotification", label: "Challenge announcements" },
-	{ key: "competitionWonNotification", label: "Challenge results" },
-	{ key: "referralSignupNotification", label: "Referral signups" },
-	{ key: "photoLikedNotification", label: "Photo likes" },
-]
+}[] = [{ key: "referralSignupNotification", label: "Referral signups" }]
 
 function NotificationsCell({ user }: { user: AdminUser }) {
 	const enabled = [

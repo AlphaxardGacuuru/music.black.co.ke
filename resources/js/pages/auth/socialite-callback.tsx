@@ -3,21 +3,21 @@ import { useNavigate } from "@tanstack/react-router"
 import toast from "@/lib/toast"
 import { useApp } from "@/contexts/AppContext"
 import { invalidateAuth } from "@/middleware/auth"
-import { CheckCircle2, Circle, Loader2 } from "lucide-react"
+import { CheckCircle2, Circle } from "lucide-react"
 
 type StepStatus = "pending" | "active" | "done"
 
 const STEPS = [
 	"Verifying your identity",
 	"Setting up your account",
-	"Redirecting to dashboard",
+	"Opening Black Music",
 ]
 
 const PROVIDER_ICONS: Record<string, React.ReactNode> = {
 	google: (
 		<svg
 			aria-hidden="true"
-			className="size-6"
+			className="size-7"
 			viewBox="0 0 24 24">
 			<path
 				fill="#4285F4"
@@ -82,7 +82,7 @@ export default function SocialiteCallback() {
 				window.localStorage.removeItem("referralCode")
 				invalidateAuth()
 				toast.success(message ?? "Logged in")
-				navigate({ to: "/" })
+				navigate({ to: "/home" })
 				return
 			}
 
@@ -97,58 +97,80 @@ export default function SocialiteCallback() {
 		}
 	}, [])
 
-	return (
-		<div className="flex h-[50vh] items-center justify-center bg-background rounded-2xl">
-			<div className="flex w-full max-w-xs flex-col items-center justify-center gap-5 rounded-2xl bg-card p-8 shadow-sm">
-				<div className="flex flex-col items-center gap-2">
-					<div className="flex size-11 items-center justify-center rounded-full border bg-background shadow-sm">
-						{PROVIDER_ICONS[provider] ?? (
-							<div className="size-5 rounded-full bg-muted" />
-						)}
-					</div>
-					<div className="text-center">
-						<h1 className="text-base font-semibold">
-							Signing in with {capitalize(provider)}
-						</h1>
-						<p className="text-xs text-muted-foreground">
-							This will only take a moment
-						</p>
-					</div>
-				</div>
+	const doneCount = stepStatuses.filter((status) => status === "done").length
 
-				<div className="w-full space-y-2">
-					{STEPS.map((label, i) => {
-						const status = stepStatuses[i]
-						return (
-							<div
-								key={label}
-								className="flex items-center gap-2.5">
-								<span className="shrink-0">
-									{status === "done" && (
-										<CheckCircle2 className="size-4 text-green-500" />
-									)}
-									{status === "active" && (
-										<Loader2 className="size-4 animate-spin text-primary" />
-									)}
-									{status === "pending" && (
-										<Circle className="size-4 text-muted-foreground/40" />
-									)}
-								</span>
-								<span
-									className={
-										status === "pending"
-											? "text-xs text-muted-foreground/50"
-											: status === "active"
-												? "text-xs font-medium text-foreground"
-												: "text-xs text-muted-foreground"
-									}>
-									{label}
-								</span>
-							</div>
-						)
-					})}
-				</div>
+	return (
+		<div className="flex flex-col gap-6">
+			<div className="flex flex-col items-center gap-3">
+				<span className="flex size-14 items-center justify-center rounded-full border bg-background shadow-md">
+					{PROVIDER_ICONS[provider] ?? (
+						<span className="size-6 rounded-full bg-muted" />
+					)}
+				</span>
+				<p className="text-sm font-medium text-muted-foreground">
+					Signing in with {capitalize(provider)}
+				</p>
 			</div>
+
+			<div className="h-1.5 overflow-hidden rounded-full bg-primary/15">
+				<div
+					className="h-full rounded-full bg-primary transition-[width] duration-500 ease-out"
+					style={{
+						width: `${Math.max(doneCount / STEPS.length, 0.08) * 100}%`,
+					}}
+				/>
+			</div>
+
+			<ol className="space-y-3">
+				{STEPS.map((label, i) => {
+					const status = stepStatuses[i]
+
+					return (
+						<li
+							key={label}
+							className="flex items-center gap-3">
+							<span className="flex size-5 shrink-0 items-center justify-center">
+								{status === "done" && (
+									<CheckCircle2 className="size-5 text-primary" />
+								)}
+								{status === "active" && <EqualizerIndicator />}
+								{status === "pending" && (
+									<Circle className="size-5 text-muted-foreground/40" />
+								)}
+							</span>
+							<span
+								className={
+									status === "pending"
+										? "text-sm text-muted-foreground/50"
+										: status === "active"
+											? "text-sm font-medium text-foreground"
+											: "text-sm text-muted-foreground"
+								}>
+								{label}
+							</span>
+						</li>
+					)
+				})}
+			</ol>
 		</div>
 	)
+}
+
+// A tiny three-bar equalizer in place of a spinner, reusing the backdrop's
+// bounce keyframes so the in-progress step feels like the rest of the app.
+function EqualizerIndicator() {
+	return (
+		<span
+			aria-hidden="true"
+			className="flex h-4 items-end gap-0.5">
+			<span className="h-full w-1 origin-bottom animate-[eq-bounce-a_0.9s_ease-in-out_infinite] rounded-full bg-primary motion-reduce:animate-none" />
+			<span className="h-full w-1 origin-bottom animate-[eq-bounce-b_0.7s_ease-in-out_infinite] rounded-full bg-primary motion-reduce:animate-none" />
+			<span className="h-full w-1 origin-bottom animate-[eq-bounce-a_1.1s_ease-in-out_infinite_-0.4s] rounded-full bg-primary motion-reduce:animate-none" />
+		</span>
+	)
+}
+
+SocialiteCallback.layout = {
+	title: "Welcome to Black Music",
+	description: "Hang tight while we sign you in",
 }

@@ -113,10 +113,9 @@ class AdminReferralControllerTest extends TestCase
             Referral::create(['referrer_id' => $referrer->id, 'referred_id' => User::factory()->create()->id]),
         ]);
 
-        // Same partial-mock boundary as PhotoCompetitionWinnersPayoutTest:
-        // the real Kopokopo/M-Pesa call happens inside initiateTransfer()
-        // via a fresh K2 SDK client built inside the service, so only that
-        // call is mocked, while payReferrer()'s own logic (guards, the
+        // Partial-mock boundary: the real Kopokopo/M-Pesa call happens
+        // inside initiateTransfer() via a fresh K2 SDK client built inside
+        // the service, so only that call is mocked, while payReferrer()'s own logic (guards, the
         // kopokopo_reference/amount_paid update) runs for real.
         $this->partialMock(KopokopoTransferService::class, function ($mock) {
             $mock->shouldReceive('initiateTransfer')
