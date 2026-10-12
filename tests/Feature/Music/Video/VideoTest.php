@@ -138,6 +138,8 @@ class VideoTest extends TestCase
         Storage::disk('public')->put('videos/clip.mp4', 'video-bytes');
 
         $video = Video::factory()->create(['video' => 'videos/clip.mp4', 'name' => 'Clip']);
+        // Downloads are for the artist and buyers (see PrivacyTest).
+        Sanctum::actingAs($video->user);
 
         $this->get("/api/videos/download/{$video->id}")
             ->assertOk()
@@ -150,6 +152,8 @@ class VideoTest extends TestCase
 
     public function test_download_of_missing_video_is_not_found(): void
     {
+        Sanctum::actingAs(User::factory()->create());
+
         $this->get('/api/videos/download/does-not-exist')->assertNotFound();
     }
 

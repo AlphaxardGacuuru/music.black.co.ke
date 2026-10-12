@@ -85,3 +85,49 @@ export type Paginated<T> = {
 	data: T[]
 	meta: { current_page: number; last_page: number; total: number }
 }
+
+/** A comment on a video, audio, karaoke or post (the *CommentResource shapes). */
+export type MusicComment = {
+	id: string
+	text: string
+	name: string
+	username: string
+	avatar: string
+	decos?: number
+	hasLiked: boolean
+	likes: number
+	/** Video and audio comments send createdAt, karaoke and post ones created_at. */
+	createdAt?: string
+	created_at?: string
+}
+
+/** What a comment hangs off, matching the API's "<kind>-comments" endpoints. */
+export type CommentKind = "video" | "audio" | "karaoke" | "post"
+
+/** AudioResource. */
+export type Audio = {
+	id: string
+	/** File path, use mediaUrl() for the src. */
+	audio: string
+	name: string
+	artistName: string
+	username: string
+	avatar: string
+	artistDecos: number
+	ft: string | null
+	audioAlbumId: string
+	album: string | null
+	genre: string
+	thumbnail: string
+	description: string | null
+	released: string
+	hasLiked: boolean
+	likes: number
+	comments: number
+	inCart: boolean
+	hasBoughtAudio: boolean
+	hasBought1: boolean
+	hasFollowed: boolean
+	downloads: number
+	createdAt: string
+}

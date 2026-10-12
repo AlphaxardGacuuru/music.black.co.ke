@@ -121,7 +121,11 @@ class VideoService extends Service
     {
         $video = Video::findOrFail($id);
 
+        Gate::authorize('download', $video);
+
         $path = $video->getRawOriginal('video');
+
+        abort_unless(Storage::disk('public')->exists($path), 404);
 
         // Get file extension
         $ext = substr($path, -3);

@@ -32,6 +32,11 @@ export default defineConfig(({ mode }) => {
 				filename: "sw.ts",
 				registerType: "autoUpdate",
 				manifest: false,
+				// Every page is bundled up front (see app.tsx), so the app chunk
+				// is over Workbox's 2 MiB default; keep it precached for offline.
+				injectManifest: {
+					maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+				},
 				devOptions: {
 					enabled: false,
 				},

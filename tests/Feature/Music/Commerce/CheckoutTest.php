@@ -114,7 +114,7 @@ class CheckoutTest extends TestCase
                 && count($event->audios) === 2
                 && $event->structuredAudios->count() === 2
                 && $event->decoArtists === []
-                && $event->broadcastOn()->name === 'private-audio-bought';
+                && $event->broadcastOn()->name === 'private-audio-bought.' . $buyer->id;
         });
         Event::assertNotDispatched(VideoBoughtEvent::class);
     }

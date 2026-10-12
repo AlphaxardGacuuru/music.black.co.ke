@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BoughtAudioController;
 use App\Http\Controllers\BoughtVideoController;
 use App\Http\Controllers\CartAudioController;
+use App\Http\Controllers\CartCheckoutController;
 use App\Http\Controllers\CartVideoController;
 use App\Http\Controllers\DecoController;
 use App\Http\Controllers\MPESATransactionController;
@@ -40,6 +41,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Kopokopo STK Push
     Route::post('stk-push', [MPESATransactionController::class, 'stkPush']);
+
+    // Buy the cart with the wallet balance the user already has.
+    Route::post('cart-checkout', [CartCheckoutController::class, 'store']);
 
     // Artists' earnings from song sales, paid out to M-Pesa.
     Route::apiResource('song-payouts', SongPayoutController::class)->only(['index', 'store']);

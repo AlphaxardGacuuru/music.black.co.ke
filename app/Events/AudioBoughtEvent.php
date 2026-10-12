@@ -34,6 +34,7 @@ class AudioBoughtEvent implements ShouldBroadcast
      */
     public function broadcastOn(): PrivateChannel
     {
-        return new PrivateChannel('audio-bought');
+        // Only the buyer listens: the payload carries their details.
+        return new PrivateChannel('audio-bought.' . $this->user->id);
     }
 }

@@ -3,6 +3,7 @@ import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useApp } from '@/contexts/AppContext';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
@@ -34,8 +35,22 @@ const sidebarNavItems: NavItem[] = [
     },
 ];
 
+// Song payouts are only for musicians.
+const musicianNavItems: NavItem[] = [
+    {
+        title: 'Payouts',
+        href: '/settings/payouts',
+        icon: null,
+    },
+];
+
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { auth } = useApp();
+    const navItems =
+        auth?.accountType === 'musician'
+            ? [...sidebarNavItems, ...musicianNavItems]
+            : sidebarNavItems;
 
     return (
         <div className="px-4 py-6">
@@ -50,7 +65,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                         className="flex flex-col space-y-1 space-x-0"
                         aria-label="Settings"
                     >
-                        {sidebarNavItems.map((item, index) => (
+                        {navItems.map((item, index) => (
                             <Button
                                 key={`${toUrl(item.href)}-${index}`}
                                 size="sm"

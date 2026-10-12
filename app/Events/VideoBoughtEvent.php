@@ -34,6 +34,7 @@ class VideoBoughtEvent implements ShouldBroadcast
      */
     public function broadcastOn(): PrivateChannel
     {
-        return new PrivateChannel('video-bought');
+        // Only the buyer listens: the payload carries their details.
+        return new PrivateChannel('video-bought.' . $this->user->id);
     }
 }

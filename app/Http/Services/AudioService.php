@@ -124,6 +124,8 @@ class AudioService extends Service
     {
         $audio = Audio::findOrFail($id);
 
+        Gate::authorize('download', $audio);
+
         $path = $audio->getRawOriginal('audio');
 
         abort_unless(Storage::disk('public')->exists($path), 404);

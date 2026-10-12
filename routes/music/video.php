@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 // Download. Registered before the videos resource so "download" is not
 // swallowed by videos/{video}. The OLD frontend calls videos/download/{id};
 // videos/download?id= is also accepted.
-Route::get('videos/download/{id?}', [VideoController::class, 'download']);
+Route::get('videos/download/{id?}', [VideoController::class, 'download'])->middleware('auth:sanctum');
 
 // Public reads
 Route::apiResource('videos', VideoController::class)->only(['index', 'show']);

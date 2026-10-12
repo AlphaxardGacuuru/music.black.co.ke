@@ -1,4 +1,5 @@
 import { AppBottomNav } from "@/components/app-bottom-nav"
+import { AudioPlayerBar } from "@/components/audio/audio-player-bar"
 import { AppContent } from "@/components/app-content"
 import { AppShell } from "@/components/app-shell"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -31,6 +32,8 @@ export default function AppSidebarLayout({
 					)}>
 					{children}
 				</div>
+				{/* Sticky, so it takes up room in the flow and never covers content. */}
+				{!fullScreen && <AudioPlayerBar />}
 			</AppContent>
 			<AppSidebar />
 			<AppBottomNav />

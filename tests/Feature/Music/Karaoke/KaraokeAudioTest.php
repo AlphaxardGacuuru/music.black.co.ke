@@ -20,7 +20,9 @@ class KaraokeAudioTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1)
             ->assertJsonPath('0.id', $karaokeAudio->id)
-            ->assertJsonPath('0.audio_id', $karaokeAudio->audio_id);
+            ->assertJsonPath('0.audio_id', $karaokeAudio->audio_id)
+            ->assertJsonPath('0.audio.name', 'Song Name')
+            ->assertJsonPath('0.audio.thumbnail', '/storage/audio-thumbnails/song.png');
     }
 
     public function test_guest_can_view_one_karaoke_audio(): void

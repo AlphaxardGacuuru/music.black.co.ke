@@ -16,56 +16,55 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-        $userRoles = [
-            "userId" => $this->id,
-            "roles" => $this->roles,
-        ];
+        $viewer = auth('sanctum')->user();
+        $viewerId = $viewer?->id;
 
-        $userRoleNames = [
-            "userId" => $this->id,
-            "roleNames" => $this->getRoleNames(),
-        ];
-
-        $viewerId = auth('sanctum')->id();
+        // Profiles, charts and comments are public. Contact details, the
+        // wallet and account settings are only for the user and the admin.
+        $isPrivateViewer = $viewer !== null
+            && ((string) $viewer->id === (string) $this->id
+                || $viewer->email === config('admin.email'));
 
         return [
             "id" => $this->id,
             "name" => $this->name,
             "username" => $this->username,
-            "email" => $this->email,
-            "phone" => $this->phone,
             "gender" => $this->gender,
             "avatar" => $this->avatar,
             "backdrop" => $this->backdrop,
-            "dob" => $this->dob,
             "bio" => $this->bio,
             "location" => $this->location,
-            "withdrawal" => $this->withdrawal,
             "posts" => $this->posts()->count(),
             "following" => $this->follows()->count() - 1,
             "fans" => $this->fans(),
             "hasFollowed" => $this->hasFollowed($viewerId),
             "hasBought1" => $this->hasBought1($viewerId),
             "decos" => $this->decos,
-            "balance" => $this->balance(),
             "videos" => $this->videos()->count(),
-            "boughtVideos" => $this->boughtVideos()->count(),
             "audios" => $this->audios()->count(),
-            "boughtAudios" => $this->boughtAudios()->count(),
             "verified" => (bool) $this->verified,
             "accountType" => $this->account_type,
-            "emailVerifiedAt" => $this->email_verified_at,
-            "settings" => $this->settings,
-            "roles" => [$userRoles],
-            "roleNames" => [$userRoleNames],
-            "permissions" => $this->getAllPermissions()->pluck('name')->unique()->values(),
-            "twoFactorEnabled" => $this->hasTwoFactorEnabled(),
-            "referralsCount" => $this->referrals_made_count ?? $this->referralsMade()->count(),
-            "referredBy" => $this->whenLoaded('referral', fn() => $this->referral?->referrer
-                ? ["id" => $this->referral->referrer->id, "name" => $this->referral->referrer->name]
-                : null),
-            "pushSubscriptionsCount" => $this->push_subscriptions_count ?? $this->pushSubscriptions()->count(),
             "createdAt" => $this->created_at,
+            $this->mergeWhen($isPrivateViewer, fn() => [
+                "email" => $this->email,
+                "phone" => $this->phone,
+                "dob" => $this->dob,
+                "withdrawal" => $this->withdrawal,
+                "balance" => $this->balance(),
+                "boughtVideos" => $this->boughtVideos()->count(),
+                "boughtAudios" => $this->boughtAudios()->count(),
+                "emailVerifiedAt" => $this->email_verified_at,
+                "settings" => $this->settings,
+                "roles" => [["userId" => $this->id, "roles" => $this->roles]],
+                "roleNames" => [["userId" => $this->id, "roleNames" => $this->getRoleNames()]],
+                "permissions" => $this->getAllPermissions()->pluck('name')->unique()->values(),
+                "twoFactorEnabled" => $this->hasTwoFactorEnabled(),
+                "referralsCount" => $this->referrals_made_count ?? $this->referralsMade()->count(),
+                "referredBy" => $this->whenLoaded('referral', fn() => $this->referral?->referrer
+                    ? ["id" => $this->referral->referrer->id, "name" => $this->referral->referrer->name]
+                    : null),
+                "pushSubscriptionsCount" => $this->push_subscriptions_count ?? $this->pushSubscriptions()->count(),
+            ]),
         ];
     }
 }

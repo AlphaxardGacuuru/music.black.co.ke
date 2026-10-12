@@ -10,11 +10,14 @@ use Illuminate\Http\Request;
 class KaraokeAudioService extends Service
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource, with each song's name and thumbnail
+     * (the raw rows only carry audio_id).
      */
     public function index(): Collection
     {
-        return KaraokeAudio::all();
+        return KaraokeAudio::with('audio:id,name,thumbnail')
+            ->orderBy('created_at', 'DESC')
+            ->get();
     }
 
     /**

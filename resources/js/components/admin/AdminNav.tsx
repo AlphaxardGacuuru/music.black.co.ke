@@ -1,6 +1,7 @@
 import {
 	ChevronRight,
 	LayoutDashboard,
+	Music,
 	Send,
 	ShieldCheck,
 	UserPlus,
@@ -26,6 +27,7 @@ import { useCurrentUrl } from "@/hooks/use-current-url"
 const ADMIN_ITEMS = [
 	{ title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
 	{ title: "Users", href: "/admin/users", icon: Users },
+	{ title: "Music", href: "/admin/music", icon: Music },
 	{ title: "Payouts", href: "/admin/kopokopo-transfers", icon: Send },
 	{ title: "Referrals", href: "/admin/referrals", icon: UserPlus },
 ]

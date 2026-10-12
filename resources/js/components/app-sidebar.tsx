@@ -1,5 +1,17 @@
 import { Link } from "@/components/ui/link"
-import { Download, House } from "lucide-react"
+import {
+	Clapperboard,
+	Download,
+	Headphones,
+	House,
+	Library,
+	MessagesSquare,
+	MicVocal,
+	Search,
+	ShoppingCart,
+	TrendingUp,
+	Upload,
+} from "lucide-react"
 import { AdminNav } from "@/components/admin/AdminNav"
 import AppLogo from "@/components/app-logo"
 import { NavFooter } from "@/components/nav-footer"
@@ -15,6 +27,7 @@ import {
 	SidebarContent,
 	SidebarFooter,
 	SidebarGroup,
+	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
@@ -24,14 +37,26 @@ import {
 const HOME_URL = "/"
 import type { NavItem } from "@/types"
 
-// The music pages (feed, charts, library, ...) are added here as they're
-// rebuilt on the new frontend.
+// The everyday destinations, shown in the sidebar and as the mobile bottom
+// bar (the same five as music.black's bottom nav).
 export const mainNavItems: NavItem[] = [
-	{
-		title: "Home",
-		href: "/home",
-		icon: House,
-	},
+	{ title: "Home", href: "/home", icon: House },
+	{ title: "Karaoke", href: "/karaoke/charts", icon: MicVocal },
+	{ title: "Search", href: "/search", icon: Search },
+	{ title: "Library", href: "/library", icon: Library },
+	{ title: "Cart", href: "/cart", icon: ShoppingCart },
+]
+
+const discoverNavItems: NavItem[] = [
+	{ title: "Video charts", href: "/video/charts", icon: TrendingUp },
+	{ title: "Audio charts", href: "/audio/charts", icon: Headphones },
+	{ title: "Chat", href: "/chat", icon: MessagesSquare },
+]
+
+// A musician's own uploads and albums.
+const studioNavItems: NavItem[] = [
+	{ title: "My videos", href: "/video", icon: Clapperboard },
+	{ title: "My audios", href: "/audio", icon: Upload },
 ]
 
 // Sibling routes can share a path prefix (e.g. /video and /video/charts),
@@ -71,7 +96,24 @@ export function AppSidebar() {
 	const { auth } = useApp()
 	const { currentUrl } = useCurrentUrl()
 	const isAdmin = auth?.email === ADMIN_EMAIL
-	const activeMainNavHref = findActiveNavHref(currentUrl, mainNavItems)
+	const isMusician = auth?.accountType === "musician"
+	const allNavItems = [...mainNavItems, ...discoverNavItems, ...studioNavItems]
+	const activeNavHref = findActiveNavHref(currentUrl, allNavItems)
+
+	const renderItems = (items: NavItem[]) =>
+		items.map((item) => (
+			<SidebarMenuItem key={item.title}>
+				<SidebarMenuButton
+					asChild
+					isActive={toUrl(item.href) === activeNavHref}
+					tooltip={item.title}>
+					<Link href={toUrl(item.href)}>
+						{item.icon && <item.icon />}
+						<span>{item.title}</span>
+					</Link>
+				</SidebarMenuButton>
+			</SidebarMenuItem>
+		))
 
 	return (
 		<Sidebar
@@ -102,23 +144,20 @@ export function AppSidebar() {
 			</SidebarHeader>
 
 			<SidebarContent>
+				{/* On mobile these live in the bottom bar instead. */}
 				<SidebarGroup className="hidden px-2 py-0 md:block">
-					<SidebarMenu>
-						{mainNavItems.map((item) => (
-							<SidebarMenuItem key={item.title}>
-								<SidebarMenuButton
-									asChild
-									isActive={toUrl(item.href) === activeMainNavHref}
-									tooltip={item.title}>
-									<Link href={toUrl(item.href)}>
-										{item.icon && <item.icon />}
-										<span>{item.title}</span>
-									</Link>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						))}
-					</SidebarMenu>
+					<SidebarMenu>{renderItems(mainNavItems)}</SidebarMenu>
 				</SidebarGroup>
+				<SidebarGroup className="px-2 py-0">
+					<SidebarGroupLabel>Discover</SidebarGroupLabel>
+					<SidebarMenu>{renderItems(discoverNavItems)}</SidebarMenu>
+				</SidebarGroup>
+				{isMusician && (
+					<SidebarGroup className="px-2 py-0">
+						<SidebarGroupLabel>Studio</SidebarGroupLabel>
+						<SidebarMenu>{renderItems(studioNavItems)}</SidebarMenu>
+					</SidebarGroup>
+				)}
 				{isAdmin && <AdminNav />}
 			</SidebarContent>
 

@@ -1,6 +1,6 @@
-// A single photo's full-screen view needs the fixed mobile bottom nav and
+// Full-screen views (the story viewer) need the fixed mobile bottom nav and
 // the sidebar header out of the way, since neither leaves enough room for
-// an edge-to-edge image.
+// edge-to-edge media.
 export function isFullScreenRoute(): boolean {
-	return /^\/photos\/[^/]+\/show$/.test(window.location.pathname)
+	return /^\/story\/show\/[^/]+$/.test(window.location.pathname)
 }

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 
 // Registered before the "audios" resource so "audios/download" is not
 // swallowed by "audios/{audio}". The frontend calls "audios/download/{id}".
-Route::get('audios/download/{id?}', [AudioController::class, 'download']);
+Route::get('audios/download/{id?}', [AudioController::class, 'download'])->middleware('auth:sanctum');
 
 // Audio Charts
 Route::get('audio-charts/newly-released', [AudioController::class, 'newlyReleased']);

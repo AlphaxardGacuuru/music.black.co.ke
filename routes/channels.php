@@ -20,5 +20,6 @@ Broadcast::channel('chat', function ($user) {
 Broadcast::channel('post-created', fn() => true);
 Broadcast::channel('post-commented', fn() => true);
 Broadcast::channel('kopokopo-created', fn() => true);
-Broadcast::channel('video-bought', fn() => true);
-Broadcast::channel('audio-bought', fn() => true);
+// Purchase receipts, for the buyer only.
+Broadcast::channel('video-bought.{userId}', fn($user, $userId) => (string) $user->id === (string) $userId);
+Broadcast::channel('audio-bought.{userId}', fn($user, $userId) => (string) $user->id === (string) $userId);

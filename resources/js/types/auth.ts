@@ -8,8 +8,10 @@ export type UserSettings = {
 }
 
 export type User = {
-	id: number
+	id: string
 	name: string
+	/** Public handle, e.g. "@blackmusic". */
+	username: string
 	email: string
 	phone: string | null
 	avatar?: string
@@ -18,6 +20,26 @@ export type User = {
 	twoFactorEnabled?: boolean
 	referralsCount?: number
 	settings?: UserSettings | null
+	// Music profile (UserResource).
+	accountType?: "normal" | "musician"
+	backdrop?: string
+	bio?: string | null
+	dob?: string | null
+	location?: string | null
+	/** The balance a musician must reach before withdrawing, in KES. */
+	withdrawal?: string
+	posts?: number
+	following?: number
+	fans?: number
+	hasFollowed?: boolean
+	hasBought1?: boolean
+	decos?: number
+	/** Wallet balance for buying songs, in KES. */
+	balance?: number
+	videos?: number
+	boughtVideos?: number
+	audios?: number
+	boughtAudios?: number
 	created_at: string
 	updated_at: string
 	[key: string]: unknown

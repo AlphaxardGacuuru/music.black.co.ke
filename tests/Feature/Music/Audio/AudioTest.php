@@ -144,6 +144,8 @@ class AudioTest extends TestCase
         Storage::disk('public')->put('audios/song.mp3', 'mp3-bytes');
 
         $audio = Audio::factory()->create(['audio' => 'audios/song.mp3', 'name' => 'My Song']);
+        // Downloads are for the artist and buyers (see PrivacyTest).
+        Sanctum::actingAs($audio->user);
 
         $this->get("/api/audios/download/{$audio->id}")
             ->assertOk()
@@ -159,6 +161,7 @@ class AudioTest extends TestCase
         Storage::fake('public');
 
         $audio = Audio::factory()->create();
+        Sanctum::actingAs($audio->user);
 
         $this->get("/api/audios/download/{$audio->id}")->assertNotFound();
         $this->get('/api/audios/download')->assertNotFound();

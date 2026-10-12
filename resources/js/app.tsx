@@ -29,6 +29,7 @@ import AuthLayout from "@/layouts/auth-layout"
 import SettingsLayout from "@/layouts/settings/layout"
 import AdminLayout from "@/layouts/admin/layout"
 import { AppProvider } from "@/contexts/AppContext"
+import { AudioPlayerProvider } from "@/contexts/AudioPlayerContext"
 import { discoverPageRoutes } from "@/router/page-routes"
 import NotFound from "@/components/not-found"
 
@@ -56,9 +57,19 @@ const GUEST_ONLY = new Set([
 
 const PUBLIC = new Set(["welcome", "auth/socialite-callback"])
 
+// A page module can also mark itself public (viewable by guests, like the
+// charts, songs and profiles) with `export const isPublic = true`.
 const pages = import.meta.glob<{
 	default: ComponentType<Record<string, unknown>>
+	isPublic?: boolean
 }>("./pages/**/*.tsx", { eager: true })
+
+function isPublicPage(componentName: string): boolean {
+	return (
+		PUBLIC.has(componentName) ||
+		pages[`./pages/${componentName}.tsx`]?.isPublic === true
+	)
+}
 
 const discoveredRoutes: RegisteredPageRoute[] = discoverPageRoutes(
 	Object.keys(pages),
@@ -70,9 +81,11 @@ function RootLayout() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<AppProvider>
-				<TooltipProvider delayDuration={0}>
-					<Outlet />
-				</TooltipProvider>
+				<AudioPlayerProvider>
+					<TooltipProvider delayDuration={0}>
+						<Outlet />
+					</TooltipProvider>
+				</AudioPlayerProvider>
 				<Toaster />
 			</AppProvider>
 		</QueryClientProvider>
@@ -133,7 +146,7 @@ const tanstackRoutes = discoveredRoutes.map((discoveredRoute) => {
 		component,
 		beforeLoad: GUEST_ONLY.has(discoveredRoute.componentName)
 			? requireGuest
-			: PUBLIC.has(discoveredRoute.componentName)
+			: isPublicPage(discoveredRoute.componentName)
 				? undefined
 				: async (ctx) => {
 						await requireAuth()

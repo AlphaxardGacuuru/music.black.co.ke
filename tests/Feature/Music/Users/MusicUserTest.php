@@ -41,7 +41,7 @@ class MusicUserTest extends TestCase
             ->assertJsonPath('data.id', $user->id)
             ->assertJsonPath('data.username', '@artist')
             ->assertJsonPath('data.hasFollowed', false)
-            ->assertJsonPath('data.balance', 0);
+            ->assertJsonMissingPath('data.balance');
     }
 
     public function test_artists_lists_musicians_except_the_viewer_and_blackmusic(): void
