@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\VideoUploadedEvent;
 use App\Http\Services\VideoService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -30,13 +31,14 @@ class VideoController extends Controller
         $request->validate([
             'video' => 'required|string',
             'name' => 'required|string',
-            'thumbnail' => 'required',
+            // Without one, ProcessVideoJob uses a frame from the video.
+            'thumbnail' => 'nullable|string',
             'ft' => 'nullable|exists:users,username',
         ]);
 
         [$saved, $message, $video] = $this->service->store($request);
 
-        // VideoUploadedEvent::dispatchIf($saved, $video);
+        VideoUploadedEvent::dispatchIf($saved, $video);
 
         return response([
             'message' => $message,

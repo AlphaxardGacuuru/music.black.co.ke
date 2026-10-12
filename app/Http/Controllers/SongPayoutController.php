@@ -2,51 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SongPayout;
+use App\Http\Services\SongPayoutService;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
-/**
- * Empty in OLD as well. Kept so the OLD URLs still resolve.
- */
 class SongPayoutController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(): void
+    public function __construct(protected SongPayoutService $service)
     {
         //
     }
 
     /**
-     * Store a newly created resource in storage.
+     * The signed-in artist's payouts and withdrawable balance.
      */
-    public function store(Request $request): void
+    public function index(Request $request): Response
     {
-        //
+        return response(['data' => $this->service->index($request->user())], 200);
     }
 
     /**
-     * Display the specified resource.
+     * Withdraw the signed-in artist's balance to M-Pesa. The amount is always
+     * the full balance, worked out on the server.
      */
-    public function show(SongPayout $songPayout): void
+    public function store(Request $request): Response
     {
-        //
-    }
+        [$started, $message, $songPayout] = $this->service->store($request->user());
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, SongPayout $songPayout): void
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(SongPayout $songPayout): void
-    {
-        //
+        return response([
+            'message' => $message,
+            'data' => $songPayout,
+        ], $started ? 200 : 422);
     }
 }

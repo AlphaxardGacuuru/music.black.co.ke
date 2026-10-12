@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Music\Video;
 
+use App\Events\VideoUploadedEvent;
 use App\Models\BoughtVideo;
 use App\Models\User;
 use App\Models\Video;
 use App\Models\VideoAlbum;
 use App\Models\VideoLike;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -62,7 +64,7 @@ class VideoTest extends TestCase
 
         $this->postJson('/api/videos', ['ft' => 'nobody'])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['video', 'name', 'thumbnail', 'ft']);
+            ->assertJsonValidationErrors(['video', 'name', 'ft']);
     }
 
     public function test_user_can_store_a_video(): void
@@ -72,6 +74,8 @@ class VideoTest extends TestCase
         $album = VideoAlbum::factory()->create(['user_id' => $user->id]);
 
         Sanctum::actingAs($user);
+        // Thumbnail generation is covered in ProcessVideoJobTest.
+        Event::fake([VideoUploadedEvent::class]);
 
         $this->postJson('/api/videos', [
             'video' => 'videos/new.mp4',

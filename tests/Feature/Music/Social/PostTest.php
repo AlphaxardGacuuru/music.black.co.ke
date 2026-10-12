@@ -37,14 +37,15 @@ class PostTest extends TestCase
             ->assertJsonPath('data.0.username', '@blackmusic');
     }
 
-    public function test_users_see_posts_of_musicians_blackmusic_follows_and_not_muted(): void
+    public function test_users_see_posts_of_musicians_they_follow_and_not_muted(): void
     {
+        $viewer = User::factory()->create();
         $musician = User::factory()->create();
         $muted = User::factory()->create();
-        Follow::factory()->create(['followed_id' => $musician->id, 'user_id' => $this->blackMusic->id]);
+        Follow::factory()->create(['followed_id' => $musician->id, 'user_id' => $viewer->id]);
         Follow::factory()->create([
             'followed_id' => $muted->id,
-            'user_id' => $this->blackMusic->id,
+            'user_id' => $viewer->id,
             'muted' => ['posts' => true, 'stories' => false],
         ]);
 
@@ -53,7 +54,7 @@ class PostTest extends TestCase
         Post::factory()->create(['user_id' => $this->blackMusic->id]);
         Post::factory()->create();
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs($viewer);
 
         $this->getJson('/api/posts')
             ->assertOk()

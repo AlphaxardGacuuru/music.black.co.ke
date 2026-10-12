@@ -22,20 +22,18 @@ class StoryService extends Service
     public function index(): AnonymousResourceCollection
     {
         if ($this->id) {
-            // Get Stories if the musician is followed (OLD joined on the
-            // follows of @blackmusic, not the current user) and not muted
-            $blackMusicId = User::where('username', '@blackmusic')->value('id');
-
+            // Stories from the musicians the viewer follows (which includes
+            // themselves and @blackmusic), unless they muted them
             $getStories = Story::select('stories.*', 'follows.muted->stories as muted', 'follows.blocked')
                 ->join('follows', fn (JoinClause $join) => $join->on('follows.followed_id', '=', 'stories.user_id')
-                    ->where('follows.user_id', '=', $blackMusicId))
+                    ->where('follows.user_id', '=', $this->id))
                 ->where('follows.muted->stories', false);
         } else {
             $getStories = Story::whereHas('user', fn ($query) => $query->where('username', '@blackmusic'));
         }
 
         $stories = $getStories
-            ->orderBy('stories.id', 'DESC')
+            ->orderBy('stories.created_at', 'DESC')
             ->paginate(10);
 
         return StoryResource::collection($stories);

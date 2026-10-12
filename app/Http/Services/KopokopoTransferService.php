@@ -184,7 +184,7 @@ class KopokopoTransferService extends Service
      * ".../send_money/{this}", the same id that later shows up as the
      * webhook payload's top-level "data.id".
      */
-    private function locationId(string $location): ?string
+    public function locationId(string $location): ?string
     {
         if ($location === '') {
             return null;

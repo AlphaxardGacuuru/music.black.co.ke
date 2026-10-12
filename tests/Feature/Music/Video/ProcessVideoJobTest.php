@@ -37,6 +37,7 @@ class ProcessVideoJobTest extends TestCase
 
         FFMpeg::shouldReceive('fromDisk')->once()->with('public')->andReturn($media);
         $media->shouldReceive('open')->once()->with('videos/abc123.mp4')->andReturnSelf();
+        $media->shouldReceive('getDurationInSeconds')->once()->andReturn(60);
         $media->shouldReceive('getFrameFromSeconds')->once()->with(10)->andReturnSelf();
         $media->shouldReceive('export')->once()->andReturn($exporter);
         $exporter->shouldReceive('toDisk')->once()->with('public')->andReturnSelf();

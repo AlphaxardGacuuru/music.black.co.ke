@@ -6,6 +6,8 @@ use App\Events\KopokopoTransferInitiated;
 use App\Events\KopokopoTransferRecordedEvent;
 use App\Http\Services\Service;
 use App\Models\Referral;
+use App\Models\SongPayout;
+use App\Notifications\SongPayoutNotification;
 use Illuminate\Support\Collection;
 
 /**
@@ -32,6 +34,7 @@ class KopokopoTransferRecordedListener
 
         if ($transfer->isConfirmedSuccess()) {
             $this->confirmReferrals($reference);
+            $this->confirmSongPayouts($reference);
 
             return;
         }
@@ -41,7 +44,28 @@ class KopokopoTransferRecordedListener
                 ->where('kopokopo_reference', $reference)
                 ->whereNull('paid_at')
                 ->update(['kopokopo_reference' => null, 'amount_paid' => null]);
+
+            // Deleting the pending payout returns the money to the artist's
+            // balance so they can withdraw it again.
+            SongPayout::query()
+                ->where('kopokopo_reference', $reference)
+                ->whereNull('paid_at')
+                ->delete();
         }
+    }
+
+    private function confirmSongPayouts(string $reference): void
+    {
+        SongPayout::query()
+            ->with('user')
+            ->where('kopokopo_reference', $reference)
+            ->whereNull('paid_at')
+            ->get()
+            ->each(function (SongPayout $songPayout) {
+                $songPayout->update(['paid_at' => now()]);
+
+                $songPayout->user?->notify(new SongPayoutNotification($songPayout));
+            });
     }
 
     private function confirmReferrals(string $reference): void

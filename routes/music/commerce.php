@@ -25,7 +25,6 @@ Route::apiResource('bought-videos', BoughtVideoController::class);
 
 // Stubs in OLD as well
 Route::apiResource('decos', DecoController::class);
-Route::apiResource('song-payouts', SongPayoutController::class);
 
 // Artist's bought songs
 Route::get('artist/bought-videos/{username}', [BoughtVideoController::class, 'artistBoughtVideos']);
@@ -41,6 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Kopokopo STK Push
     Route::post('stk-push', [MPESATransactionController::class, 'stkPush']);
+
+    // Artists' earnings from song sales, paid out to M-Pesa.
+    Route::apiResource('song-payouts', SongPayoutController::class)->only(['index', 'store']);
 });
 
 /*

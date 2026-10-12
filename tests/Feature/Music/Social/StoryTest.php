@@ -40,20 +40,21 @@ class StoryTest extends TestCase
             ->assertJsonPath('data.0.hasSeen', false);
     }
 
-    public function test_users_see_unmuted_stories_of_musicians_blackmusic_follows(): void
+    public function test_users_see_unmuted_stories_of_musicians_they_follow(): void
     {
+        $viewer = User::factory()->create();
         $musician = User::factory()->create();
         $muted = User::factory()->create();
-        Follow::factory()->create(['followed_id' => $musician->id, 'user_id' => $this->blackMusic->id]);
+        Follow::factory()->create(['followed_id' => $musician->id, 'user_id' => $viewer->id]);
         Follow::factory()->create([
             'followed_id' => $muted->id,
-            'user_id' => $this->blackMusic->id,
+            'user_id' => $viewer->id,
             'muted' => ['posts' => false, 'stories' => true],
         ]);
         Story::factory()->create(['user_id' => $musician->id]);
         Story::factory()->create(['user_id' => $muted->id]);
 
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs($viewer);
 
         $this->getJson('/api/stories')
             ->assertOk()

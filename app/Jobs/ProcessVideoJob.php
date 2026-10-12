@@ -20,8 +20,9 @@ class ProcessVideoJob implements ShouldQueue
     }
 
     /**
-     * Grab the frame 10 seconds in and save it as
-     * video-thumbnails/<video file name>.jpg on the public disk.
+     * Grab the frame 10 seconds in (or halfway through a shorter clip), save
+     * it as video-thumbnails/<video file name>.jpg on the public disk, and use
+     * it as the video's thumbnail when the artist didn't upload one.
      */
     public function handle(): void
     {
@@ -29,13 +30,20 @@ class ProcessVideoJob implements ShouldQueue
         $video = $this->video->getRawOriginal('video');
 
         // File name without directory or extension, e.g. "abc"
-        $thumbnail = pathinfo($video, PATHINFO_FILENAME);
+        $thumbnail = 'video-thumbnails/' . pathinfo($video, PATHINFO_FILENAME) . '.jpg';
 
-        FFMpeg::fromDisk('public')
-            ->open($video)
-            ->getFrameFromSeconds(10)
+        $media = FFMpeg::fromDisk('public')->open($video);
+
+        $seconds = min(10, intdiv($media->getDurationInSeconds(), 2));
+
+        $media->getFrameFromSeconds($seconds)
             ->export()
             ->toDisk('public')
-            ->save('video-thumbnails/' . $thumbnail . '.jpg');
+            ->save($thumbnail);
+
+        if (! $this->video->getRawOriginal('thumbnail')) {
+            $this->video->thumbnail = $thumbnail;
+            $this->video->save();
+        }
     }
 }

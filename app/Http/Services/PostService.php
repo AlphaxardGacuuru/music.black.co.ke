@@ -18,20 +18,18 @@ class PostService extends Service
     {
         // Get posts based on whether current user is guest
         if ($this->id) {
-            // Get Posts if the musician is followed (OLD joined on the
-            // follows of @blackmusic, not the current user) and not muted
-            $blackMusicId = User::where('username', '@blackmusic')->value('id');
-
+            // Posts from the musicians the viewer follows (which includes
+            // themselves and @blackmusic), unless they muted them
             $getPosts = Post::select('posts.*', 'follows.muted->posts as muted', 'follows.blocked')
                 ->join('follows', fn (JoinClause $join) => $join->on('follows.followed_id', '=', 'posts.user_id')
-                    ->where('follows.user_id', '=', $blackMusicId))
+                    ->where('follows.user_id', '=', $this->id))
                 ->where('follows.muted->posts', false);
         } else {
             $getPosts = Post::whereHas('user', fn ($query) => $query->where('username', '@blackmusic'));
         }
 
         $posts = $getPosts
-            ->orderBy('posts.id', 'DESC')
+            ->orderBy('posts.created_at', 'DESC')
             ->paginate(10);
 
         return PostResource::collection($posts);
@@ -138,7 +136,7 @@ class PostService extends Service
             ->join('follows', fn (JoinClause $join) => $join->on('follows.followed_id', '=', 'posts.user_id')
                 ->where('follows.user_id', '=', $this->id))
             ->where('posts.user_id', $artistId)
-            ->orderBy('posts.id', 'DESC')
+            ->orderBy('posts.created_at', 'DESC')
             ->get();
 
         return PostResource::collection($getArtistPosts);

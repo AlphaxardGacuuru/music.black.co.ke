@@ -53,7 +53,12 @@ class Video extends Model
     protected function thumbnail(): Attribute
     {
         return Attribute::make(
-            get: fn($value) => preg_match("/http/", $value) ? $value : "/storage/" . $value,
+            // Null until ProcessVideoJob makes one, when none was uploaded.
+            get: fn($value) => match (true) {
+                $value === null => null,
+                (bool) preg_match("/http/", $value) => $value,
+                default => "/storage/" . $value,
+            },
         );
     }
 

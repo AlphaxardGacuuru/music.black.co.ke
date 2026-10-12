@@ -3,16 +3,32 @@
 namespace App\Listeners;
 
 use App\Events\StoryCreatedEvent;
+use App\Models\Follow;
+use App\Models\User;
+use App\Notifications\StoryCreatedNotification;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\Notification;
 
-class StoryCreatedListener
+class StoryCreatedListener implements ShouldQueue
 {
     /**
-     * Handle the event.
+     * Tell the poster's followers about their new story, except followers
+     * who muted their stories (and the poster, who follows themselves).
      */
     public function handle(StoryCreatedEvent $event): void
     {
-        // OLD only instantiated a StoryCreatedNotification (with a missing
-        // argument) and never sent it to anyone, so no notification goes out.
-        // StoryCreatedNotification is kept ready for when recipients are decided.
+        $story = $event->story;
+
+        $followerIds = Follow::query()
+            ->where('followed_id', $story->user_id)
+            ->where('user_id', '!=', $story->user_id)
+            ->get()
+            ->reject(fn(Follow $follow) => (bool) ($follow->muted['stories'] ?? false))
+            ->pluck('user_id');
+
+        Notification::send(
+            User::query()->whereKey($followerIds)->get(),
+            new StoryCreatedNotification($story, $story->user->username)
+        );
     }
 }

@@ -21,6 +21,16 @@ class Deco extends Model
         'artist_id',
     ];
 
+    /**
+     * users.decos is the number of decos a fan holds (shown next to their
+     * name), so keep it in step with the deco rows.
+     */
+    protected static function booted(): void
+    {
+        static::created(fn(Deco $deco) => User::query()->whereKey($deco->user_id)->increment('decos'));
+        static::deleted(fn(Deco $deco) => User::query()->whereKey($deco->user_id)->decrement('decos'));
+    }
+
     /*
      * Relationships
      */

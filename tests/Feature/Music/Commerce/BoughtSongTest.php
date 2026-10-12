@@ -98,8 +98,6 @@ class BoughtSongTest extends TestCase
         $this->getJson('/api/bought-audios/missing')->assertNotFound();
         $this->getJson('/api/decos')->assertOk();
         $this->postJson('/api/decos')->assertOk();
-        $this->getJson('/api/song-payouts')->assertOk();
-        $this->postJson('/api/song-payouts', ['amount' => 100])->assertOk();
     }
 
     public function test_seeders_record_purchases(): void
