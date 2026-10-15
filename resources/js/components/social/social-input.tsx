@@ -134,7 +134,7 @@ export function SocialInput({
 		<form
 			onSubmit={submit}
 			autoComplete="off"
-			className={cn("space-y-3", className)}>
+			className={cn("space-y-2", className)}>
 			{mention !== undefined && (
 				<MentionPicker
 					query={mention}
@@ -144,8 +144,8 @@ export function SocialInput({
 
 			<div
 				className={cn(
-					"flex gap-2",
-					variant === "bar" ? "items-end" : "flex-col"
+					"flex gap-1",
+					variant === "bar" ? "items-center" : "flex-col"
 				)}>
 				<textarea
 					ref={textareaRef}

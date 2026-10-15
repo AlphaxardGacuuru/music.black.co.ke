@@ -232,8 +232,8 @@ export function HomeFeed() {
 					className={cn(
 						"fixed right-4 z-40 flex flex-col gap-3 transition-[bottom] duration-300 sm:right-65",
 						showsPlayer
-							? "bottom-44 md:bottom-[5.5rem]"
-							: "bottom-[5.5rem] md:bottom-4"
+							? "bottom-44 md:bottom-22"
+							: "bottom-28 md:bottom-4"
 					)}>
 					{isMusician && (
 						<>

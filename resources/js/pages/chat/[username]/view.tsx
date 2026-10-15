@@ -225,8 +225,8 @@ export default function ChatShow({ username }: { username: string }) {
 							"sticky z-30 mb-2 p-2 transition-[bottom] duration-300",
 							// Clear the mini player while it shows, then drop back down.
 							showsPlayer
-								? "bottom-44 md:bottom-[5.5rem]"
-								: "bottom-[5.5rem] md:bottom-4"
+								? "bottom-44 md:bottom-22"
+								: "bottom-2 md:bottom-4"
 						)}>
 						<SocialInput
 							variant="bar"
