@@ -218,6 +218,28 @@ class ImportLegacyMusicTest extends TestCase
         $this->assertTrue($chat->trashed());
     }
 
+    public function test_zero_dates_are_read_as_missing(): void
+    {
+        DB::connection('legacy')->table('users')->where('username', '@artist')->update([
+            'created_at' => '0000-00-00 00:00:00',
+            'updated_at' => '0000-00-00 00:00:00',
+            'email_verified_at' => '0000-00-00 00:00:00',
+        ]);
+
+        $this->artisan('music:import-legacy')->assertSuccessful();
+
+        $artist = User::where('username', '@artist')->sole();
+
+        // It takes the previous user's created_at, so it keeps its place.
+        $this->assertSame('2022-10-24 10:00:00', $artist->getRawOriginal('created_at'));
+        $this->assertSame('2022-10-24 10:00:00', $artist->getRawOriginal('updated_at'));
+        $this->assertNull($artist->email_verified_at);
+        $this->assertSame(
+            ['@blackmusic', '@artist', '@fan'],
+            User::orderBy('id')->pluck('username')->all()
+        );
+    }
+
     public function test_it_refuses_a_database_that_already_has_users(): void
     {
         User::factory()->create();

@@ -372,10 +372,11 @@ class ImportLegacyMusicCommand extends Command
 
         $read = 0;
         $imported = 0;
+        $previousCreatedAt = null;
 
         $this->legacy->table($from)
             ->orderBy('id')
-            ->chunk((int) $this->option('chunk'), function ($rows) use ($from, $to, $map, $ignoreDuplicates, &$read, &$imported) {
+            ->chunk((int) $this->option('chunk'), function ($rows) use ($from, $to, $map, $ignoreDuplicates, &$read, &$imported, &$previousCreatedAt) {
                 $batch = [];
 
                 foreach ($rows as $raw) {
@@ -387,7 +388,11 @@ class ImportLegacyMusicCommand extends Command
                         continue;
                     }
 
-                    $createdAt = $row->created_at ?? now();
+                    // A row with no usable created_at (null or MySQL's zero
+                    // date) takes the previous row's, so its new id still
+                    // sorts where its old id did.
+                    $createdAt = $row->created_at ?? $previousCreatedAt ?? $row->updated_at ?? now();
+                    $previousCreatedAt = $createdAt;
                     $newId = (string) Str::uuid7(Carbon::parse($createdAt));
 
                     $this->ids[$from][$row->id] = $newId;
@@ -452,7 +457,9 @@ class ImportLegacyMusicCommand extends Command
      * The production schema drifted from the old migrations over the years
      * (columns like chats.seen_at or users.decos exist in some copies and
      * not others), so a column that isn't there reads as null instead of
-     * failing the import.
+     * failing the import. MySQL's zero dates ("0000-00-00 00:00:00") also
+     * read as null, since they aren't real dates and strict mode won't
+     * accept them on insert.
      */
     private function lenient(object $row): object
     {
@@ -465,12 +472,14 @@ class ImportLegacyMusicCommand extends Command
 
             public function __get(string $column): mixed
             {
-                return $this->columns[$column] ?? null;
+                $value = $this->columns[$column] ?? null;
+
+                return is_string($value) && str_starts_with($value, '0000-00-00') ? null : $value;
             }
 
             public function __isset(string $column): bool
             {
-                return isset($this->columns[$column]);
+                return $this->__get($column) !== null;
             }
         };
     }
