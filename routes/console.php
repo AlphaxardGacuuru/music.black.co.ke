@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\DeleteStaleTemporaryUploadsJob;
+use App\Models\Story;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -22,3 +23,6 @@ Schedule::job(new DeleteStaleTemporaryUploadsJob)
     // ->everyMinute();
     ->dailyAt("01:00");
 
+
+// Delete stories (and their media files) once they're 24 hours old
+Schedule::command('model:prune', ['--model' => [Story::class]])->hourly();

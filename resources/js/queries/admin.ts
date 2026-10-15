@@ -33,8 +33,6 @@ export type AdminUser = {
 	verified: boolean
 	settings: UserSettings | null
 	pushSubscriptionsCount: number
-	/** Who this user is credited to as a referral, if anyone. */
-	referredBy: { id: string; name: string } | null
 	createdAt: string
 }
 
@@ -67,29 +65,6 @@ export function useToggleUserVerified() {
 			Axios.patch(`api/admin/users/${userId}/verify`, { verified }),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
-		},
-	})
-}
-
-/**
- * Credit a user to a referrer by hand, for someone who signed up without a
- * referral link. Refreshes both the users table (its "Referred by" column)
- * and the referrals page's totals/leaderboard.
- */
-export function useAttachReferrer() {
-	const queryClient = useQueryClient()
-
-	return useMutation({
-		mutationFn: ({
-			userId,
-			referrerId,
-		}: {
-			userId: string
-			referrerId: string
-		}) => Axios.post(`api/admin/users/${userId}/referrer`, { referrerId }),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin", "users"] })
-			queryClient.invalidateQueries({ queryKey: ["admin", "referrals"] })
 		},
 	})
 }
@@ -226,91 +201,6 @@ export function useAddKopokopoRecipient() {
 			queryClient.invalidateQueries({
 				queryKey: ["admin", "kopokopo-recipients"],
 			})
-		},
-	})
-}
-
-export type AdminReferralLeaderboardEntry = {
-	userId: string
-	name: string
-	avatar: string | null
-	verified: boolean
-	phone: string | null
-	referralsCount: number
-	eligibleAmount: number
-}
-
-export type AdminReferralsData = {
-	totalReferrals: number
-	totalReferrers: number
-	threshold: number
-	rewardAmount: number
-	leaderboard: AdminReferralLeaderboardEntry[]
-}
-
-export function useAdminReferrals() {
-	return useQuery({
-		queryKey: ["admin", "referrals"],
-		queryFn: () =>
-			Axios.get<{ data: AdminReferralsData }>("api/admin/referrals").then(
-				(res) => res.data.data
-			),
-	})
-}
-
-export type AdminReferral = {
-	id: string
-	referrerName: string | null
-	referredName: string | null
-	createdAt: string
-	amountPaid: number | null
-	paidAt: string | null
-}
-
-type AdminRecentReferralsResponse = {
-	data: AdminReferral[]
-	meta: { current_page: number; last_page: number; total: number }
-}
-
-export function useAdminRecentReferrals(page = 1, perPage = 20) {
-	return useQuery({
-		queryKey: ["admin", "referrals", "recent", page, perPage],
-		queryFn: () =>
-			Axios.get<AdminRecentReferralsResponse>("api/admin/referrals/recent", {
-				params: { page, per_page: perPage },
-			}).then((res) => res.data),
-	})
-}
-
-export function useUpdateReferralSettings() {
-	const queryClient = useQueryClient()
-
-	return useMutation({
-		mutationFn: (payload: { threshold: number; rewardAmount: number }) =>
-			Axios.put("api/admin/referrals/settings", payload),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin", "referrals"] })
-		},
-	})
-}
-
-export function usePayReferrer() {
-	const queryClient = useQueryClient()
-
-	return useMutation({
-		// Same status-in-body convention as useSendKopokopoTransfer.
-		mutationFn: (userId: string) =>
-			Axios.post<{ status: unknown; message: string }>(
-				`api/admin/referrals/${userId}/pay`
-			).then((res) => {
-				if (res.data.status !== true) {
-					throw new Error(res.data.message)
-				}
-
-				return res.data
-			}),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["admin", "referrals"] })
 		},
 	})
 }

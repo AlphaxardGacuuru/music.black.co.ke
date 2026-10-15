@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 use Laravel\Socialite\Facades\Socialite;
@@ -25,16 +24,8 @@ class AuthenticatedSessionController extends Controller
 
     /*
      * Social Logins*/
-    public function redirectToProvider(Request $request, string $website): RedirectResponse
+    public function redirectToProvider(string $website): RedirectResponse
     {
-        // Google's redirect back to handleProviderCallback() carries no
-        // custom params of ours, so a referral code picked up on the way in
-        // is stashed in a short-lived cookie instead — it rides along
-        // automatically since the callback is a same-site top-level GET.
-        if ($request->filled('ref')) {
-            Cookie::queue('referral_ref', $request->string('ref')->toString(), 10);
-        }
-
         return Socialite::driver($website)->redirect();
     }
 
@@ -49,7 +40,7 @@ class AuthenticatedSessionController extends Controller
             return redirect('/login?error=' . urlencode('Authentication failed. Please try again.'));
         }
 
-        $dbUser = $this->authService->findOrCreateFromSocialite($socialUser, $request->cookie('referral_ref'));
+        $dbUser = $this->authService->findOrCreateFromSocialite($socialUser);
 
         Auth::login($dbUser);
 

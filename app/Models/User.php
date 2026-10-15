@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\EmailNotificationCategory;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -11,10 +10,8 @@ use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Laragear\TwoFactor\TwoFactorAuthentication;
 use Laravel\Sanctum\HasApiTokens;
@@ -147,22 +144,6 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         return Attribute::make(
             get: fn($value) => Carbon::parse($value)->format('d M Y h:i:s'),
         );
-    }
-
-    /**
-     * Other users this user referred, who signed up via their referral link.
-     */
-    public function referralsMade(): HasMany
-    {
-        return $this->hasMany(Referral::class, 'referrer_id');
-    }
-
-    /**
-     * Who referred this user, if anyone (a user can only be referred once).
-     */
-    public function referral(): HasOne
-    {
-        return $this->hasOne(Referral::class, 'referred_id');
     }
 
     public function audios(): HasMany
@@ -437,28 +418,5 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
             + $this->boughtAudios->count() * BoughtAudio::PRICE;
 
         return (int) $this->mpesaTransactions->sum('amount') - $spent;
-    }
-
-    /**
-     * Whether this user still wants emails for the given category — opt-out
-     * by default (true) so users created before a category existed, or who
-     * never touched their preferences, keep receiving it.
-     */
-    public function wantsEmail(EmailNotificationCategory $category): bool
-    {
-        return (bool) ($this->settings?->{$category->settingsKey()} ?? true);
-    }
-
-    /**
-     * A signed, no-login-required link that turns the given category off —
-     * embedded in every email of that category so it can be unsubscribed
-     * from with one click.
-     */
-    public function unsubscribeUrlFor(EmailNotificationCategory $category): string
-    {
-        return URL::signedRoute('unsubscribe.show', [
-            'user' => $this->getKey(),
-            'category' => $category->value,
-        ]);
     }
 }

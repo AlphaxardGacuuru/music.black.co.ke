@@ -134,6 +134,32 @@ class StoryTest extends TestCase
         Storage::disk('public')->assertMissing(['stories/a.jpg', 'stories/b.mp4']);
     }
 
+    public function test_stories_older_than_a_day_are_pruned_with_their_media(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('stories/old.jpg', 'x');
+        Storage::disk('public')->put('stories/old.mp4', 'x');
+        Storage::disk('public')->put('stories/new.jpg', 'x');
+
+        $expired = Story::factory()->create([
+            'media' => [['image' => 'stories/old.jpg'], ['video' => 'stories/old.mp4']],
+            'created_at' => now()->subHours(25),
+        ]);
+        SeenStory::factory()->create(['story_id' => $expired->id]);
+        $fresh = Story::factory()->create([
+            'media' => [['image' => 'stories/new.jpg']],
+            'created_at' => now()->subHours(23),
+        ]);
+
+        $this->artisan('model:prune', ['--model' => [Story::class]])->assertSuccessful();
+
+        $this->assertModelMissing($expired);
+        $this->assertModelExists($fresh);
+        $this->assertSame(0, SeenStory::count());
+        Storage::disk('public')->assertMissing(['stories/old.jpg', 'stories/old.mp4']);
+        Storage::disk('public')->assertExists('stories/new.jpg');
+    }
+
     public function test_user_can_mark_story_seen(): void
     {
         $story = Story::factory()->create();

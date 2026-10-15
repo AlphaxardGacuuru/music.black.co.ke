@@ -15,11 +15,11 @@ class AdminUserControllerTest extends TestCase
         return User::factory()->create(['email' => config('admin.email')]);
     }
 
-    public function test_the_listing_reports_pwa_install_state_and_notification_settings(): void
+    public function test_the_listing_reports_pwa_install_state_and_push_subscriptions(): void
     {
         $installed = User::factory()->create([
             'name' => 'Ivy Installed',
-            'settings' => ['pwaInstalledAt' => '2026-01-01T00:00:00Z', 'referralSignupNotification' => false],
+            'settings' => ['pwaInstalledAt' => '2026-01-01T00:00:00Z'],
         ]);
         $installed->updatePushSubscription('https://push.example.com/a', 'key', 'token');
 
@@ -32,7 +32,6 @@ class AdminUserControllerTest extends TestCase
         $byId = collect($response->json('data'))->keyBy('id');
 
         $this->assertNotEmpty($byId[$installed->id]['settings']['pwaInstalledAt']);
-        $this->assertFalse($byId[$installed->id]['settings']['referralSignupNotification']);
         $this->assertSame(1, $byId[$installed->id]['pushSubscriptionsCount']);
 
         $this->assertEmpty($byId[$notInstalled->id]['settings'] ?? []);

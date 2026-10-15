@@ -2,7 +2,6 @@
 
 namespace App\Http\Services;
 
-use App\Models\Referral;
 use App\Models\User;
 use App\Notifications\WelcomeNotification;
 use Illuminate\Auth\Events\Registered;
@@ -14,25 +13,18 @@ use Laravel\Socialite\Contracts\User as SocialiteUser;
 class AuthService extends Service
 {
 	/**
-	 * Create an account from the email/password signup form and credit the
-	 * referrer, if any.
+	 * Create an account from the name/email/password signup form.
 	 */
-	public function register(
-		string $name,
-		string $email,
-		string $password,
-		mixed $referrerId
-	): User {
+	public function register(string $name, string $email, string $password): User
+	{
 		$user = new User;
 		$user->name = $name;
 		$user->email = $email;
 		$user->password = Hash::make($password);
-		$user->settings = [
-			'referralSignupNotification' => true,
-		];
 		$user->save();
 
-		Referral::record($referrerId, $user);
+		$user->notify(new WelcomeNotification);
+		event(new Registered($user));
 
 		return $user;
 	}
@@ -41,10 +33,8 @@ class AuthService extends Service
 	 * Find the local account for a social login (by provider id, then by
 	 * email) and sync its details, or create one if this is a new user.
 	 */
-	public function findOrCreateFromSocialite(
-		SocialiteUser $socialUser,
-		mixed $referrerId
-	): User {
+	public function findOrCreateFromSocialite(SocialiteUser $socialUser): User
+	{
 		$avatarUrl = $socialUser->getAvatar();
 
 		$user = User::query()
@@ -85,10 +75,8 @@ class AuthService extends Service
 		$user->google_id = $socialUser->getId();
 		$user->avatar = $avatarUrl;
 		$user->email_verified_at = now();
-		$user->password = Str::random(40);
+		$user->password = Hash::make(Str::random(40));
 		$user->save();
-
-		Referral::record($referrerId, $user);
 
 		$user->notify(new WelcomeNotification);
 		event(new Registered($user));
@@ -111,7 +99,9 @@ class AuthService extends Service
 			]);
 		}
 
-		if (! Hash::check($password, $user->password)) {
+		// Accounts made through Google before passwords were hashed hold a
+		// plain random string, which can never match.
+		if (! Hash::isHashed($user->password) || ! Hash::check($password, $user->password)) {
 			throw ValidationException::withMessages([
 				'password' => ['The provided password is incorrect.']
 			]);

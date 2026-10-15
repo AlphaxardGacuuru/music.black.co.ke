@@ -1,5 +1,5 @@
 import { Bell } from "lucide-react"
-import { useEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useIsInstallStepSettled } from "@/components/install-app-onboarding-modal"
 import { Button } from "@/components/ui/button"
@@ -24,41 +24,8 @@ import toast from "@/lib/toast"
 // no longer permanently hides the modal.
 const DISMISSED_KEY = "notifications-prompt-dismissed"
 
-// sessionStorage writes don't notify the current tab, so dismissing fires
-// this event to let useIsPermissionsStepSettled() subscribers (the referral
-// modal) re-render and open right after "Not now".
-const DISMISSED_EVENT = "notifications-prompt-dismissed"
-
 function wasDismissedThisSession(): boolean {
 	return sessionStorage.getItem(DISMISSED_KEY) === "1"
-}
-
-function subscribeToDismissal(callback: () => void): () => void {
-	window.addEventListener(DISMISSED_EVENT, callback)
-	return () => window.removeEventListener(DISMISSED_EVENT, callback)
-}
-
-// Mirrors useIsInstallStepSettled() — the referral onboarding modal waits on
-// this so it never appears ahead of, or stacked on top of, the
-// notifications prompt.
-export function useIsPermissionsStepSettled(): boolean {
-	const { isSupported, permission } = usePushNotifications()
-	const { isInstalled } = usePwaInstall()
-	const installStepSettled = useIsInstallStepSettled()
-	const dismissed = useSyncExternalStore(
-		subscribeToDismissal,
-		wasDismissedThisSession,
-	)
-
-	if (!installStepSettled) {
-		return false
-	}
-
-	if (!isInstalled || !isSupported || permission === "granted") {
-		return true
-	}
-
-	return dismissed
 }
 
 export default function PermissionsOnboardingModal() {
@@ -151,7 +118,6 @@ export default function PermissionsOnboardingModal() {
 
 	function handleSkip() {
 		sessionStorage.setItem(DISMISSED_KEY, "1")
-		window.dispatchEvent(new Event(DISMISSED_EVENT))
 		setOpen(false)
 	}
 

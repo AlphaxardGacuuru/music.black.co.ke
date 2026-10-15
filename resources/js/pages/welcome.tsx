@@ -80,7 +80,7 @@ export default function Welcome() {
 	const { auth } = useApp()
 
 	const primaryCta = auth
-		? { href: "/home", label: "Go to your feed" }
+		? { href: "/", label: "Go to your feed" }
 		: { href: "/login", label: "Join Black Music" }
 
 	return (
@@ -96,7 +96,7 @@ export default function Welcome() {
 
 			<header className="relative z-10 mx-auto flex max-w-6xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
 				<Link
-					href="/"
+					href="/welcome"
 					variant="unstyled"
 					size="none">
 					<AppLogo className="h-16 w-auto" />
@@ -110,7 +110,7 @@ export default function Welcome() {
 					</Link>
 					{auth ? (
 						<Link
-							href="/home"
+							href="/"
 							variant="solid">
 							Home
 						</Link>
@@ -253,7 +253,7 @@ export default function Welcome() {
 							</h2>
 						</div>
 						<Link
-							href={auth ? "/home" : "/login"}
+							href={auth ? "/" : "/login"}
 							variant="solid"
 							size="lg"
 							className="gap-2 self-start rounded-full px-6 sm:self-auto">

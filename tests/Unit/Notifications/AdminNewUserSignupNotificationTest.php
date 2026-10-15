@@ -20,7 +20,7 @@ class AdminNewUserSignupNotificationTest extends TestCase
         $admin = User::factory()->create();
         $newUser = User::factory()->create(['name' => 'Jane', 'email' => 'jane@example.com']);
 
-        $notification = new AdminNewUserSignupNotification($newUser, null);
+        $notification = new AdminNewUserSignupNotification($newUser);
 
         $this->assertSame([WebPushChannel::class], $notification->via($admin));
 
@@ -30,19 +30,5 @@ class AdminNewUserSignupNotificationTest extends TestCase
         $body = $webPush->toArray()['body'];
         $this->assertStringContainsString('Jane', $body);
         $this->assertStringContainsString('jane@example.com', $body);
-        $this->assertStringNotContainsString('Referred by', $body);
-    }
-
-    #[Test]
-    public function it_mentions_the_referrer_when_present(): void
-    {
-        $admin = User::factory()->create();
-        $newUser = User::factory()->create(['name' => 'Jane']);
-        $referrer = User::factory()->create(['name' => 'Bob']);
-
-        $notification = new AdminNewUserSignupNotification($newUser, $referrer);
-        $webPush = $notification->toWebPush($admin, $notification);
-
-        $this->assertStringContainsString('Referred by Bob', $webPush->toArray()['body']);
     }
 }

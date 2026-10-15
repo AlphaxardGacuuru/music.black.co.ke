@@ -1,8 +1,19 @@
 import { Head } from "@/lib/spa"
 import { useState, useEffect } from "react"
-import { Spinner } from "@/components/ui/spinner"
+import { useNavigate } from "@tanstack/react-router"
+import { LoaderCircle } from "lucide-react"
+import GoogleLoginButton from "@/components/google-login-button"
+import InputError from "@/components/input-error"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Link } from "@/components/ui/link"
+import { useApp } from "@/contexts/AppContext"
+import axios from "@/lib/axios"
 import toast from "@/lib/toast"
+import { invalidateAuth } from "@/middleware/auth"
+import { register } from "@/routes"
+import { store } from "@/routes/login"
+import { request } from "@/routes/password"
 
 type Props = {
 	status?: string
@@ -13,11 +24,13 @@ export default function Login({
 	status,
 	googleLoginUrl = "login/google/redirect",
 }: Props) {
+	const { setLocalStorage } = useApp()
+	const navigate = useNavigate()
 	const searchParams = new URLSearchParams(window.location.search)
 	const oauthError = searchParams.get("error")
-	const referralCode = window.localStorage.getItem("referralCode")
 
-	const [googleLoading, setGoogleLoading] = useState(false)
+	const [processing, setProcessing] = useState(false)
+	const [errors, setErrors] = useState<Record<string, string>>({})
 
 	useEffect(() => {
 		if (oauthError) {
@@ -25,67 +38,128 @@ export default function Login({
 		}
 	}, [oauthError])
 
+	function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+		event.preventDefault()
+		setProcessing(true)
+		setErrors({})
+		const fd = new FormData(event.currentTarget)
+
+		const { url, method } = store()
+
+		axios
+			.request({
+				url,
+				method,
+				data: { ...Object.fromEntries(fd), device_name: "web" },
+			})
+			.then((response) => {
+				if (response.data.two_factor) {
+					navigate({
+						to: "/two-factor-challenge",
+						search: { pending_token: response.data.data },
+					})
+					return
+				}
+
+				setLocalStorage("sanctumToken", response.data.data)
+				invalidateAuth()
+				toast.success(response.data.message ?? "Logged in")
+				navigate({ to: "/home" })
+			})
+			.catch((err: unknown) => {
+				const e = err as {
+					response?: {
+						status?: number
+						data?: { errors?: Record<string, string | string[]> }
+					}
+				}
+
+				if (e.response?.status === 422) {
+					const raw = e.response.data?.errors ?? {}
+					setErrors(
+						Object.fromEntries(
+							Object.entries(raw).map(([k, v]) => [
+								k,
+								Array.isArray(v) ? String(v[0] ?? "") : String(v),
+							])
+						)
+					)
+				} else if (e.response?.status === 429) {
+					toast.error("Too many attempts. Please wait a minute and try again.")
+				}
+			})
+			.finally(() => {
+				setProcessing(false)
+			})
+	}
+
 	return (
 		<>
 			<Head title="Log in" />
 
 			<div className="flex flex-col gap-6">
-				<Button
-					type="button"
-					variant="transparent"
-					className="w-full"
-					disabled={googleLoading}
-					asChild>
-					<a
-						href={
-							referralCode
-								? `${googleLoginUrl}?ref=${encodeURIComponent(referralCode)}`
-								: googleLoginUrl
-						}
-						onClick={(event) => {
-							if (googleLoading) {
-								event.preventDefault()
+				<form
+					onSubmit={handleSubmit}
+					className="grid gap-4">
+					<div className="grid gap-2">
+						<Input
+							id="email"
+							label="Email"
+							type="email"
+							name="email"
+							autoComplete="email"
+							autoFocus
+							required
+						/>
+						<InputError message={errors.email} />
+					</div>
 
-								return
-							}
+					<div className="grid gap-2">
+						<Input
+							id="password"
+							label="Password"
+							type="password"
+							name="password"
+							autoComplete="current-password"
+							required
+						/>
+						<InputError message={errors.password} />
+					</div>
 
-							setGoogleLoading(true)
-						}}
-						className={googleLoading ? "pointer-events-none" : undefined}
-						aria-disabled={googleLoading}>
-						{googleLoading ? (
-							<>
-								<Spinner />
-								Redirecting to Google...
-							</>
-						) : (
-							<>
-								<svg
-									aria-hidden="true"
-									className="size-4"
-									viewBox="0 0 24 24">
-									<path
-										fill="#4285F4"
-										d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.3h6.44a5.5 5.5 0 0 1-2.39 3.61v3h3.86c2.25-2.07 3.58-5.12 3.58-8.64Z"
-									/>
-									<path
-										fill="#34A853"
-										d="M12 24c3.24 0 5.96-1.08 7.95-2.92l-3.86-3c-1.08.72-2.46 1.14-4.09 1.14-3.14 0-5.8-2.12-6.75-4.97H1.26v3.1A12 12 0 0 0 12 24Z"
-									/>
-									<path
-										fill="#FBBC05"
-										d="M5.25 14.25A7.2 7.2 0 0 1 4.87 12c0-.78.14-1.53.38-2.25v-3.1H1.26A12 12 0 0 0 0 12c0 1.93.46 3.76 1.26 5.35l3.99-3.1Z"
-									/>
-									<path
-										fill="#EA4335"
-										d="M12 4.78c1.76 0 3.34.61 4.58 1.82l3.43-3.43C17.95 1.25 15.23 0 12 0A12 12 0 0 0 1.26 6.65l3.99 3.1c.94-2.85 3.61-4.97 6.75-4.97Z"
-									/>
-								</svg>
-								Continue with Google
-							</>
-						)}
-					</a>
-				</Button>
+					<div className="text-right text-sm">
+						<Link
+							href={request().url}
+							variant="text"
+							size="none">
+							Forgot password?
+						</Link>
+					</div>
+
+					<Button
+						className="w-full"
+						disabled={processing}>
+						{processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
+						Log in
+					</Button>
+				</form>
+
+				<div className="flex items-center gap-3 text-xs text-muted-foreground">
+					<span className="h-px flex-1 bg-border" />
+					or
+					<span className="h-px flex-1 bg-border" />
+				</div>
+
+				<GoogleLoginButton href={googleLoginUrl} />
+
+				<div className="space-x-1 text-center text-sm text-muted-foreground">
+					<span>New to Black Music?</span>
+					<Link
+						href={register().url}
+						variant="text"
+						size="none">
+						Create an account
+					</Link>
+				</div>
 			</div>
 
 			{status && (
@@ -99,5 +173,5 @@ export default function Login({
 
 Login.layout = {
 	title: "Log in to your account",
-	description: "Sign in with Google to continue",
+	description: "Use your email and password, or continue with Google",
 }

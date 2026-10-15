@@ -30,13 +30,13 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'device_name' => 'required|string|max:255',
         ]);
 
         $user = $this->authService->register(
             $request->name,
             $request->email,
             $request->password,
-            $request->input('referrerId'),
         );
 
         Auth::login($user);

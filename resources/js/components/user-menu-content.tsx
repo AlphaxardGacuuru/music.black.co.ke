@@ -81,7 +81,7 @@ export function UserMenuContent({ user }: Props) {
 					<Link
 						variant="unstyled"
 						className="block w-full cursor-pointer"
-						href="/">
+						href="/welcome">
 						<Home className="mr-2" />
 						Welcome Page
 					</Link>

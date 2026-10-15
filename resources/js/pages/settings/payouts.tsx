@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query"
-import { Banknote, Clock, Info, UserPlus } from "lucide-react"
+import { Banknote, Clock, Info } from "lucide-react"
 import { useState } from "react"
 import Heading from "@/components/heading"
 import { WithdrawDialog } from "@/components/payouts/withdraw-dialog"
@@ -200,23 +200,6 @@ export default function Payouts() {
 					</>
 				)}
 
-				<GlassCard className="flex items-center gap-4 p-5">
-					<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-						<UserPlus className="size-5" />
-					</div>
-					<div className="min-w-0 flex-1 text-sm">
-						<p className="font-semibold">Invite friends</p>
-						<p className="text-muted-foreground">
-							Share your link and get rewarded when friends join.
-						</p>
-					</div>
-					<Link
-						href="/settings/referrals"
-						variant="outline"
-						size="sm">
-						Invite
-					</Link>
-				</GlassCard>
 			</div>
 
 			{auth?.phone && (

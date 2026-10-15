@@ -11,7 +11,6 @@ use Carbon\Carbon;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Gate;
 
 class StoryService extends Service
@@ -82,14 +81,7 @@ class StoryService extends Service
 
         Gate::authorize('delete', $story);
 
-        // Delete media (every file of every item, images and videos)
-        foreach ($story->media ?? [] as $media) {
-            foreach ((array) $media as $path) {
-                if (is_string($path)) {
-                    Storage::disk('public')->delete($path);
-                }
-            }
-        }
+        $story->deleteMedia();
 
         $deleted = $story->delete();
 

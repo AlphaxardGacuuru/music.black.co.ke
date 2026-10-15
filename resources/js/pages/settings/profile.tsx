@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useApp } from "@/contexts/AppContext"
 import ProfileController from "@/actions/App/Http/Controllers/Settings/ProfileController"
 import DeleteUser from "@/components/delete-user"
-import EmailNotificationSettings from "@/components/email-notification-settings"
 import Heading from "@/components/heading"
 import InputError from "@/components/input-error"
 import MusicProfileSettings from "@/components/music-profile-settings"
@@ -204,7 +203,6 @@ export default function Profile({
 					description="Choose how you want to be notified about the weekly challenge."
 				/>
 				<PushNotificationSettings />
-				<EmailNotificationSettings />
 			</div>
 
 			<hr />

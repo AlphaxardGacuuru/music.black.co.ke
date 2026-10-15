@@ -275,13 +275,6 @@ class ImportLegacyMusicCommand extends Command
                 'artist_id' => $this->user($row->artist),
             ]), false],
 
-            // OLD: "username" referred "referee". A user can only be
-            // referred once now, so later duplicates are dropped.
-            ['referrals', 'referrals', fn(object $row) => $this->withUsers([
-                'referrer_id' => $this->user($row->username),
-                'referred_id' => $this->user($row->referee),
-            ]), true],
-
             // Historical payouts were sent outside the app, so they count as paid.
             ['song_payouts', 'song_payouts', fn(object $row) => $this->withUsers([
                 'user_id' => $this->user($row->username),

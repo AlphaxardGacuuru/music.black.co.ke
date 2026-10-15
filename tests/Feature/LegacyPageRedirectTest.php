@@ -34,8 +34,17 @@ class LegacyPageRedirectTest extends TestCase
             ->assertRedirect($to);
     }
 
+    public function test_old_home_url_redirects_to_the_feed(): void
+    {
+        $this->get('/home')->assertStatus(301)->assertRedirect('/');
+    }
+
     public function test_new_page_urls_serve_the_app(): void
     {
+        $this->withoutVite();
+
+        $this->get('/')->assertOk();
+        $this->get('/welcome')->assertOk();
         $this->get('/videos/abc/view')->assertOk();
         $this->get('/profile/@blackmusic/view')->assertOk();
     }

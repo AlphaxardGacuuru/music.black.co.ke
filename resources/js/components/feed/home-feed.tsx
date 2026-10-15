@@ -2,6 +2,7 @@ import { useEcho } from "@laravel/echo-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowUp, Award, Camera, MessageSquare, PenLine } from "lucide-react"
 import { useState } from "react"
+import { useShowsPlayerBar } from "@/components/audio/audio-player-bar"
 import { MusicianRow } from "@/components/feed/musician-row"
 import { PostCard } from "@/components/feed/post-card"
 import { StoryCard } from "@/components/feed/story-card"
@@ -12,6 +13,7 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Link } from "@/components/ui/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useApp } from "@/contexts/AppContext"
+import { cn } from "@/lib/utils"
 import {
 	feedKeys,
 	useArtists,
@@ -29,6 +31,7 @@ const PLACEHOLDERS = [1, 2, 3, 4, 5]
  */
 export function HomeFeed() {
 	const { auth } = useApp()
+	const showsPlayer = useShowsPlayerBar()
 	const queryClient = useQueryClient()
 	const [hasNewPosts, setHasNewPosts] = useState(false)
 	const [deletedIds, setDeletedIds] = useState<string[]>([])
@@ -223,9 +226,15 @@ export function HomeFeed() {
 				</GlassCard>
 			</aside>
 
-			{/* Floating create and chat buttons, stacked above the user avatar */}
+			{/* Floating create and chat buttons, raised above the mini player while it shows */}
 			{auth && (
-				<div className="fixed bottom-44 right-4 sm:right-65 z-40 flex flex-col gap-3 md:bottom-20">
+				<div
+					className={cn(
+						"fixed right-4 z-40 flex flex-col gap-3 transition-[bottom] duration-300 sm:right-65",
+						showsPlayer
+							? "bottom-44 md:bottom-[5.5rem]"
+							: "bottom-[5.5rem] md:bottom-4"
+					)}>
 					{isMusician && (
 						<>
 							<Link

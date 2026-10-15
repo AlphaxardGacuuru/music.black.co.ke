@@ -2,7 +2,7 @@
 	"name": "Black Music",
 	"short_name": "Black Music",
 	"description": "Stream and buy music, and support the artists you love.",
-	"start_url": "/home",
+	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",
 	"background_color": "#FFD700",

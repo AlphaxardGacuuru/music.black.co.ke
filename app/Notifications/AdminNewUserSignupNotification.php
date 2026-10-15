@@ -11,8 +11,7 @@ use NotificationChannels\WebPush\WebPushMessage;
 
 /**
  * An operational alert to the admin account, not a user-facing preference,
- * always sent, unlike ReferralSignupNotification which respects the
- * recipient's email settings.
+ * so it's always sent.
  */
 class AdminNewUserSignupNotification extends Notification implements ShouldQueue
 {
@@ -20,7 +19,6 @@ class AdminNewUserSignupNotification extends Notification implements ShouldQueue
 
     public function __construct(
         protected User $newUser,
-        protected ?User $referrer,
     ) {}
 
     /**
@@ -33,13 +31,7 @@ class AdminNewUserSignupNotification extends Notification implements ShouldQueue
 
     protected function bodyLine(): string
     {
-        $line = "New user signed up: {$this->newUser->name} ({$this->newUser->email}).";
-
-        if ($this->referrer) {
-            $line .= " Referred by {$this->referrer->name}.";
-        }
-
-        return $line;
+        return "New user signed up: {$this->newUser->name} ({$this->newUser->email}).";
     }
 
     public function toWebPush($notifiable, $notification): WebPushMessage

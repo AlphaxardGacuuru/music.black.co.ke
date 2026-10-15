@@ -4,7 +4,6 @@ import {
 	Music,
 	Send,
 	ShieldCheck,
-	UserPlus,
 	Users,
 } from "lucide-react"
 import { Link } from "@/components/ui/link"
@@ -29,7 +28,6 @@ const ADMIN_ITEMS = [
 	{ title: "Users", href: "/admin/users", icon: Users },
 	{ title: "Music", href: "/admin/music", icon: Music },
 	{ title: "Payouts", href: "/admin/kopokopo-transfers", icon: Send },
-	{ title: "Referrals", href: "/admin/referrals", icon: UserPlus },
 ]
 
 export function AdminNav() {

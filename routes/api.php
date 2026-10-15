@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Admin\AdminReferralController;
 use App\Http\Controllers\FilePondController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\KopokopoRecipientController;
@@ -10,7 +9,6 @@ use App\Http\Controllers\MPESATransactionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PushSubscriptionController;
-use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserController;
@@ -55,12 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('onboarding/install', [OnboardingController::class, 'completeInstall']);
     Route::post('onboarding/permissions', [OnboardingController::class, 'completePermissions']);
-    Route::post('onboarding/referral', [OnboardingController::class, 'completeReferral']);
     Route::post('onboarding/pwa-installed', [OnboardingController::class, 'recordPwaInstalled']);
-
-
-    Route::get('referrals/settings', [ReferralController::class, 'settings'])->name('referrals.settings');
-    Route::get('referrals/mine', [ReferralController::class, 'mine'])->name('referrals.mine');
 });
 
 Route::middleware(['auth:sanctum', 'admin'])
@@ -74,11 +67,6 @@ Route::middleware(['auth:sanctum', 'admin'])
         Route::post('kopokopo-transfers/initiate', [KopokopoTransferController::class, 'initiateTransfer'])->name('kopokopo-transfers.initiate');
         Route::get('kopokopo-recipients', [KopokopoRecipientController::class, 'index'])->name('kopokopo-recipients.index');
         Route::post('kopokopo-recipients', [KopokopoRecipientController::class, 'store'])->name('kopokopo-recipients.store');
-        Route::get('referrals', [AdminReferralController::class, 'index'])->name('referrals.index');
-        Route::get('referrals/recent', [AdminReferralController::class, 'recent'])->name('referrals.recent');
-        Route::put('referrals/settings', [AdminReferralController::class, 'updateSettings'])->name('referrals.settings');
-        Route::post('referrals/{user}/pay', [AdminReferralController::class, 'pay'])->name('referrals.pay');
-        Route::post('users/{user}/referrer', [AdminReferralController::class, 'attach'])->name('users.referrer');
     });
 
 // Public profiles, by "@username" or id, and musicians to discover.

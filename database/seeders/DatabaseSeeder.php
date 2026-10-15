@@ -20,7 +20,6 @@ class DatabaseSeeder extends Seeder
                 BlackMusicUserSeeder::class,
                 AdminUserSeeder::class,
                 UserSeeder::class,
-                ReferralSeeder::class,
                 VideoAlbumSeeder::class,
                 VideoSeeder::class,
                 AudioAlbumSeeder::class,

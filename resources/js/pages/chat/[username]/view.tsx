@@ -1,6 +1,7 @@
 import { echo, useEcho } from "@laravel/echo-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { useEffect, useRef, useState } from "react"
+import { useShowsPlayerBar } from "@/components/audio/audio-player-bar"
 import { ChatBubble } from "@/components/chat/chat-bubble"
 import { UserAvatar } from "@/components/feed/user-avatar"
 import { PageHeader } from "@/components/social/page-header"
@@ -26,6 +27,7 @@ const TYPING_TIMEOUT = 3000
 
 export default function ChatShow({ username }: { username: string }) {
 	const { auth } = useApp()
+	const showsPlayer = useShowsPlayerBar()
 	const queryClient = useQueryClient()
 	const conversation = useConversation(username)
 	const user = useProfile(username)
@@ -218,7 +220,14 @@ export default function ChatShow({ username }: { username: string }) {
 				</div>
 
 				{!isSelf && (
-					<GlassCard className="sticky bottom-[5.5rem] z-30 mb-2 p-2 md:bottom-4">
+					<GlassCard
+						className={cn(
+							"sticky z-30 mb-2 p-2 transition-[bottom] duration-300",
+							// Clear the mini player while it shows, then drop back down.
+							showsPlayer
+								? "bottom-44 md:bottom-[5.5rem]"
+								: "bottom-[5.5rem] md:bottom-4"
+						)}>
 						<SocialInput
 							variant="bar"
 							placeholder="Message"

@@ -40,7 +40,7 @@ import type { NavItem } from "@/types"
 // The everyday destinations, shown in the sidebar and as the mobile bottom
 // bar (the same five as music.black's bottom nav).
 export const mainNavItems: NavItem[] = [
-	{ title: "Home", href: "/home", icon: House },
+	{ title: "Home", href: "/", icon: House },
 	{ title: "Discover", href: "/videos/charts", icon: Compass },
 	{ title: "Search", href: "/search", icon: Search },
 	{ title: "Cart", href: "/cart", icon: ShoppingCart },

@@ -3,16 +3,19 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Prunable;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Story extends Model
 {
-    use HasFactory, HasUuids;
+    use HasFactory, HasUuids, Prunable;
 
     /**
      * The attributes that are mass assignable.
@@ -61,6 +64,37 @@ class Story extends Model
     /*
      * Custom functions
      */
+
+    /**
+     * Stories expire 24 hours after they're posted (see `model:prune` in
+     * routes/console.php).
+     */
+    public function prunable(): Builder
+    {
+        return static::where('created_at', '<=', now()->subDay());
+    }
+
+    /**
+     * Delete the story's files before an expired story is pruned.
+     */
+    protected function pruning(): void
+    {
+        $this->deleteMedia();
+    }
+
+    /**
+     * Delete every file of every media item (images and videos).
+     */
+    public function deleteMedia(): void
+    {
+        foreach ($this->media ?? [] as $media) {
+            foreach ((array) $media as $path) {
+                if (is_string($path)) {
+                    Storage::disk('public')->delete($path);
+                }
+            }
+        }
+    }
 
     /**
      * Whether the given user has seen this story.

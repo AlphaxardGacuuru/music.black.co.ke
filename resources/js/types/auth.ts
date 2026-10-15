@@ -2,8 +2,6 @@ export type UserSettings = {
 	installOnboardedAt?: string
 	pwaInstalledAt?: string
 	permissionsOnboardedAt?: string
-	referralOnboardedAt?: string
-	referralSignupNotification?: boolean
 	[key: string]: unknown
 }
 
@@ -18,7 +16,6 @@ export type User = {
 	verified?: boolean
 	email_verified_at: string | null
 	twoFactorEnabled?: boolean
-	referralsCount?: number
 	settings?: UserSettings | null
 	// Music profile (UserResource).
 	accountType?: "normal" | "musician"

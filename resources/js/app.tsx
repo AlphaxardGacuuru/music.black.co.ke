@@ -11,10 +11,12 @@ import {
 	createRootRoute,
 	createRoute,
 	createRouter,
+	redirect,
 } from "@tanstack/react-router"
 import { QueryClientProvider } from "@tanstack/react-query"
 import { queryClient } from "@/lib/query-client"
 import {
+	getAuth,
 	requireAdmin,
 	requireAuth,
 	requireGuest,
@@ -50,6 +52,7 @@ type SpaPage = {
 
 const GUEST_ONLY = new Set([
 	"auth/login",
+	"auth/register",
 	"auth/forgot-password",
 	"auth/reset-password",
 	"auth/two-factor-challenge",
@@ -69,6 +72,14 @@ function isPublicPage(componentName: string): boolean {
 		PUBLIC.has(componentName) ||
 		pages[`./pages/${componentName}.tsx`]?.isPublic === true
 	)
+}
+
+// The feed lives at "/", so guests opening the app land on the welcome page
+// instead of the login form.
+async function requireAuthOrWelcome() {
+	if (!(await getAuth())) {
+		throw redirect({ to: "/welcome" })
+	}
 }
 
 const discoveredRoutes: RegisteredPageRoute[] = discoverPageRoutes(
@@ -136,7 +147,7 @@ const tanstackRoutes = discoveredRoutes.map((discoveredRoute) => {
 	}
 
 	const routePath =
-		discoveredRoute.componentName === "welcome"
+		discoveredRoute.componentName === "home"
 			? "/"
 			: discoveredRoute.path.replace(/^\//, "")
 
@@ -146,7 +157,9 @@ const tanstackRoutes = discoveredRoutes.map((discoveredRoute) => {
 		component,
 		beforeLoad: GUEST_ONLY.has(discoveredRoute.componentName)
 			? requireGuest
-			: isPublicPage(discoveredRoute.componentName)
+			: discoveredRoute.componentName === "home"
+				? requireAuthOrWelcome
+				: isPublicPage(discoveredRoute.componentName)
 				? undefined
 				: async (ctx) => {
 						await requireAuth()
@@ -233,17 +246,6 @@ function PageRenderer() {
 }
 
 // ─── Mount ───────────────────────────────────────────────────────────────────
-
-// A shared link (e.g. "?ref=<userId>") can land on any page — the welcome
-// page, straight on /login, anywhere — and the visitor might browse a
-// bit before signing up, so the code is captured here on every load and
-// held in localStorage until login.tsx (or the Google OAuth redirect)
-// consumes it.
-const referralCode = new URLSearchParams(window.location.search).get("ref")
-
-if (referralCode) {
-	window.localStorage.setItem("referralCode", referralCode)
-}
 
 const container = document.getElementById("app")
 

@@ -9,7 +9,7 @@ const routeOverrides: Record<string, string> = {
 }
 
 export function componentNameToPath(componentName: string): string {
-	if (componentName === "welcome") {
+	if (componentName === "home") {
 		return "/"
 	}
 

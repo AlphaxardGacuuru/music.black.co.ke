@@ -2,7 +2,6 @@
 
 namespace App\Http\Services;
 
-use App\Enums\EmailNotificationCategory;
 use App\Http\Resources\UserResource;
 use App\Models\Role;
 use App\Models\User;
@@ -33,8 +32,7 @@ class UserService extends Service
 		}
 
 		return $query
-			->withCount(['referralsMade', 'pushSubscriptions'])
-			->with('referral.referrer:id,name')
+			->withCount('pushSubscriptions')
 			->orderBy('id', 'DESC')
 			->paginate($request->integer('per_page', 15));
 	}
@@ -146,28 +144,6 @@ class UserService extends Service
 		$deleted = $user->delete();
 
 		return [$deleted, $user->name . ' deleted'];
-	}
-
-	/**
-	 * Merge email preferences into the same users.settings blob that also
-	 * holds onboarding progress, leaving the other keys untouched.
-	 *
-	 * @param  array<string, bool>  $preferences
-	 */
-	public function updateNotificationPreferences(User $user, array $preferences): void
-	{
-		$user->settings = array_merge((array) ($user->settings ?? []), $preferences);
-		$user->save();
-	}
-
-	/**
-	 * Turn a single email category off, from a signed unsubscribe link.
-	 */
-	public function unsubscribe(User $user, EmailNotificationCategory $category): void
-	{
-		$settings = (array) ($user->settings ?? []);
-		$settings[$category->settingsKey()] = false;
-		$user->update(['settings' => $settings]);
 	}
 
 	/**

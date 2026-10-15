@@ -5,8 +5,6 @@ namespace App\Http\Services;
 use App\Events\KopokopoTransferRecordedEvent;
 use App\Http\Resources\KopokopoTransferResource;
 use App\Models\KopokopoTransfer;
-use App\Models\Referral;
-use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Kopokopo\SDK\K2;
@@ -131,52 +129,6 @@ class KopokopoTransferService extends Service
         }
 
         return $fallback;
-    }
-
-    /**
-     * Pay a referrer for however many complete referral-reward batches
-     * they've accumulated (see Referral::eligiblePayout()). A successful
-     * initiation only means Kopokopo accepted the request, so this records kopokopo_reference (and the per-referral
-     * amount they'll be paid) rather than marking the referrals paid
-     * outright; paid_at only gets set once the webhook confirms the
-     * transfer actually completed (see KopokopoTransferRecordedListener).
-     *
-     * @param  array<int, string>  $referralIds  The specific unpaid referrals this payout covers.
-     * @return array{0: bool, 1: string, 2: mixed}
-     */
-    public function payReferrer(
-        User $referrer,
-        float $totalAmount,
-        array $referralIds,
-        float $perReferralAmount
-    ): array {
-        if ($referralIds === []) {
-            return [false, $referrer->name . ' hasn\'t reached the referral threshold yet', null];
-        }
-
-        if (! $referrer->phone) {
-            return [false, $referrer->name . ' has no M-Pesa phone number on file', null];
-        }
-
-        $request = Request::create('/', 'POST', [
-            'destinationReference' => $referrer->phone,
-            'amount' => $totalAmount,
-            'recipientName' => $referrer->name,
-            'description' => 'Black Music referral reward',
-        ]);
-
-        [$status, $message, $data] = $this->initiateTransfer($request);
-
-        if ($status === true) {
-            Referral::query()
-                ->whereIn('id', $referralIds)
-                ->update([
-                    'amount_paid' => $perReferralAmount,
-                    'kopokopo_reference' => $this->locationId($data['location'] ?? ''),
-                ]);
-        }
-
-        return [$status === true, $message, $data];
     }
 
     /**

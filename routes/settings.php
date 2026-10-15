@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Settings\NotificationPreferencesController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use Illuminate\Support\Facades\Route;
@@ -15,16 +14,12 @@ Route::redirect('settings', '/settings/profile');
 Route::get('settings/profile', fn() => view('app'))->name('profile.edit');
 Route::get('settings/security', fn() => view('app'))->name('security.edit');
 Route::get('settings/appearance', fn() => view('app'))->name('appearance.edit');
-Route::get('settings/referrals', fn() => view('app'))->name('referrals.edit');
 
 // Data endpoints stay behind auth:sanctum — these are real API calls made by
 // the SPA via Axios, which does attach the bearer token, so the guard works
 // as intended here.
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('settings/profile', [ProfileController::class, 'update'])->name('profile.update');
-
-    Route::patch('settings/notifications', [NotificationPreferencesController::class, 'update'])
-        ->name('notification-preferences.update');
 });
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
