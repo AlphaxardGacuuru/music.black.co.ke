@@ -34,6 +34,8 @@ type Props = {
 	acceptedFileTypes?: string[]
 	maxFileSize?: string
 	label?: string
+	/** Fixed "width:height" shape for the drop zone, e.g. "9:16" for stories. */
+	aspectRatio?: string
 	className?: string
 }
 
@@ -50,6 +52,7 @@ export function FileUpload({
 	acceptedFileTypes,
 	maxFileSize = "200MB",
 	label = 'Drag and drop or <span class="filepond--label-action">browse</span>',
+	aspectRatio,
 	className,
 }: Props) {
 	const isReplacing = endpoint.includes("/")
@@ -118,6 +121,7 @@ export function FileUpload({
 				acceptedFileTypes={acceptedFileTypes}
 				maxFileSize={maxFileSize}
 				labelIdle={label}
+				stylePanelAspectRatio={aspectRatio}
 			/>
 		</div>
 	)

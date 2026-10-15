@@ -86,6 +86,8 @@ export default function StoryCreate() {
 							field="filepond-media"
 							acceptedFileTypes={["image/*", "video/*"]}
 							maxFileSize="50MB"
+							aspectRatio="9:16"
+							className="mx-auto w-full max-w-64"
 							label={
 								uploads.length
 									? 'Add another image or video, or <span class="filepond--label-action">browse</span>'
