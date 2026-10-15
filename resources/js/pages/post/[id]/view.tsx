@@ -40,7 +40,7 @@ export default function PostShow({ id }: { id: string }) {
 			<Head title="Post | Black Music" />
 			{auth && <NewCommentsListener onNew={() => setHasNewComments(true)} />}
 
-			<div className="mx-auto w-full max-w-xl space-y-4 px-4 py-6">
+			<div className="mx-auto w-full max-w-xl space-y-4">
 				<PageHeader title="Post" />
 
 				{hasNewComments && (

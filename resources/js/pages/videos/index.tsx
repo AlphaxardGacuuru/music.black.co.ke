@@ -55,7 +55,7 @@ function Studio() {
 	]
 
 	return (
-		<div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6 lg:px-6">
+		<div className="mx-auto w-full max-w-6xl space-y-6 lg:px-6">
 			<header className="flex flex-wrap items-end justify-between gap-4">
 				<div>
 					<p className="text-sm text-muted-foreground">Studio</p>
@@ -63,21 +63,21 @@ function Studio() {
 				</div>
 				<div className="flex flex-wrap gap-2">
 					<Link
-						href="/audio"
-						variant="ghost"
+						href="/audios"
+						variant="outline"
 						size="sm">
 						<Music className="size-4" />
 						Go to audios
 					</Link>
 					<Link
-						href="/video/album/create"
+						href="/videos/album/create"
 						variant="outline"
 						size="sm">
 						<FolderPlus className="size-4" />
 						Create album
 					</Link>
 					<Link
-						href="/video/create"
+						href="/videos/create"
 						variant="solid"
 						size="sm">
 						<Upload className="size-4" />
@@ -162,7 +162,7 @@ function AlbumSection({
 					cover
 				) : (
 					<Link
-						href={`/video/album/edit/${album.id}`}
+						href={`/videos/album/${album.id}/edit`}
 						variant="unstyled">
 						{cover}
 					</Link>
@@ -176,7 +176,7 @@ function AlbumSection({
 				</div>
 				{!isSingles && (
 					<Link
-						href={`/video/album/edit/${album.id}`}
+						href={`/videos/album/${album.id}/edit`}
 						variant="ghost"
 						size="icon"
 						aria-label={`Edit ${album.name}`}>
@@ -206,7 +206,7 @@ function StudioVideoRow({ video }: { video: VideoDetail }) {
 	return (
 		<div className="flex gap-3 py-3">
 			<Link
-				href={`/video/show/${video.id}`}
+				href={`/videos/${video.id}/view`}
 				variant="unstyled"
 				className="relative aspect-video w-28 shrink-0 overflow-hidden rounded-lg bg-muted sm:w-36">
 				<Film className="absolute inset-0 m-auto size-6 text-muted-foreground/40" />
@@ -219,7 +219,7 @@ function StudioVideoRow({ video }: { video: VideoDetail }) {
 				<div className="flex items-start gap-2">
 					<div className="min-w-0 flex-1">
 						<Link
-							href={`/video/show/${video.id}`}
+							href={`/videos/${video.id}/view`}
 							variant="unstyled"
 							className="line-clamp-1 font-semibold">
 							{video.name}
@@ -231,7 +231,7 @@ function StudioVideoRow({ video }: { video: VideoDetail }) {
 						</p>
 					</div>
 					<Link
-						href={`/video/edit/${video.id}`}
+						href={`/videos/${video.id}/edit`}
 						variant="outline"
 						size="sm"
 						className="h-7 px-3 text-xs">

@@ -2,5 +2,5 @@
 // the sidebar header out of the way, since neither leaves enough room for
 // edge-to-edge media.
 export function isFullScreenRoute(): boolean {
-	return /^\/story\/show\/[^/]+$/.test(window.location.pathname)
+	return /^\/story\/[^/]+\/view$/.test(window.location.pathname)
 }

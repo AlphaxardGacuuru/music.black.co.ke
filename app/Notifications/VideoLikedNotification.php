@@ -38,7 +38,7 @@ class VideoLikedNotification extends Notification implements ShouldBroadcast
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/video/show/' . $this->video->id,
+            'url' => '/videos/' . $this->video->id . '/view',
             'from' => $this->user->username,
             'message' => $this->user->username . ' liked ' . $this->video->name,
         ];

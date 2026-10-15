@@ -131,7 +131,7 @@ export default function Search() {
 	return (
 		<>
 			<Head title="Search | Black Music" />
-			<div className="mx-auto w-full max-w-5xl space-y-6 px-4 py-6">
+			<div className="mx-auto w-full max-w-5xl space-y-6">
 				<label className="sticky top-2 z-30 flex h-12 items-center gap-2 rounded-full border border-border bg-background/80 px-4 shadow-sm backdrop-blur-xl focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20">
 					<SearchIcon className="size-5 text-muted-foreground" />
 					<input
@@ -217,7 +217,7 @@ export default function Search() {
 							{artistResults.map((artist) => (
 								<Link
 									key={artist.id}
-									href={`/profile/show/${artist.username}`}
+									href={`/profile/${artist.username}/view`}
 									variant="unstyled"
 									onClick={() => onOpenResult(artist.name)}
 									className="w-20 shrink-0 text-center">
@@ -333,7 +333,7 @@ function AlbumResult({
 }) {
 	return (
 		<Link
-			href={album.username ? `/profile/show/${album.username}` : "/search"}
+			href={album.username ? `/profile/${album.username}/view` : "/search"}
 			variant="unstyled"
 			onClick={onOpen}
 			className="flex items-center gap-3 rounded-2xl hover:bg-accent/40">

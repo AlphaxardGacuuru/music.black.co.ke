@@ -10,6 +10,7 @@ use App\Http\Controllers\DecoController;
 use App\Http\Controllers\MPESATransactionController;
 use App\Http\Controllers\SongPayoutController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\VerifyKopokopoSignature;
 
 /*
  * Commerce: carts, bought songs, decos, song payouts and payments.
@@ -33,7 +34,7 @@ Route::get('artist/bought-audios/{username}', [BoughtAudioController::class, 'ar
 
 // OLD Kopokopo STK push callback URL, kept so callbacks for STK pushes sent
 // by OLD still land. NEW sends api/mpesa-transactions as the callback.
-Route::post('kopokopo', [MPESATransactionController::class, 'store']);
+Route::post('kopokopo', [MPESATransactionController::class, 'store'])->middleware(VerifyKopokopoSignature::class);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('cart-audios', [CartAudioController::class, 'store'])->name('cart-audios.store');

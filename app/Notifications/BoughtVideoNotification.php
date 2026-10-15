@@ -36,7 +36,7 @@ class BoughtVideoNotification extends Notification implements ShouldBroadcast
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/profile/show/'.$this->video->user->username,
+            'url' => '/profile/' . $this->video->user->username . '/view',
             'from' => $this->video->user->username,
             'id' => $this->video->user->username,
             'message' => $this->video->user->username.' bought '.$this->video->name,

@@ -36,7 +36,7 @@ export function VideoCard({ video }: { video: Video }) {
 	return (
 		<div className="flex gap-3">
 			<Link
-				href={`/video/show/${video.id}`}
+				href={`/videos/${video.id}/view`}
 				variant="unstyled"
 				className="group relative aspect-video w-36 shrink-0 overflow-hidden rounded-xl bg-muted">
 				<FeedImage
@@ -46,7 +46,7 @@ export function VideoCard({ video }: { video: Video }) {
 			</Link>
 			<div className="min-w-0 flex-1">
 				<Link
-					href={`/video/show/${video.id}`}
+					href={`/videos/${video.id}/view`}
 					variant="unstyled"
 					className="line-clamp-2 text-sm font-semibold leading-snug">
 					{video.name}

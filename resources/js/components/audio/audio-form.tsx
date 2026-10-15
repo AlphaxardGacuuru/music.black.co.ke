@@ -20,8 +20,23 @@ import {
 import { apiErrorMessage } from "@/queries/feed"
 import type { AudioForm as AudioFormFields } from "@/types/audio"
 import type { Audio } from "@/types/music"
+import { ArrowLeft, Upload } from "lucide-react"
+import { Spinner } from "../ui/spinner"
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const MONTHS = [
+	"Jan",
+	"Feb",
+	"Mar",
+	"Apr",
+	"May",
+	"Jun",
+	"Jul",
+	"Aug",
+	"Sep",
+	"Oct",
+	"Nov",
+	"Dec",
+]
 
 /** The API sends dates as "05 Mar 2024"; date inputs want "2024-03-05". */
 export function toDateInput(value: string | null | undefined): string {
@@ -101,9 +116,11 @@ export function AudioForm({ audio }: { audio?: Audio }) {
 
 		request
 			.then((res) => {
-				toast.success(res.data.message ?? (audio ? "Audio edited" : "Audio uploaded"))
+				toast.success(
+					res.data.message ?? (audio ? "Audio edited" : "Audio uploaded")
+				)
 				void refresh()
-				void navigate({ to: "/audio" })
+				void navigate({ to: "/audios" })
 			})
 			.catch((error: unknown) => toast.error(apiErrorMessage(error)))
 			.finally(() => setSaving(false))
@@ -116,11 +133,15 @@ export function AudioForm({ audio }: { audio?: Audio }) {
 
 	return (
 		<GlassCard className="mx-auto w-full max-w-2xl p-5 md:p-8">
-			<p className="text-xs font-medium uppercase tracking-widest text-primary">Studio</p>
+			<p className="text-xs font-medium uppercase tracking-widest text-primary">
+				Studio
+			</p>
 			<h1 className="text-2xl font-bold tracking-tight">
 				{isEditing ? `Edit ${audio?.name}` : "Upload your audio"}
 			</h1>
-			{!isEditing && <p className="text-sm text-muted-foreground">It's free.</p>}
+			{!isEditing && (
+				<p className="text-sm text-muted-foreground">It's free.</p>
+			)}
 
 			<form
 				onSubmit={onSubmit}
@@ -185,23 +206,6 @@ export function AudioForm({ audio }: { audio?: Audio }) {
 
 				<div className="space-y-2">
 					<p className="text-sm font-medium">
-						{isEditing ? "Replace the thumbnail" : "Audio thumbnail"}
-					</p>
-					<FileUpload
-						endpoint={audio ? `audio-thumbnail/${audio.id}` : "audio-thumbnail"}
-						field="filepond-thumbnail"
-						acceptedFileTypes={["image/*"]}
-						maxFileSize="10MB"
-						onUploaded={(path) =>
-							audio ? onReplaced("Thumbnail") : setThumbnail(path)
-						}
-						onRemoved={() => setThumbnail("")}
-						label='Drop the cover image or <span class="filepond--label-action">browse</span>'
-					/>
-				</div>
-
-				<div className="space-y-2">
-					<p className="text-sm font-medium">
 						{isEditing ? "Replace the audio" : "Audio file"}
 					</p>
 					<p className="text-xs text-muted-foreground">
@@ -219,15 +223,32 @@ export function AudioForm({ audio }: { audio?: Audio }) {
 					/>
 				</div>
 
+				<div className="space-y-2">
+					<p className="text-sm font-medium">
+						{isEditing ? "Replace the thumbnail" : "Audio thumbnail"}
+					</p>
+					<FileUpload
+						endpoint={audio ? `audio-thumbnail/${audio.id}` : "audio-thumbnail"}
+						field="filepond-thumbnail"
+						acceptedFileTypes={["image/*"]}
+						maxFileSize="10MB"
+						onUploaded={(path) =>
+							audio ? onReplaced("Thumbnail") : setThumbnail(path)
+						}
+						onRemoved={() => setThumbnail("")}
+						label='Drop the cover image or <span class="filepond--label-action">browse</span>'
+					/>
+				</div>
+
 				{!isEditing && (
 					<GlassInner className="space-y-2 p-4 text-sm">
 						<p className="font-semibold">Before you upload</p>
 						<p className="text-muted-foreground">
-							By uploading you agree that you <b className="text-foreground">own</b>{" "}
-							this song. Audios sell at{" "}
-							<b className="text-primary">KES {AUDIO_PRICE}</b>: Black Music takes
-							50% (KES {AUDIO_PRICE - AUDIO_ARTIST_SHARE}) and you take 50% (KES{" "}
-							{AUDIO_ARTIST_SHARE}).
+							By uploading you agree that you{" "}
+							<b className="text-foreground">own</b> this song. Audios sell at{" "}
+							<b className="text-primary">KES {AUDIO_PRICE}</b>: Black Music
+							takes 50% (KES {AUDIO_PRICE - AUDIO_ARTIST_SHARE}) and you take
+							50% (KES {AUDIO_ARTIST_SHARE}).
 						</p>
 						<label className="flex cursor-pointer items-center gap-2 pt-1">
 							<input
@@ -243,14 +264,17 @@ export function AudioForm({ audio }: { audio?: Audio }) {
 
 				<div className="flex flex-wrap items-center justify-between gap-3 pt-2">
 					<Link
-						href="/audio"
-						variant="muted"
-						size="none">
+						href="/audios"
+						variant="outline"
+						size="lg">
+						<ArrowLeft className="mr-2" />
 						Back to studio
 					</Link>
 					<Button
 						type="submit"
-						disabled={saving || !agreed}>
+						disabled={saving || !agreed}
+						size="lg">
+						{saving ? <Spinner /> : <Upload className="mr-2" />}
 						{saving ? "Saving..." : isEditing ? "Save changes" : "Upload audio"}
 					</Button>
 				</div>

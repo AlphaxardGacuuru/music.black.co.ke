@@ -14,6 +14,7 @@ use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserController;
+use App\Http\Middleware\VerifyKopokopoSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -85,10 +86,10 @@ Route::get('users/{id}', [UserController::class, 'show'])->name('users.show');
 Route::get('artists', [UserController::class, 'artists']);
 
 // Kopokopo's send_money callback — hit by Kopokopo itself, not the admin UI.
-Route::post('kopokopo-transfers', [KopokopoTransferController::class, 'store']);
+Route::post('kopokopo-transfers', [KopokopoTransferController::class, 'store'])->middleware(VerifyKopokopoSignature::class);
 
 // Kopokopo's STK push (incoming payment) callback, hit by Kopokopo itself.
-Route::post('mpesa-transactions', [MPESATransactionController::class, 'store']);
+Route::post('mpesa-transactions', [MPESATransactionController::class, 'store'])->middleware(VerifyKopokopoSignature::class);
 
 /*
  * Filepond Controller

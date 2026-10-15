@@ -25,7 +25,7 @@ export default function PostEdit({ id }: { id: string }) {
 				toast.success(res.data.message ?? "Post edited")
 				void queryClient.invalidateQueries({ queryKey: feedKeys.posts })
 				void queryClient.invalidateQueries({ queryKey: socialKeys.post(id) })
-				void navigate({ to: `/post/show/${id}` })
+				void navigate({ to: `/post/${id}/view` })
 			})
 			.catch((error) => {
 				toast.error(apiErrorMessage(error))
@@ -37,10 +37,10 @@ export default function PostEdit({ id }: { id: string }) {
 	return (
 		<>
 			<Head title="Edit post | Black Music" />
-			<div className="mx-auto w-full max-w-xl space-y-4 px-4 py-6">
+			<div className="mx-auto w-full max-w-xl space-y-4">
 				<PageHeader
 					title="Edit post"
-					backHref={`/post/show/${id}`}
+					backHref={`/post/${id}/view`}
 				/>
 				<GlassCard className="space-y-4 p-4 sm:p-5">
 					{post.isPending && <Skeleton className="h-28 w-full rounded-2xl" />}

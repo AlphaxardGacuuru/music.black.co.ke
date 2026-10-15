@@ -20,8 +20,8 @@ const CHARTS: { name: AudioChartName; label: string }[] = [
 
 const SECTIONS = [
 	{ href: "/karaoke/charts", label: "Karaoke" },
-	{ href: "/video/charts", label: "Videos" },
-	{ href: "/audio/charts", label: "Audios" },
+	{ href: "/videos/charts", label: "Videos" },
+	{ href: "/audios/charts", label: "Audios" },
 ]
 
 const PAGE = 8
@@ -179,7 +179,7 @@ export default function AudioCharts() {
 								className="size-16 text-base"
 							/>
 							<Link
-								href={`/profile/show/${artist.username}`}
+								href={`/profile/${artist.username}/view`}
 								variant="unstyled"
 								className="w-full truncate text-xs text-muted-foreground hover:text-foreground">
 								{artist.username}

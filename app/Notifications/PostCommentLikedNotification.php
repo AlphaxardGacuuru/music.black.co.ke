@@ -40,7 +40,7 @@ class PostCommentLikedNotification extends Notification implements ShouldBroadca
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/post/show/'.$this->post->id,
+            'url' => '/post/' . $this->post->id . '/view',
             'from' => $this->user->username,
             'message' => $this->user->username.' liked your comment on '.$this->post->text,
         ];

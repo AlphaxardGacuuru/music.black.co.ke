@@ -1,6 +1,6 @@
 import { useEcho } from "@laravel/echo-react"
 import { useQueryClient } from "@tanstack/react-query"
-import { ArrowUp, Award, Camera, MessagesSquare, PenLine } from "lucide-react"
+import { ArrowUp, Award, Camera, MessageSquare, PenLine } from "lucide-react"
 import { useState } from "react"
 import { MusicianRow } from "@/components/feed/musician-row"
 import { PostCard } from "@/components/feed/post-card"
@@ -57,7 +57,7 @@ export function HomeFeed() {
 		.slice(0, 10)
 
 	return (
-		<div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] lg:px-6">
+		<div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[17rem_minmax(0,1fr)_19rem] lg:px-6">
 			{hasNewPosts && (
 				<Button
 					onClick={onShowNewPosts}
@@ -225,7 +225,7 @@ export function HomeFeed() {
 
 			{/* Floating create and chat buttons, stacked above the user avatar */}
 			{auth && (
-				<div className="fixed bottom-36 right-4 z-40 flex flex-col gap-3 md:bottom-20">
+				<div className="fixed bottom-44 right-4 sm:right-65 z-40 flex flex-col gap-3 md:bottom-20">
 					{isMusician && (
 						<>
 							<Link
@@ -233,12 +233,12 @@ export function HomeFeed() {
 								variant="outline"
 								size="icon"
 								aria-label="Create story"
-								className="size-12 bg-background/80 shadow-lg backdrop-blur-sm">
+								className="size-12 bg-background/80 shadow-lg backdrop-blur-sm shadow-primary/30">
 								<Camera className="size-5" />
 							</Link>
 							<Link
 								href="/post/create"
-								variant="solid"
+								variant="outline"
 								size="icon"
 								aria-label="Create post"
 								className="size-12 shadow-lg shadow-primary/30">
@@ -251,8 +251,8 @@ export function HomeFeed() {
 						variant="outline"
 						size="icon"
 						aria-label="Chat"
-						className="size-12 bg-background/80 shadow-lg backdrop-blur-sm">
-						<MessagesSquare className="size-5" />
+						className="size-12 bg-background/80 shadow-lg backdrop-blur-sm shadow-primary/30">
+						<MessageSquare className="size-5" />
 					</Link>
 				</div>
 			)}

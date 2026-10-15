@@ -45,7 +45,7 @@ class VideoCommentLikeTest extends TestCase
         Notification::assertSentTo($comment->user, VideoCommentLikedNotification::class, function($notification) use ($comment, $user) {
             $data = $notification->toArray($comment->user);
 
-            return $data['url'] == '/video/show/' . $comment->video->id
+            return $data['url'] == '/videos/' . $comment->video->id . '/view'
                 && $data['message'] == $user->username . ' liked your comment on ' . $comment->video->name;
         });
 

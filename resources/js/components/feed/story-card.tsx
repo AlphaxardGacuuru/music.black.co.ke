@@ -9,7 +9,7 @@ export function StoryCard({ story }: { story: Story }) {
 
 	return (
 		<Link
-			href={`/story/show/${story.id}`}
+			href={`/story/${story.id}/view`}
 			variant="unstyled"
 			className="group w-28 shrink-0 snap-start sm:w-32">
 			<div

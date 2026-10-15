@@ -15,7 +15,7 @@ class UnknownPayerTest extends TestCase
     {
         Event::fake([MpesaTransactionCreatedEvent::class]);
 
-        $this->postJson('/api/mpesa-transactions', [
+        $this->postKopokopoCallback('/api/mpesa-transactions', [
             'data' => [
                 'id' => 'abc',
                 'type' => 'incoming_payment',

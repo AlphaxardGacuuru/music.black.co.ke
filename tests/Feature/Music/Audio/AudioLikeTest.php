@@ -45,7 +45,7 @@ class AudioLikeTest extends TestCase
         Notification::assertSentTo($audio->user, AudioLikedNotification::class, function ($notification) use ($audio, $user) {
             $data = $notification->toArray($audio->user);
 
-            return $data['url'] === '/audio/show/' . $audio->id
+            return $data['url'] === '/audios/' . $audio->id . '/view'
                 && $data['from'] === $user->username
                 && $data['message'] === $user->username . ' liked ' . $audio->name
                 && $notification->via($audio->user) === ['database', 'broadcast'];

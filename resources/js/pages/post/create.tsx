@@ -36,7 +36,7 @@ export default function PostCreate() {
 	return (
 		<>
 			<Head title="Create post | Black Music" />
-			<div className="mx-auto w-full max-w-xl space-y-4 px-4 py-6">
+			<div className="mx-auto w-full max-w-xl space-y-4">
 				<PageHeader title="Create post" />
 				<GlassCard className="p-4 sm:p-5">
 					<SocialInput

@@ -30,7 +30,7 @@ export default function ProfileShow({ username }: { username: string }) {
 	return (
 		<>
 			<Head title={`${profile.data?.name ?? username} | Black Music`} />
-			<div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-6">
+			<div className="mx-auto w-full max-w-4xl space-y-6">
 				{profile.isPending && (
 					<GlassCard className="overflow-hidden">
 						<Skeleton className="h-36 rounded-none sm:h-52" />

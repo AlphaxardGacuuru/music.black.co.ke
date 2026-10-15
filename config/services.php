@@ -60,6 +60,9 @@ return [
         // top-ups for buying songs), not environment-specific like the API
         // credentials above, so it lives at the top level.
         'till_number' => env('KOPOKOPO_TILL_NUMBER'),
+        // Local development only: accept hand-made callbacks without
+        // Kopokopo's signature (see VerifyKopokopoSignature).
+        'allow_unsigned_callbacks' => (bool) env('KOPOKOPO_ALLOW_UNSIGNED_CALLBACKS', false),
         'sandbox' => [
             'clientId' => env('KOPOKOPO_CLIENT_ID_SANDBOX'),
             'clientSecret' => env('KOPOKOPO_CLIENT_SECRET_SANDBOX'),

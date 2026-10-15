@@ -105,9 +105,9 @@ export function AudioRow({ audio, queue, rank, className }: Props) {
 				</span>
 			</button>
 			<Link
-				href={`/audio/show/${audio.id}`}
+				href={`/audios/${audio.id}/view`}
 				variant="unstyled"
-				className="min-w-0 flex-1">
+				className="min-w-0 flex-1 self-start">
 				<span
 					className={cn(
 						"block truncate text-sm font-semibold",

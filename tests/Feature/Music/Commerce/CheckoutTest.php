@@ -50,7 +50,7 @@ class CheckoutTest extends TestCase
         CartAudio::create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
         CartVideo::create(['video_id' => $video->id, 'user_id' => $buyer->id]);
 
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 30))
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 30))
             ->assertOk()
             ->assertJsonPath('status', 'success');
 
@@ -75,7 +75,7 @@ class CheckoutTest extends TestCase
 
         Notification::assertSentTo($artist, BoughtAudioNotification::class, function ($notification) use ($artist, $audio) {
             return $notification->toArray($artist) === [
-                'url' => '/profile/show/'.$artist->username,
+                'url' => '/profile/' . $artist->username . '/view',
                 'from' => $artist->username,
                 'id' => $artist->username,
                 'message' => $artist->username.' bought '.$audio->name,
@@ -107,7 +107,7 @@ class CheckoutTest extends TestCase
             CartAudio::create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
         }
 
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 20))->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 20))->assertOk();
 
         Event::assertDispatched(AudioBoughtEvent::class, function (AudioBoughtEvent $event) use ($buyer) {
             return $event->user->is($buyer)
@@ -130,7 +130,7 @@ class CheckoutTest extends TestCase
         CartAudio::create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
 
         // KES 15 covers the audio (10) but not the video (20)
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 15))->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 15))->assertOk();
 
         $this->assertDatabaseCount('bought_videos', 0);
         $this->assertDatabaseHas('bought_audios', ['audio_id' => $audio->id, 'user_id' => $buyer->id]);
@@ -138,7 +138,7 @@ class CheckoutTest extends TestCase
         Notification::assertNotSentTo($buyer, VideoReceiptNotification::class);
 
         // Topping up 15 more (balance now 20) buys the video
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 15, 'QKX999ZZZ'))->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 15, 'QKX999ZZZ'))->assertOk();
 
         $this->assertDatabaseHas('bought_videos', ['video_id' => $video->id, 'user_id' => $buyer->id]);
         $this->assertDatabaseCount('cart_videos', 0);
@@ -156,7 +156,7 @@ class CheckoutTest extends TestCase
         CartAudio::create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
 
         // 20 + 5 paid, 20 spent: 5 left, not enough for an audio
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 5))->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 5))->assertOk();
 
         $this->assertDatabaseCount('bought_audios', 0);
         $this->assertDatabaseHas('cart_audios', ['audio_id' => $audio->id]);
@@ -172,12 +172,12 @@ class CheckoutTest extends TestCase
 
         $payload = $this->kopokopoCallback($buyer, 10);
 
-        $this->postJson('/api/mpesa-transactions', $payload)->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $payload)->assertOk();
 
         // The song is added to the cart again, then Kopokopo repeats the callback
         CartAudio::create(['audio_id' => $this->makeAudio()->id, 'user_id' => $buyer->id]);
 
-        $this->postJson('/api/mpesa-transactions', $payload)
+        $this->postKopokopoCallback('/api/mpesa-transactions', $payload)
             ->assertOk()
             ->assertJsonPath('message', 'Transaction Already Exists');
 
@@ -196,7 +196,7 @@ class CheckoutTest extends TestCase
         BoughtAudio::factory()->create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
         CartAudio::create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
 
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 100))->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 100))->assertOk();
 
         $this->assertDatabaseCount('bought_audios', 1);
         Notification::assertNotSentTo($buyer, AudioReceiptNotification::class);
@@ -218,14 +218,14 @@ class CheckoutTest extends TestCase
         $audio = $this->makeAudio($artist);
         CartAudio::create(['audio_id' => $audio->id, 'user_id' => $buyer->id]);
 
-        $this->postJson('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 10))->assertOk();
+        $this->postKopokopoCallback('/api/mpesa-transactions', $this->kopokopoCallback($buyer, 10))->assertOk();
 
         $this->assertDatabaseHas('decos', ['user_id' => $buyer->id, 'artist_id' => $artist->id]);
         $this->assertSame(1, Deco::count());
         Notification::assertSentTo($buyer, DecoNotification::class, function ($notification) use ($buyer, $artist) {
             return $notification->artist === $artist->username
                 && $notification->toArray($buyer) === [
-                    'url' => '/profile/show/'.$artist->username,
+                    'url' => '/profile/' . $artist->username . '/view',
                     'from' => $artist->username,
                     'message' => 'Congratulations! '.$artist->username.' decorated you.',
                 ];
@@ -240,7 +240,7 @@ class CheckoutTest extends TestCase
         $video = $this->makeVideo();
         CartVideo::create(['video_id' => $video->id, 'user_id' => $buyer->id]);
 
-        $this->postJson('/api/kopokopo', $this->kopokopoCallback($buyer, 20))
+        $this->postKopokopoCallback('/api/kopokopo', $this->kopokopoCallback($buyer, 20))
             ->assertOk()
             ->assertJsonPath('status', 'success');
 

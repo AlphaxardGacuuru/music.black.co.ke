@@ -164,7 +164,7 @@ class AdminReferralControllerTest extends TestCase
             ]),
         ]);
 
-        $this->postJson('/api/kopokopo-transfers', [
+        $this->postKopokopoCallback('/api/kopokopo-transfers', [
             'data' => [
                 'id' => 'referrer-transfer-123',
                 'attributes' => [
@@ -198,7 +198,7 @@ class AdminReferralControllerTest extends TestCase
             'amount_paid' => 50,
         ]);
 
-        $this->postJson('/api/kopokopo-transfers', [
+        $this->postKopokopoCallback('/api/kopokopo-transfers', [
             'data' => [
                 'id' => 'referrer-transfer-456',
                 'attributes' => [

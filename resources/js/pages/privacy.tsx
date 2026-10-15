@@ -13,7 +13,7 @@ export default function Privacy() {
 		<>
 			<Head title="Privacy policy | Black Music" />
 
-			<div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-6">
+			<div className="mx-auto w-full max-w-4xl lg:px-6">
 				<div className="mb-4 flex items-center justify-between gap-3">
 					<Link
 						href="/"

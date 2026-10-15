@@ -49,7 +49,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
             ->line('- Buy their videos and audios.')
             ->line('- Sell your own videos and audios.')
             ->line('And much more! To get you started we picked some awesome songs for you.')
-            ->action('Check out the charts', url('/video/charts'))
+            ->action('Check out the charts', url('/videos/charts'))
             ->line("Thank you and we're excited to have you!");
     }
 
@@ -62,7 +62,7 @@ class WelcomeNotification extends Notification implements ShouldQueue
     public function toArray($notifiable)
     {
         return [
-            'url' => '/profile/show/@blackmusic',
+            'url' => '/profile/@blackmusic/view',
             'from' => '@blackmusic',
             'message' => 'Welcome ' . $notifiable->username . ' to Black Music.',
         ];

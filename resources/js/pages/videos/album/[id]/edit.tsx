@@ -16,7 +16,7 @@ export default function VideoAlbumEdit({ id }: { id: string }) {
 		(album.data.username === auth?.username || auth?.username === "@blackmusic" || auth?.email === ADMIN_EMAIL)
 
 	return (
-		<div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6">
+		<div className="mx-auto w-full max-w-2xl space-y-6">
 			<Head title={`Edit ${album.data?.name ?? "album"} | Black Music`} />
 
 			{album.isPending && (

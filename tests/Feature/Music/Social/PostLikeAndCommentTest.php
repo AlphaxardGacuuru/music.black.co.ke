@@ -46,7 +46,7 @@ class PostLikeAndCommentTest extends TestCase
         Notification::assertSentTo($post->user, PostLikedNotification::class, function ($notification) use ($post, $liker) {
             $data = $notification->toArray($post->user);
 
-            return $data['url'] === '/post/show/'.$post->id
+            return $data['url'] === '/post/' . $post->id . '/view'
                 && $data['from'] === $liker->username
                 && $data['message'] === $liker->username.' liked your post.';
         });

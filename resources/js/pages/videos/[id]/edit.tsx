@@ -18,7 +18,7 @@ export default function VideoEdit({ id }: { id: string }) {
 		(video.data.username === auth?.username || auth?.username === "@blackmusic" || auth?.email === ADMIN_EMAIL)
 
 	return (
-		<div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6">
+		<div className="mx-auto w-full max-w-2xl space-y-6">
 			<Head title={`Edit ${video.data?.name ?? "video"} | Black Music`} />
 
 			{video.isPending && (
@@ -44,7 +44,7 @@ export default function VideoEdit({ id }: { id: string }) {
 				<>
 					<header className="flex items-center gap-4">
 						<Link
-							href={`/video/show/${video.data.id}`}
+							href={`/videos/${video.data.id}/view`}
 							variant="unstyled"
 							className="relative aspect-video w-32 shrink-0 overflow-hidden rounded-xl bg-muted">
 							<Film className="absolute inset-0 m-auto size-6 text-muted-foreground/40" />

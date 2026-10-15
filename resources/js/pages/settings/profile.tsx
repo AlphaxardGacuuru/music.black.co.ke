@@ -8,6 +8,7 @@ import DeleteUser from "@/components/delete-user"
 import EmailNotificationSettings from "@/components/email-notification-settings"
 import Heading from "@/components/heading"
 import InputError from "@/components/input-error"
+import MusicProfileSettings from "@/components/music-profile-settings"
 import PushNotificationSettings from "@/components/push-notification-settings"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -147,7 +148,7 @@ export default function Profile({
 							autoComplete="tel"
 						/>
 						<p className="text-sm text-muted-foreground">
-							Required before you can submit a photo — this is where your prize
+							Required before you can submit a photo. This is where your prize
 							money is sent.
 						</p>
 
@@ -190,6 +191,12 @@ export default function Profile({
 				</form>
 			</div>
 
+			<hr />
+
+			{auth && <MusicProfileSettings auth={auth} />}
+
+			<hr />
+
 			<div className="space-y-6">
 				<Heading
 					variant="small"
@@ -199,6 +206,8 @@ export default function Profile({
 				<PushNotificationSettings />
 				<EmailNotificationSettings />
 			</div>
+
+			<hr />
 
 			<DeleteUser />
 		</>

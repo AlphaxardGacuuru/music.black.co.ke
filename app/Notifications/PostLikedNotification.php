@@ -38,7 +38,7 @@ class PostLikedNotification extends Notification implements ShouldBroadcast
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/post/show/'.$this->post->id,
+            'url' => '/post/' . $this->post->id . '/view',
             'from' => $this->user->username,
             'message' => $this->user->username.' liked your post.',
         ];

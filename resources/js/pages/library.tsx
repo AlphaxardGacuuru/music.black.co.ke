@@ -48,7 +48,7 @@ export default function Library() {
 		<>
 			<Head title="Library | Black Music" />
 
-			<div className="mx-auto w-full max-w-4xl px-4 py-6 lg:px-6">
+			<div className="mx-auto w-full max-w-4xl lg:px-6">
 				<header className="mb-5">
 					<h1 className="text-2xl font-semibold tracking-tight">Library</h1>
 					<p className="text-sm text-muted-foreground">
@@ -102,7 +102,7 @@ export default function Library() {
 						{videos.data?.length === 0 && (
 							<Empty
 								text="You haven't bought any videos yet."
-								href="/video/charts"
+								href="/videos/charts"
 								cta="Browse video charts"
 							/>
 						)}
@@ -142,7 +142,7 @@ export default function Library() {
 						{audios.data?.length === 0 && (
 							<Empty
 								text="You haven't bought any audios yet."
-								href="/audio/charts"
+								href="/audios/charts"
 								cta="Browse audio charts"
 							/>
 						)}

@@ -37,7 +37,7 @@ export function SongRow({
 	children,
 	className,
 }: Props) {
-	const href = `/${kind}/show/${id}`
+	const href = `/${kind}s/${id}/view`
 
 	return (
 		<div className={cn("flex items-center gap-3", className)}>

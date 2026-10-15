@@ -48,7 +48,7 @@ class DecoNotification extends Notification implements ShouldBroadcast
         $message = 'Congratulations! '.$this->artist.' decorated you.';
 
         return [
-            'url' => '/profile/show/'.$this->artist,
+            'url' => '/profile/' . $this->artist . '/view',
             'from' => $this->artist,
             'message' => $message,
         ];

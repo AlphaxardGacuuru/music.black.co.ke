@@ -53,6 +53,8 @@ export type AudioPlayerValue = {
 	 * preview, as on music.black.
 	 */
 	canPlayFull: (audio: Audio | null) => boolean
+	/** Stop and dismiss the player, forgetting the song and queue. */
+	close: () => void
 }
 
 /** Seconds a listener who hasn't bought the song can hear. */
@@ -348,6 +350,29 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 		)
 	}, [])
 
+	const close = useCallback(() => {
+		const el = audioRef.current
+
+		if (el) {
+			el.pause()
+			el.removeAttribute("src")
+			el.load()
+		}
+
+		userStarted.current = false
+		latest.current = { ...latest.current, current: null, queue: [] }
+		setCurrent(null)
+		setQueue([])
+		setIsPlaying(false)
+		setIsLoading(false)
+		setCurrentTime(0)
+		setDuration(0)
+
+		if ("mediaSession" in navigator) {
+			navigator.mediaSession.metadata = null
+		}
+	}, [])
+
 	// Restore the last song (paused) and the volume on first load.
 	useEffect(() => {
 		const el = audioRef.current
@@ -530,6 +555,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 			isLoading,
 			update,
 			canPlayFull,
+			close,
 		}),
 		[
 			current,
@@ -551,6 +577,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
 			isLoading,
 			update,
 			canPlayFull,
+			close,
 		]
 	)
 
@@ -592,6 +619,7 @@ export function useAudioPlayer(): AudioPlayerValue {
 			isLoading: false,
 			update: noop,
 			canPlayFull: () => false,
+			close: noop,
 		}
 	}
 

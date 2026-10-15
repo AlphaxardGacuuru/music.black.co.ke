@@ -38,7 +38,7 @@ class AudioCommentLikedNotification extends Notification implements ShouldBroadc
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/audio/show/' . $this->comment->audio->id,
+            'url' => '/audios/' . $this->comment->audio->id . '/view',
             'from' => $this->user->username,
             'message' => $this->user->username . ' liked your comment on ' . $this->comment->audio->name,
         ];

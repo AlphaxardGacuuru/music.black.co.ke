@@ -108,7 +108,7 @@ export default function AudioShow({ id }: { id: string }) {
 				<Head title="Song not found | Black Music" />
 				<p className="font-semibold">This song isn't available.</p>
 				<Link
-					href="/audio/charts"
+					href="/audios/charts"
 					variant="outline"
 					className="mt-4">
 					Browse audio charts
@@ -295,7 +295,7 @@ function SongHeader({ audio, queue }: { audio: Audio; queue?: Audio[] }) {
 	}
 
 	const onShare = async () => {
-		const url = `${window.location.origin}/audio/show/${audio.id}`
+		const url = `${window.location.origin}/audios/${audio.id}/view`
 		const shareData = {
 			title: audio.name,
 			text: `Check out ${audio.name} on Black Music`,
@@ -468,7 +468,7 @@ function SongHeader({ audio, queue }: { audio: Audio; queue?: Audio[] }) {
 					avatar={audio.avatar}
 				/>
 				<Link
-					href={`/profile/show/${audio.username}`}
+					href={`/profile/${audio.username}/view`}
 					variant="unstyled"
 					className="min-w-0 flex-1">
 					<span className="block truncate font-semibold">{audio.artistName}</span>

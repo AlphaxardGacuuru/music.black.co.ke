@@ -6,7 +6,7 @@ import { useApp } from "@/contexts/AppContext"
 
 /**
  * The studio is for musicians. Everyone else sees how to become one (switch
- * the account type on the profile page).
+ * the account type in profile settings).
  */
 export function MusicianGate({ children }: { children: ReactNode }) {
 	const { auth } = useApp()
@@ -30,7 +30,7 @@ export function MusicianGate({ children }: { children: ReactNode }) {
 					</p>
 				</div>
 				<Link
-					href="/profile/edit"
+					href="/settings/profile"
 					variant="solid">
 					Become a musician
 				</Link>

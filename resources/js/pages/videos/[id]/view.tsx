@@ -68,7 +68,7 @@ export default function VideoShow({ id }: { id: string }) {
 
 function LoadingVideo() {
 	return (
-		<div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-6">
+		<div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-6">
 			<div className="space-y-4">
 				<Skeleton className="aspect-video w-full rounded-3xl" />
 				<Skeleton className="h-6 w-2/3" />
@@ -153,7 +153,7 @@ function VideoPage({ video }: { video: VideoDetail }) {
 		const shareData = {
 			title: video.name,
 			text: `Check out ${video.name} by ${video.username} on Black Music`,
-			url: `${window.location.origin}/video/show/${video.id}`,
+			url: `${window.location.origin}/videos/${video.id}/view`,
 		}
 
 		if (navigator.canShare?.(shareData)) {
@@ -173,7 +173,7 @@ function VideoPage({ video }: { video: VideoDetail }) {
 	}
 
 	return (
-		<div className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-6">
+		<div className="mx-auto grid w-full max-w-7xl gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:px-6">
 			<main className="min-w-0 space-y-5">
 				<VideoPlayer
 					path={video.video}
@@ -241,7 +241,7 @@ function VideoPage({ video }: { video: VideoDetail }) {
 
 						{isOwner && (
 							<Link
-								href={`/video/edit/${video.id}`}
+								href={`/videos/${video.id}/edit`}
 								variant="outline"
 								size="sm">
 								<Pencil className="size-4" />
@@ -291,7 +291,7 @@ function VideoPage({ video }: { video: VideoDetail }) {
 							avatar={video.avatar}
 						/>
 						<Link
-							href={`/profile/show/${video.username}`}
+							href={`/profile/${video.username}/view`}
 							variant="unstyled"
 							className="min-w-0 flex-1">
 							<p className="truncate font-semibold">{video.artistName}</p>

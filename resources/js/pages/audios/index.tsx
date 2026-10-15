@@ -62,21 +62,21 @@ export default function AudioStudio() {
 				</div>
 				<div className="flex flex-wrap gap-2">
 					<Link
-						href="/video"
+						href="/videos"
 						variant="outline"
 						size="sm">
 						<Video />
 						Go to videos
 					</Link>
 					<Link
-						href="/audio/album/create"
+						href="/audios/album/create"
 						variant="outline"
 						size="sm">
 						<Plus />
 						Create album
 					</Link>
 					<Link
-						href="/audio/create"
+						href="/audios/create"
 						variant="solid"
 						size="sm">
 						<Upload />
@@ -153,7 +153,7 @@ function AlbumSection({ album, audios }: { album: AudioAlbum; audios: Audio[] })
 					cover
 				) : (
 					<Link
-						href={`/audio/album/edit/${album.id}`}
+						href={`/audios/album/${album.id}/edit`}
 						variant="unstyled"
 						aria-label={`Edit ${album.name}`}>
 						{cover}
@@ -168,7 +168,7 @@ function AlbumSection({ album, audios }: { album: AudioAlbum; audios: Audio[] })
 				</div>
 				{!isSingles && (
 					<Link
-						href={`/audio/album/edit/${album.id}`}
+						href={`/audios/album/${album.id}/edit`}
 						variant="ghost"
 						size="icon"
 						aria-label={`Edit ${album.name}`}>
@@ -186,7 +186,7 @@ function AlbumSection({ album, audios }: { album: AudioAlbum; audios: Audio[] })
 						key={audio.id}
 						className="flex items-center gap-3 p-2.5">
 						<Link
-							href={`/audio/show/${audio.id}`}
+							href={`/audios/${audio.id}/view`}
 							variant="unstyled"
 							className="relative flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
 							<Music className="size-5 text-muted-foreground" />
@@ -227,7 +227,7 @@ function AlbumSection({ album, audios }: { album: AudioAlbum; audios: Audio[] })
 							</p>
 						</div>
 						<Link
-							href={`/audio/edit/${audio.id}`}
+							href={`/audios/${audio.id}/edit`}
 							variant="outline"
 							size="sm">
 							Edit

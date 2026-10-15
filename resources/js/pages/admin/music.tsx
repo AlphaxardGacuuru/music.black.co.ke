@@ -42,7 +42,7 @@ const videoColumns: ColumnDef<AdminVideo>[] = [
 		header: "Name",
 		cell: ({ row }) => (
 			<Link
-				href={`/video/show/${row.original.id}`}
+				href={`/videos/${row.original.id}/view`}
 				variant="text">
 				{row.original.name}
 			</Link>
@@ -65,7 +65,7 @@ const audioColumns: ColumnDef<Audio>[] = [
 		header: "Name",
 		cell: ({ row }) => (
 			<Link
-				href={`/audio/show/${row.original.id}`}
+				href={`/audios/${row.original.id}/view`}
 				variant="text">
 				{row.original.name}
 			</Link>

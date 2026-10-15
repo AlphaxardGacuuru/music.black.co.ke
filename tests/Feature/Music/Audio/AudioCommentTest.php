@@ -75,7 +75,7 @@ class AudioCommentTest extends TestCase
         Notification::assertSentTo($audio->user, AudioCommentedNotification::class, function ($notification) use ($audio, $user) {
             $data = $notification->toArray($audio->user);
 
-            return $data['url'] === '/audio/show/' . $audio->id
+            return $data['url'] === '/audios/' . $audio->id . '/view'
                 && $data['message'] === $user->username . ' commented on ' . $audio->name;
         });
     }

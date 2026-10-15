@@ -142,7 +142,7 @@ export default function ChatShow({ username }: { username: string }) {
 	return (
 		<>
 			<Head title={`${user.data?.name ?? username} | Chat | Black Music`} />
-			<div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4 px-4 pt-4">
+			<div className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-4">
 				<GlassCard className="sticky top-2 z-30 px-2 py-2">
 					<PageHeader
 						backHref="/chat"

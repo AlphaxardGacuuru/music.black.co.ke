@@ -62,7 +62,7 @@ export default function StoryCreate() {
 	return (
 		<>
 			<Head title="Create story | Black Music" />
-			<div className="mx-auto w-full max-w-xl space-y-4 px-4 py-6">
+			<div className="mx-auto w-full max-w-xl space-y-4">
 				<PageHeader title="Create story" />
 
 				<GlassCard className="space-y-4 p-4 sm:p-5">

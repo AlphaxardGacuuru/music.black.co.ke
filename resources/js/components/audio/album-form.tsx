@@ -75,7 +75,7 @@ export function AlbumForm({ album }: { album?: AudioAlbum }) {
 			.then((res) => {
 				toast.success(res.data.message ?? "Album saved")
 				void queryClient.invalidateQueries({ queryKey: audioKeys.all })
-				void navigate({ to: "/audio" })
+				void navigate({ to: "/audios" })
 			})
 			.catch((error: unknown) => toast.error(apiErrorMessage(error)))
 			.finally(() => setSaving(false))
@@ -133,7 +133,7 @@ export function AlbumForm({ album }: { album?: AudioAlbum }) {
 
 				<div className="flex flex-wrap items-center justify-between gap-3 pt-2">
 					<Link
-						href="/audio"
+						href="/audios"
 						variant="muted"
 						size="none">
 						Back to studio

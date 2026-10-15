@@ -26,7 +26,7 @@ export default function ChatNew() {
 	return (
 		<>
 			<Head title="New chat | Black Music" />
-			<div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6">
+			<div className="mx-auto w-full max-w-2xl space-y-4">
 				<PageHeader
 					title="New chat"
 					backHref="/chat"

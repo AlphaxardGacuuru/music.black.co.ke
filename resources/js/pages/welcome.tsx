@@ -3,7 +3,7 @@ import {
 	Clapperboard,
 	Disc3,
 	Headphones,
-	MessagesSquare,
+	MessageSquare,
 	MicVocal,
 	Newspaper,
 	Pause,
@@ -50,7 +50,7 @@ const features = [
 		description: "See what is trending, newly released and selling most.",
 	},
 	{
-		icon: MessagesSquare,
+		icon: MessageSquare,
 		title: "Chat",
 		description: "Talk directly with the artists and fans you follow.",
 	},
@@ -89,7 +89,7 @@ export default function Welcome() {
 
 			{/* A single stage light from above, rather than scattered glows. */}
 			<div className="pointer-events-none absolute inset-x-0 top-0 z-0 flex justify-center overflow-hidden">
-				<div className="h-[36rem] w-[60rem] -translate-y-1/2 rounded-full bg-primary/30 blur-3xl dark:bg-primary/22" />
+				<div className="h-144 w-240 -translate-y-1/2 rounded-full bg-primary/30 blur-3xl dark:bg-primary/22" />
 			</div>
 
 			<Head title="Black Music. Stream, buy and support the artists you love" />

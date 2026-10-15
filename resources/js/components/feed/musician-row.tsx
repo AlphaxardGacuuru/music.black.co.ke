@@ -55,7 +55,7 @@ export function MusicianRow({ artist }: { artist: Artist }) {
 				className="size-9"
 			/>
 			<Link
-				href={`/profile/show/${artist.username}`}
+				href={`/profile/${artist.username}/view`}
 				variant="unstyled"
 				className="min-w-0 flex-1">
 				<p className="truncate text-sm font-semibold">{artist.name}</p>

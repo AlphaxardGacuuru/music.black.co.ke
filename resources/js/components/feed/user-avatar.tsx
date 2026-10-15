@@ -16,7 +16,7 @@ export function UserAvatar({ name, username, avatar, className }: Props) {
 
 	return (
 		<Link
-			href={`/profile/show/${username}`}
+			href={`/profile/${username}/view`}
 			variant="unstyled"
 			className="shrink-0">
 			<Avatar className={cn("size-10 text-sm", className)}>

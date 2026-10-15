@@ -16,8 +16,8 @@ const PLACEHOLDERS = [1, 2, 3, 4, 5, 6, 7, 8]
 
 const CHART_AREAS = [
 	{ label: "Karaoke", href: "/karaoke/charts" },
-	{ label: "Videos", href: "/video/charts" },
-	{ label: "Audios", href: "/audio/charts" },
+	{ label: "Videos", href: "/videos/charts" },
+	{ label: "Audios", href: "/audios/charts" },
 ]
 
 function Chip({
@@ -91,7 +91,7 @@ export default function VideoCharts() {
 	}
 
 	return (
-		<div className="mx-auto w-full max-w-7xl space-y-6 px-4 py-6 lg:px-6">
+		<div className="mx-auto w-full max-w-7xl space-y-6 lg:px-6">
 			<Head title="Video charts | Black Music" />
 
 			<header className="space-y-4">
@@ -166,7 +166,7 @@ export default function VideoCharts() {
 								className="size-16"
 							/>
 							<Link
-								href={`/profile/show/${artist.username}`}
+								href={`/profile/${artist.username}/view`}
 								variant="unstyled"
 								className="mt-1.5 w-full truncate text-xs font-medium">
 								{artist.username}
@@ -189,7 +189,7 @@ export default function VideoCharts() {
 
 			<section>
 				<h2 className="mb-3 text-lg font-semibold">Songs</h2>
-				<div className="grid gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+				<div className="grid gap-x-4 gap-y-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 					{data.isPending &&
 						PLACEHOLDERS.map((key) => (
 							<div

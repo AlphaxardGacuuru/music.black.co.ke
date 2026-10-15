@@ -1,5 +1,5 @@
 import { useLocation } from "@tanstack/react-router"
-import { Loader2, Music, Pause, Play, SkipForward } from "lucide-react"
+import { Loader2, Music, Pause, Play, SkipForward, X } from "lucide-react"
 import { FeedImage } from "@/components/feed/feed-image"
 import { Button } from "@/components/ui/button"
 import { Link } from "@/components/ui/link"
@@ -12,7 +12,7 @@ export function useShowsPlayerBar(): boolean {
 	const { current } = useAudioPlayer()
 	const { pathname } = useLocation()
 
-	return Boolean(current) && !pathname.startsWith("/audio/show/")
+	return Boolean(current) && !/^\/audios\/[^/]+\/view$/.test(pathname)
 }
 
 /**
@@ -20,8 +20,17 @@ export function useShowsPlayerBar(): boolean {
  * mobile bottom nav and at the bottom of the content on desktop.
  */
 export function AudioPlayerBar({ className }: { className?: string }) {
-	const { current, isPlaying, isLoading, toggle, next, queue, currentTime, duration } =
-		useAudioPlayer()
+	const {
+		current,
+		isPlaying,
+		isLoading,
+		toggle,
+		next,
+		queue,
+		currentTime,
+		duration,
+		close,
+	} = useAudioPlayer()
 	const visible = useShowsPlayerBar()
 
 	if (!visible || !current) {
@@ -39,7 +48,7 @@ export function AudioPlayerBar({ className }: { className?: string }) {
 			<div className="pointer-events-auto mx-auto max-w-3xl overflow-hidden rounded-2xl border border-border/60 bg-background/85 shadow-lg backdrop-blur-xl supports-backdrop-filter:bg-background/70">
 				<div className="flex items-center gap-3 p-2 pe-3">
 					<Link
-						href={`/audio/show/${current.id}`}
+						href={`/audios/${current.id}/view`}
 						variant="unstyled"
 						className="flex min-w-0 flex-1 items-center gap-3">
 						<span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
@@ -80,6 +89,14 @@ export function AudioPlayerBar({ className }: { className?: string }) {
 						disabled={queue.length < 2}
 						aria-label="Next song">
 						<SkipForward className="size-5 fill-current" />
+					</Button>
+					<Button
+						size="icon"
+						variant="ghost"
+						className="size-9 shrink-0 text-muted-foreground"
+						onClick={close}
+						aria-label="Close player">
+						<X className="size-5" />
 					</Button>
 				</div>
 				<div

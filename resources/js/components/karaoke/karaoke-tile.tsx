@@ -12,7 +12,7 @@ export function KaraokeTile({ karaoke }: { karaoke: Karaoke }) {
 	return (
 		<div className="min-w-0">
 			<Link
-				href={`/karaoke/show/${karaoke.id}`}
+				href={`/karaoke/${karaoke.id}/view`}
 				variant="unstyled"
 				className="group relative block aspect-[9/16] overflow-hidden rounded-2xl bg-muted">
 				<video

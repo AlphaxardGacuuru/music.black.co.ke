@@ -35,7 +35,7 @@ export function ChatThreadRow({
 
 	return (
 		<Link
-			href={href ?? `/chat/show/${username}`}
+			href={href ?? `/chat/${username}/view`}
 			variant="unstyled"
 			className="flex items-center gap-3 rounded-2xl px-3 py-2.5 transition-colors hover:bg-accent/60">
 			<Avatar className="size-12 shrink-0">

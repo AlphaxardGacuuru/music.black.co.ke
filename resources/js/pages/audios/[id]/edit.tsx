@@ -27,7 +27,7 @@ export default function AudioEdit({ id }: { id: string }) {
 				<GlassCard className="mx-auto w-full max-w-md p-8 text-center">
 					<p className="font-semibold">You can only edit your own songs.</p>
 					<Link
-						href="/audio"
+						href="/audios"
 						variant="outline"
 						className="mt-4">
 						Back to studio

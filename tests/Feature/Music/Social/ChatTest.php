@@ -91,7 +91,7 @@ class ChatTest extends TestCase
 
         Notification::assertSentTo($alice, NewChatNotification::class, function ($n) use ($alice, $me) {
             return $n->toArray($alice) === [
-                'url' => '/chat/show/'.$me->username,
+                'url' => '/chat/' . $me->username . '/view',
                 'from' => $me->username,
                 'message' => $me->username.' sent you a message: Yo',
             ];

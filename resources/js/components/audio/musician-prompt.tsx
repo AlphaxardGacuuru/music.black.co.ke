@@ -16,7 +16,7 @@ export function MusicianPrompt({ kind = "audio" }: { kind?: "audio" | "video" })
 				every download.
 			</p>
 			<Link
-				href="/profile/edit"
+				href="/settings/profile"
 				variant="solid"
 				className="mt-5">
 				Become a musician

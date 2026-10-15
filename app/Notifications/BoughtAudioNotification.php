@@ -36,7 +36,7 @@ class BoughtAudioNotification extends Notification implements ShouldBroadcast
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/profile/show/'.$this->audio->user->username,
+            'url' => '/profile/' . $this->audio->user->username . '/view',
             'from' => $this->audio->user->username,
             'id' => $this->audio->user->username,
             'message' => $this->audio->user->username.' bought '.$this->audio->name,

@@ -75,7 +75,7 @@ class VideoLikeTest extends TestCase
             $data = $notification->toArray($video->user);
 
             return $channels == ['database', 'broadcast']
-                && $data['url'] == '/video/show/' . $video->id
+                && $data['url'] == '/videos/' . $video->id . '/view'
                 && $data['from'] == $user->username
                 && $data['message'] == $user->username . ' liked ' . $video->name;
         });

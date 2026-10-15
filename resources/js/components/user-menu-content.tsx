@@ -3,7 +3,7 @@ import { useState } from "react"
 import { Link } from "@/components/ui/link"
 import axios from "@/lib/axios"
 import toast from "@/lib/toast"
-import { Home, LogOut, Settings } from "lucide-react"
+import { Home, LogOut, Settings, UserRound } from "lucide-react"
 import { useNavigate } from "@tanstack/react-router"
 import {
 	DropdownMenuGroup,
@@ -84,6 +84,16 @@ export function UserMenuContent({ user }: Props) {
 						href="/">
 						<Home className="mr-2" />
 						Welcome Page
+					</Link>
+				</DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link
+						variant="unstyled"
+						className="block w-full cursor-pointer"
+						href={`/profile/${user.username}/view`}
+						onClick={cleanup}>
+						<UserRound className="mr-2" />
+						My profile
 					</Link>
 				</DropdownMenuItem>
 				<DropdownMenuItem asChild>

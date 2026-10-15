@@ -56,7 +56,7 @@ function CartButtons({
 	}
 
 	return (
-		<div className="flex items-center gap-1.5">
+		<div className="flex justify-between items-center">
 			<Button
 				variant={inCart ? "default" : "outline"}
 				size="icon"
@@ -80,7 +80,7 @@ function CartButtons({
 
 /** A video with its artist and add-to-cart and buy shortcuts. */
 export function VideoTile({ video, layout = "grid", className }: Props) {
-	const href = `/video/show/${video.id}`
+	const href = `/videos/${video.id}/view`
 
 	if (layout === "row") {
 		return (
@@ -114,14 +114,14 @@ export function VideoTile({ video, layout = "grid", className }: Props) {
 	}
 
 	return (
-		<div className={cn("min-w-0", className)}>
+		<div className={cn("min-w-0 rounded-2xl bg-secondary pb-2", className)}>
 			<Link
 				href={href}
 				variant="unstyled"
 				className="group relative block aspect-video overflow-hidden rounded-2xl border border-border/60 bg-muted">
 				<Thumbnail video={video} />
 			</Link>
-			<div className="mt-2.5 flex gap-2.5">
+			<div className="flex gap-2.5 m-2">
 				<UserAvatar
 					name={video.artistName}
 					username={video.username}
@@ -139,13 +139,13 @@ export function VideoTile({ video, layout = "grid", className }: Props) {
 						{video.username}
 						{video.ft && ` ft. ${video.ft}`}
 					</p>
-					<div className="mt-2">
-						<CartButtons
-							video={video}
-							compact
-						/>
-					</div>
 				</div>
+			</div>
+			<div className="mx-2">
+				<CartButtons
+					video={video}
+					compact
+				/>
 			</div>
 		</div>
 	)

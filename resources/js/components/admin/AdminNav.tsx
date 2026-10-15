@@ -57,7 +57,9 @@ export function AdminNav() {
 										<SidebarMenuSubButton
 											asChild
 											isActive={isCurrentOrParentUrl(item.href)}>
-											<Link href={item.href}>
+											<Link
+												variant="unstyled"
+												href={item.href}>
 												<item.icon className="size-4" />
 												<span>{item.title}</span>
 											</Link>

@@ -38,7 +38,7 @@ class NewChatNotification extends Notification implements ShouldBroadcast
     public function toArray(object $notifiable): array
     {
         return [
-            'url' => '/chat/show/'.$this->user->username,
+            'url' => '/chat/' . $this->user->username . '/view',
             'from' => $this->user->username,
             'message' => $this->user->username.' sent you a message: '.$this->chat->text,
         ];

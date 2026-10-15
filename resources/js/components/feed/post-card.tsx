@@ -3,7 +3,7 @@ import {
 	Award,
 	Heart,
 	MessageCircle,
-	MoreHorizontal,
+	MoreVertical,
 	Share2,
 } from "lucide-react"
 import { useState } from "react"
@@ -78,7 +78,7 @@ export function PostCard({ post, onDeleted }: Props) {
 		const shareData = {
 			title: post.text ?? `${post.name} on Black Music`,
 			text: `Check out this post by ${post.username} on Black Music`,
-			url: `${window.location.origin}/post/show/${post.id}`,
+			url: `${window.location.origin}/post/${post.id}/view`,
 		}
 
 		if (navigator.canShare?.(shareData)) {
@@ -145,7 +145,7 @@ export function PostCard({ post, onDeleted }: Props) {
 							variant="ghost"
 							size="icon"
 							aria-label="Post options">
-							<MoreHorizontal className="size-5" />
+							<MoreVertical className="size-5" />
 						</Button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
@@ -169,7 +169,7 @@ export function PostCard({ post, onDeleted }: Props) {
 							<>
 								<DropdownMenuItem asChild>
 									<Link
-										href={`/post/edit/${post.id}`}
+										href={`/post/${post.id}/edit`}
 										variant="unstyled">
 										Edit post
 									</Link>
@@ -188,7 +188,7 @@ export function PostCard({ post, onDeleted }: Props) {
 
 			{post.text && (
 				<Link
-					href={`/post/show/${post.id}`}
+					href={`/post/${post.id}/view`}
 					variant="unstyled"
 					className="mt-3 block whitespace-pre-line text-[15px] leading-relaxed">
 					{post.text}
@@ -197,7 +197,7 @@ export function PostCard({ post, onDeleted }: Props) {
 
 			{post.media && (
 				<Link
-					href={`/post/show/${post.id}`}
+					href={`/post/${post.id}/view`}
 					variant="unstyled"
 					className="mt-3 block overflow-hidden rounded-2xl border border-border/60">
 					<FeedImage
@@ -270,7 +270,7 @@ export function PostCard({ post, onDeleted }: Props) {
 					<span className="tabular-nums">{likes}</span>
 				</Button>
 				<Link
-					href={`/post/show/${post.id}`}
+					href={`/post/${post.id}/view`}
 					variant="ghost"
 					size="sm"
 					className="gap-1.5">

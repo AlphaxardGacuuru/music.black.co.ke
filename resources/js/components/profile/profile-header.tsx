@@ -112,7 +112,7 @@ export function ProfileHeader({ user }: { user: Profile }) {
 					<div className="flex flex-wrap justify-end gap-2 pb-1">
 						{isOwn && (
 							<Link
-								href="/profile/edit"
+								href="/settings/profile"
 								variant="outline"
 								size="sm"
 								className="gap-1.5">
@@ -122,7 +122,7 @@ export function ProfileHeader({ user }: { user: Profile }) {
 						)}
 						{!isOwn && auth && (
 							<Link
-								href={`/chat/show/${user.username}`}
+								href={`/chat/${user.username}/view`}
 								variant="outline"
 								size="sm"
 								className="gap-1.5">

@@ -6,7 +6,7 @@ export default function VideoAlbumCreate() {
 	return (
 		<MusicianGate>
 			<Head title="Create video album | Black Music" />
-			<div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-6">
+			<div className="mx-auto w-full max-w-2xl space-y-6">
 				<header>
 					<p className="text-sm text-muted-foreground">Studio</p>
 					<h1 className="text-2xl font-bold">Create video album</h1>

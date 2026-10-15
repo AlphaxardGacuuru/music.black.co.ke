@@ -184,7 +184,7 @@ export function KaraokeSlide({
 		const shareData = {
 			title: karaoke.audioName,
 			text: `Check out ${karaoke.username} singing ${karaoke.audioName} on Black Music`,
-			url: `${window.location.origin}/karaoke/show/${karaoke.id}`,
+			url: `${window.location.origin}/karaoke/${karaoke.id}/view`,
 		}
 
 		if (navigator.canShare?.(shareData)) {
@@ -263,7 +263,7 @@ export function KaraokeSlide({
 						<div className="min-w-0">
 							<div className="flex items-center gap-1.5">
 								<Link
-									href={`/profile/show/${karaoke.username}`}
+									href={`/profile/${karaoke.username}/view`}
 									variant="unstyled"
 									className="truncate font-semibold normal-case">
 									{karaoke.name}
@@ -296,7 +296,7 @@ export function KaraokeSlide({
 
 					<div className="flex items-center gap-2">
 						<Link
-							href={`/audio/show/${karaoke.audioId}`}
+							href={`/audios/${karaoke.audioId}/view`}
 							variant="unstyled"
 							className="flex min-w-0 items-center gap-1.5 text-sm text-primary normal-case">
 							<Music2 className="size-4 shrink-0" />
@@ -342,7 +342,7 @@ export function KaraokeSlide({
 						<Share2 className="size-7" />
 					</RailButton>
 					<Link
-						href={`/audio/show/${karaoke.audioId}`}
+						href={`/audios/${karaoke.audioId}/view`}
 						variant="unstyled"
 						aria-label={`Open ${karaoke.audioName}`}
 						className="mt-1 block size-11 overflow-hidden rounded-full border-4 border-neutral-800 animate-spin [animation-duration:6s]"

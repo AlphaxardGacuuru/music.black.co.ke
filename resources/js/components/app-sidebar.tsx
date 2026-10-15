@@ -1,12 +1,12 @@
 import { Link } from "@/components/ui/link"
 import {
 	Clapperboard,
+	Compass,
 	Download,
 	Headphones,
 	House,
 	Library,
-	MessagesSquare,
-	MicVocal,
+	MessageSquare,
 	Search,
 	ShoppingCart,
 	TrendingUp,
@@ -41,22 +41,22 @@ import type { NavItem } from "@/types"
 // bar (the same five as music.black's bottom nav).
 export const mainNavItems: NavItem[] = [
 	{ title: "Home", href: "/home", icon: House },
-	{ title: "Karaoke", href: "/karaoke/charts", icon: MicVocal },
+	{ title: "Discover", href: "/videos/charts", icon: Compass },
 	{ title: "Search", href: "/search", icon: Search },
-	{ title: "Library", href: "/library", icon: Library },
 	{ title: "Cart", href: "/cart", icon: ShoppingCart },
+	{ title: "Library", href: "/library", icon: Library },
 ]
 
 const discoverNavItems: NavItem[] = [
-	{ title: "Video charts", href: "/video/charts", icon: TrendingUp },
-	{ title: "Audio charts", href: "/audio/charts", icon: Headphones },
-	{ title: "Chat", href: "/chat", icon: MessagesSquare },
+	{ title: "Video charts", href: "/videos/charts", icon: TrendingUp },
+	{ title: "Audio charts", href: "/audios/charts", icon: Headphones },
+	{ title: "Chat", href: "/chat", icon: MessageSquare },
 ]
 
 // A musician's own uploads and albums.
 const studioNavItems: NavItem[] = [
-	{ title: "My videos", href: "/video", icon: Clapperboard },
-	{ title: "My audios", href: "/audio", icon: Upload },
+	{ title: "My videos", href: "/videos", icon: Clapperboard },
+	{ title: "My audios", href: "/audios", icon: Upload },
 ]
 
 // Sibling routes can share a path prefix (e.g. /video and /video/charts),
@@ -107,7 +107,9 @@ export function AppSidebar() {
 					asChild
 					isActive={toUrl(item.href) === activeNavHref}
 					tooltip={item.title}>
-					<Link href={toUrl(item.href)}>
+					<Link
+						variant="unstyled"
+						href={toUrl(item.href)}>
 						{item.icon && <item.icon />}
 						<span>{item.title}</span>
 					</Link>

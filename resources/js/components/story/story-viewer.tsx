@@ -87,7 +87,7 @@ export function StoryViewer({ stories, startId }: Props) {
 			window.history.replaceState(
 				window.history.state,
 				"",
-				`/story/show/${stories[index].id}`
+				`/story/${stories[index].id}/view`
 			)
 		},
 		[stories]
@@ -388,7 +388,7 @@ export function StoryViewer({ stories, startId }: Props) {
 								className="z-[110]">
 								<DropdownMenuItem asChild>
 									<Link
-										href={`/profile/show/${story.username}`}
+										href={`/profile/${story.username}/view`}
 										variant="unstyled">
 										View profile
 									</Link>
@@ -397,7 +397,7 @@ export function StoryViewer({ stories, startId }: Props) {
 									<>
 										<DropdownMenuItem asChild>
 											<Link
-												href={`/chat/show/${story.username}`}
+												href={`/chat/${story.username}/view`}
 												variant="unstyled">
 												Message
 											</Link>

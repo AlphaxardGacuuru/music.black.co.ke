@@ -55,7 +55,7 @@ export function AudioRow({ audio, queue, onPlay }: Props) {
 			</button>
 			<div className="min-w-0 flex-1">
 				<Link
-					href={`/audio/show/${audio.id}`}
+					href={`/audios/${audio.id}/view`}
 					variant="unstyled"
 					className={cn(
 						"line-clamp-1 text-sm font-semibold",

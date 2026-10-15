@@ -103,7 +103,7 @@ export function AlbumForm({ mode, album }: Props) {
 				void queryClient.invalidateQueries({ queryKey: videoKeys.all })
 
 				if (isCreate) {
-					void navigate({ to: "/video" as never })
+					void navigate({ to: "/videos" as never })
 				} else {
 					setCover(null)
 				}
@@ -180,7 +180,7 @@ export function AlbumForm({ mode, album }: Props) {
 					{isCreate ? "Create album" : "Save changes"}
 				</Button>
 				<Link
-					href="/video"
+					href="/videos"
 					variant="ghost"
 					size="lg">
 					Back to studio

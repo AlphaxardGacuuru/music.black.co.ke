@@ -265,7 +265,7 @@ export default function Cart() {
 		<>
 			<Head title="Cart | Black Music" />
 
-			<div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-6">
+			<div className="mx-auto w-full max-w-5xl lg:px-6">
 				<header className="mb-6 flex items-center justify-between gap-3">
 					<div>
 						<h1 className="text-2xl font-semibold tracking-tight">Cart</h1>
@@ -308,7 +308,7 @@ export default function Cart() {
 									Your cart is empty. Add songs from the charts to buy them.
 								</p>
 								<Link
-									href="/video/charts"
+									href="/videos/charts"
 									variant="outline"
 									size="sm">
 									Browse charts

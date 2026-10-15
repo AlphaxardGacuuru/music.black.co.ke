@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { Info } from "lucide-react"
+import { ArrowLeft, Info, Upload } from "lucide-react"
 import { useState, type FormEvent } from "react"
 import { FileUpload } from "@/components/music/file-upload"
 import { Button } from "@/components/ui/button"
@@ -49,6 +49,7 @@ export function VideoForm({ mode, video }: Props) {
 	const [saving, setSaving] = useState(false)
 
 	const isCreate = mode === "create"
+	const [agreed, setAgreed] = useState(!isCreate)
 
 	const refresh = () => {
 		void queryClient.invalidateQueries({ queryKey: videoKeys.all })
@@ -100,7 +101,7 @@ export function VideoForm({ mode, video }: Props) {
 				refresh()
 
 				if (isCreate) {
-					void navigate({ to: "/video" as never })
+					void navigate({ to: "/videos" as never })
 				}
 			})
 			.catch((error) => toast.error(apiErrorMessage(error)))
@@ -207,7 +208,9 @@ export function VideoForm({ mode, video }: Props) {
 							: "The new image replaces the current thumbnail as soon as it finishes uploading."
 					}>
 					<FileUpload
-						endpoint={isCreate ? "video-thumbnail" : `video-thumbnail/${video.id}`}
+						endpoint={
+							isCreate ? "video-thumbnail" : `video-thumbnail/${video.id}`
+						}
 						field="filepond-thumbnail"
 						acceptedFileTypes={["image/*"]}
 						maxFileSize="10MB"
@@ -223,29 +226,40 @@ export function VideoForm({ mode, video }: Props) {
 			{isCreate && (
 				<div className="flex gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm">
 					<Info className="mt-0.5 size-4 shrink-0 text-primary" />
-					<p>
-						By uploading you confirm that you own this song. Videos sell for{" "}
-						<b>KES {VIDEO_PRICE}</b>: you get{" "}
-						<b>KES {VIDEO_ARTIST_SHARE}</b> (50%) of every sale and Black Music
-						keeps the other half.
-					</p>
+					<div className="space-y-2">
+						<p>
+							By uploading you confirm that you own this song. Videos sell for{" "}
+							<b>KES {VIDEO_PRICE}</b>: you get <b>KES {VIDEO_ARTIST_SHARE}</b>{" "}
+							(50%) of every sale and Black Music keeps the other half.
+						</p>
+						<label className="flex cursor-pointer items-center gap-2">
+							<input
+								type="checkbox"
+								checked={agreed}
+								onChange={(event) => setAgreed(event.target.checked)}
+								className="size-4 accent-primary"
+							/>
+							I own this song
+						</label>
+					</div>
 				</div>
 			)}
 
-			<div className="flex flex-wrap items-center gap-3">
+			<div className="flex justify-between items-center gap-3">
+				<Link
+					href="/videos"
+					variant="outline"
+					size="lg">
+						<ArrowLeft className="mr-2" />
+					Back to studio
+				</Link>
 				<Button
 					type="submit"
 					size="lg"
-					disabled={saving}>
-					{saving && <Spinner />}
+					disabled={saving || !agreed}>
+					{saving ? <Spinner /> : <Upload className="mr-2" />}
 					{isCreate ? "Upload video" : "Save changes"}
 				</Button>
-				<Link
-					href="/video"
-					variant="ghost"
-					size="lg">
-					Back to studio
-				</Link>
 			</div>
 		</form>
 	)

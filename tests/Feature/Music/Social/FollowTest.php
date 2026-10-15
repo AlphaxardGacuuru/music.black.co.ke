@@ -64,7 +64,7 @@ class FollowTest extends TestCase
 
         Notification::assertSentTo($musician, FollowedNotification::class, function ($n) use ($musician, $fan) {
             return $n->toArray($musician) === [
-                'url' => '/profile/show/'.$fan->username,
+                'url' => '/profile/' . $fan->username . '/view',
                 'from' => $fan->username,
                 'message' => $fan->username.' followed you.',
             ];
