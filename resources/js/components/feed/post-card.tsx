@@ -181,7 +181,6 @@ export function PostCard({ post, onDeleted }: Props) {
 								</DropdownMenuItem>
 							</>
 						)}
-						<DropdownMenuItem onSelect={onShare}>Share</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</div>
@@ -202,7 +201,7 @@ export function PostCard({ post, onDeleted }: Props) {
 					className="mt-3 block overflow-hidden rounded-2xl border border-border/60">
 					<FeedImage
 						src={post.media}
-						className="max-h-[32rem] w-full object-cover"
+						className="max-h-128 w-full object-cover"
 					/>
 				</Link>
 			)}

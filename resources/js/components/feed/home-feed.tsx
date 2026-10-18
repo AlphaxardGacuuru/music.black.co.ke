@@ -138,12 +138,12 @@ export function HomeFeed() {
 			<main className="min-w-0 space-y-6">
 				<section>
 					<h2 className="mb-3 font-semibold">Stories</h2>
-					<div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] lg:mx-0 lg:px-0">
+					<div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 [scrollbar-width:none] lg:mx-0 lg:px-0">
 						{stories.isPending &&
 							PLACEHOLDERS.map((key) => (
 								<Skeleton
 									key={key}
-									className="aspect-[9/16] w-28 shrink-0 rounded-2xl sm:w-32"
+									className="aspect-9/16 w-28 shrink-0 rounded-2xl sm:w-32"
 								/>
 							))}
 						{stories.data?.map((story) => (
@@ -158,7 +158,7 @@ export function HomeFeed() {
 					</div>
 				</section>
 
-				<section className="space-y-4">
+				<section className="space-y-2">
 					{posts.isPending &&
 						PLACEHOLDERS.slice(0, 3).map((key) => (
 							<GlassCard
