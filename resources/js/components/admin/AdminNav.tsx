@@ -1,9 +1,11 @@
 import {
+	Activity,
 	ChevronRight,
 	LayoutDashboard,
 	Music,
 	Send,
 	ShieldCheck,
+	Telescope,
 	Users,
 } from "lucide-react"
 import { Link } from "@/components/ui/link"
@@ -28,6 +30,8 @@ const ADMIN_ITEMS = [
 	{ title: "Users", href: "/admin/users", icon: Users },
 	{ title: "Music", href: "/admin/music", icon: Music },
 	{ title: "Payouts", href: "/admin/kopokopo-transfers", icon: Send },
+	{ title: "Telescope", href: "/telescope", icon: Telescope },
+	{ title: "Horizon", href: "/horizon", icon: Activity },
 ]
 
 export function AdminNav() {
