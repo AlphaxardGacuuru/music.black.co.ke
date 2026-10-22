@@ -1,6 +1,7 @@
 import {
 	Activity,
 	ChevronRight,
+	Gauge,
 	LayoutDashboard,
 	Music,
 	Send,
@@ -32,6 +33,7 @@ const ADMIN_ITEMS = [
 	{ title: "Payouts", href: "/admin/kopokopo-transfers", icon: Send },
 	{ title: "Telescope", href: "/telescope", icon: Telescope },
 	{ title: "Horizon", href: "/horizon", icon: Activity },
+	{ title: "Pulse", href: "/pulse", icon: Gauge },
 ]
 
 export function AdminNav() {
