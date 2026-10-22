@@ -1,4 +1,5 @@
 import { Breadcrumbs } from "@/components/breadcrumbs"
+import { ConnectionStatus } from "@/components/connection-status"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSidebar } from "@/components/ui/sidebar"
 import { VerifiedAvatar } from "@/components/verified-badge"
@@ -30,6 +31,8 @@ export function AppSidebarHeader({
 			<div className="min-w-0 flex-1">
 				<Breadcrumbs breadcrumbs={breadcrumbs} />
 			</div>
+
+			<ConnectionStatus />
 
 			<button
 				type="button"
