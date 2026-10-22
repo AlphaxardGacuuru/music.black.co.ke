@@ -64,7 +64,7 @@ export default function Login({
 				setLocalStorage("sanctumToken", response.data.data)
 				invalidateAuth()
 				toast.success(response.data.message ?? "Logged in")
-				navigate({ to: "/home" })
+				navigate({ to: "/" })
 			})
 			.catch((err: unknown) => {
 				const e = err as {
@@ -98,6 +98,14 @@ export default function Login({
 			<Head title="Log in" />
 
 			<div className="flex flex-col gap-6">
+				<GoogleLoginButton href={googleLoginUrl} />
+
+				<div className="flex items-center gap-3 text-xs text-muted-foreground">
+					<span className="h-px flex-1 bg-border" />
+					or
+					<span className="h-px flex-1 bg-border" />
+				</div>
+
 				<form
 					onSubmit={handleSubmit}
 					className="grid gap-4">
@@ -143,14 +151,6 @@ export default function Login({
 					</Button>
 				</form>
 
-				<div className="flex items-center gap-3 text-xs text-muted-foreground">
-					<span className="h-px flex-1 bg-border" />
-					or
-					<span className="h-px flex-1 bg-border" />
-				</div>
-
-				<GoogleLoginButton href={googleLoginUrl} />
-
 				<div className="space-x-1 text-center text-sm text-muted-foreground">
 					<span>New to Black Music?</span>
 					<Link
@@ -173,5 +173,5 @@ export default function Login({
 
 Login.layout = {
 	title: "Log in to your account",
-	description: "Use your email and password, or continue with Google",
+	description: "Continue with Google, or use your email and password",
 }

@@ -39,7 +39,7 @@ export default function Register() {
 				setLocalStorage("sanctumToken", response.data.data)
 				invalidateAuth()
 				toast.success("Welcome to Black Music")
-				navigate({ to: "/home" })
+				navigate({ to: "/" })
 			})
 			.catch((err: unknown) => {
 				const e = err as {
@@ -73,6 +73,14 @@ export default function Register() {
 			<Head title="Create an account" />
 
 			<div className="flex flex-col gap-6">
+				<GoogleLoginButton />
+
+				<div className="flex items-center gap-3 text-xs text-muted-foreground">
+					<span className="h-px flex-1 bg-border" />
+					or
+					<span className="h-px flex-1 bg-border" />
+				</div>
+
 				<form
 					onSubmit={handleSubmit}
 					className="grid gap-4">
@@ -133,14 +141,6 @@ export default function Register() {
 					</Button>
 				</form>
 
-				<div className="flex items-center gap-3 text-xs text-muted-foreground">
-					<span className="h-px flex-1 bg-border" />
-					or
-					<span className="h-px flex-1 bg-border" />
-				</div>
-
-				<GoogleLoginButton />
-
 				<div className="space-x-1 text-center text-sm text-muted-foreground">
 					<span>Already have an account?</span>
 					<Link
@@ -157,5 +157,5 @@ export default function Register() {
 
 Register.layout = {
 	title: "Create an account",
-	description: "Sign up with your name and email, or continue with Google",
+	description: "Continue with Google, or sign up with your name and email",
 }
