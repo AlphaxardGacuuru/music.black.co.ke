@@ -19,6 +19,7 @@ import { GlassCard } from "@/components/ui/glass-card"
 import { Link } from "@/components/ui/link"
 import { Head } from "@/lib/spa"
 import { useApp } from "@/contexts/AppContext"
+import { ScrollToTopButton } from "@/components/scroll-to-top-button"
 
 const features = [
 	{
@@ -85,6 +86,7 @@ export default function Welcome() {
 
 	return (
 		<div className="relative isolate min-h-screen overflow-hidden bg-background text-foreground">
+			<ScrollToTopButton />
 			<BackdropLines />
 
 			{/* A single stage light from above, rather than scattered glows. */}
