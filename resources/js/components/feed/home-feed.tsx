@@ -2,18 +2,17 @@ import { useEcho } from "@laravel/echo-react"
 import { useQueryClient } from "@tanstack/react-query"
 import { ArrowUp, Award, Camera, MessageSquare, PenLine } from "lucide-react"
 import { useState } from "react"
-import { useShowsPlayerBar } from "@/components/audio/audio-player-bar"
 import { MusicianRow } from "@/components/feed/musician-row"
 import { PostCard } from "@/components/feed/post-card"
 import { StoryCard } from "@/components/feed/story-card"
 import { UserAvatar } from "@/components/feed/user-avatar"
 import { VideoCard } from "@/components/feed/video-card"
+import { FloatingActions } from "@/components/floating-actions"
 import { Button } from "@/components/ui/button"
 import { GlassCard } from "@/components/ui/glass-card"
 import { Link } from "@/components/ui/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useApp } from "@/contexts/AppContext"
-import { cn } from "@/lib/utils"
 import {
 	feedKeys,
 	useArtists,
@@ -31,7 +30,6 @@ const PLACEHOLDERS = [1, 2, 3, 4, 5]
  */
 export function HomeFeed() {
 	const { auth } = useApp()
-	const showsPlayer = useShowsPlayerBar()
 	const queryClient = useQueryClient()
 	const [hasNewPosts, setHasNewPosts] = useState(false)
 	const [deletedIds, setDeletedIds] = useState<string[]>([])
@@ -226,15 +224,9 @@ export function HomeFeed() {
 				</GlassCard>
 			</aside>
 
-			{/* Floating create and chat buttons, raised above the mini player while it shows */}
+			{/* Floating create and chat buttons */}
 			{auth && (
-				<div
-					className={cn(
-						"fixed right-4 z-40 flex flex-col gap-3 transition-[bottom] duration-300 sm:right-65",
-						showsPlayer
-							? "bottom-44 md:bottom-22"
-							: "bottom-28 md:bottom-4"
-					)}>
+				<FloatingActions>
 					{isMusician && (
 						<>
 							<Link
@@ -263,7 +255,7 @@ export function HomeFeed() {
 						className="size-12 bg-background/80 shadow-lg backdrop-blur-sm shadow-primary/30">
 						<MessageSquare className="size-5" />
 					</Link>
-				</div>
+				</FloatingActions>
 			)}
 		</div>
 	)
