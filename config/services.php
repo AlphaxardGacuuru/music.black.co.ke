@@ -76,4 +76,25 @@ return [
             'baseUrl' => env('KOPOKOPO_BASE_URL'),
         ],
     ],
+
+    // Local artist news, posted by the house account (see
+    // PostLocalArtistNewsJob).
+    'news' => [
+        'poster_email' => env('NEWS_POSTER_EMAIL', 'al@music.black.co.ke'),
+        // Google News search for Kenyan music stories from the last two days.
+        'feed_url' => env(
+            'NEWS_FEED_URL',
+            'https://news.google.com/rss/search?q='
+                .urlencode('("Kenyan musician" OR "Kenyan artist" OR "Kenyan singer" OR "Kenyan rapper" OR gengetone) when:2d')
+                .'&hl=en-KE&gl=KE&ceid=KE:en'
+        ),
+        // Feed sources never posted from: song download sites, which give
+        // away the music artists sell here.
+        'excluded_sources' => array_filter(explode(',', env(
+            'NEWS_EXCLUDED_SOURCES',
+            'Tooxclusive,TrendyHipHop'
+        ))),
+        // New posts per run. The job runs three times a day.
+        'posts_per_run' => (int) env('NEWS_POSTS_PER_RUN', 2),
+    ],
 ];

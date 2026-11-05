@@ -234,7 +234,7 @@ export function HomeFeed() {
 								variant="outline"
 								size="icon"
 								aria-label="Create story"
-								className="size-12 bg-background/80 shadow-lg backdrop-blur-sm shadow-primary/30">
+								className="size-12 backdrop-blur-sm">
 								<Camera className="size-5" />
 							</Link>
 							<Link
@@ -242,7 +242,7 @@ export function HomeFeed() {
 								variant="outline"
 								size="icon"
 								aria-label="Create post"
-								className="size-12 shadow-lg shadow-primary/30">
+								className="size-12 backdrop-blur-sm">
 								<PenLine className="size-5" />
 							</Link>
 						</>
@@ -252,7 +252,7 @@ export function HomeFeed() {
 						variant="outline"
 						size="icon"
 						aria-label="Chat"
-						className="size-12 bg-background/80 shadow-lg backdrop-blur-sm shadow-primary/30">
+						className="size-12 backdrop-blur-sm">
 						<MessageSquare className="size-5" />
 					</Link>
 				</FloatingActions>

@@ -400,6 +400,17 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
     }
 
     /**
+     * The house account that posts local artist news and the daily story
+     * (services.news.poster_email).
+     */
+    public static function housePoster(): ?self
+    {
+        return static::query()
+            ->where('email', config('services.news.poster_email'))
+            ->first();
+    }
+
+    /**
      * Whether the given user has bought at least one song from this artist,
      * which is what lets fans follow an artist.
      */

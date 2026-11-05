@@ -1,6 +1,8 @@
 <?php
 
 use App\Jobs\DeleteStaleTemporaryUploadsJob;
+use App\Jobs\PostDailyStoryJob;
+use App\Jobs\PostLocalArtistNewsJob;
 use App\Models\Story;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -26,3 +28,15 @@ Schedule::job(new DeleteStaleTemporaryUploadsJob)
 
 // Delete stories (and their media files) once they're 24 hours old
 Schedule::command('model:prune', ['--model' => [Story::class]])->hourly();
+
+// Post local artist news from the house account at 8am, 1pm and 6pm
+// (Nairobi time, the app timezone)
+Schedule::job(new PostLocalArtistNewsJob)
+    ->cron('0 8,13,18 * * *')
+    ->withoutOverlapping();
+
+// The house account's daily story (headlines, trending, gigs, on this day)
+// at 7am, from the news posted over the previous day
+Schedule::job(new PostDailyStoryJob)
+    ->dailyAt('07:00')
+    ->withoutOverlapping();

@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\NewsArticle;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('app'))->name('home');
@@ -26,5 +27,10 @@ Route::permanentRedirect('post/edit/{id}', '/post/{id}/edit');
 
 // The feed moved from /home to /.
 Route::permanentRedirect('home', '/');
+
+// Short links in news posts (feed links are too long for a post).
+Route::get('news/{newsArticle}', fn(NewsArticle $newsArticle) => redirect()
+    ->away($newsArticle->url))
+    ->name('news.show');
 
 Route::fallback(fn() => view('app'));

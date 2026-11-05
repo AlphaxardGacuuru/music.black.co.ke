@@ -60,13 +60,13 @@ class UserFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'name' => 'Black Music',
             'username' => '@blackmusic',
-            'email' => 'al@black.co.ke',
+            'email' => 'al@music.black.co.ke',
             'email_verified_at' => now(),
             'account_type' => 'musician',
             'avatar' => 'avatars/male-avatar.png',
             'backdrop' => 'img/headphones.jpg',
             'phone' => '0700000000',
-            'password' => Hash::make('al@black.co.ke'),
+            'password' => Hash::make('al@music.black.co.ke'),
             'remember_token' => Str::random(10),
         ]);
     }
