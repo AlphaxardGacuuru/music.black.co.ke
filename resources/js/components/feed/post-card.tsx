@@ -1,4 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query"
+import { useNavigate } from "@tanstack/react-router"
 import {
 	Award,
 	Heart,
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { FeedImage } from "@/components/feed/feed-image"
 import { Link } from "@/components/ui/link"
+import { LinkifiedText } from "@/components/ui/linkified-text"
 import { useApp } from "@/contexts/AppContext"
 import toast from "@/lib/toast"
 import { cn } from "@/lib/utils"
@@ -34,6 +36,7 @@ const POLL_SLOTS = [1, 2, 3, 4, 5] as const
 export function PostCard({ post, onDeleted }: Props) {
 	const { auth } = useApp()
 	const queryClient = useQueryClient()
+	const navigate = useNavigate()
 
 	const [hasLiked, setHasLiked] = useState(post.hasLiked)
 	const [likes, setLikes] = useState(post.likes)
@@ -49,6 +52,15 @@ export function PostCard({ post, onDeleted }: Props) {
 	const refreshFeed = () => {
 		void queryClient.invalidateQueries({ queryKey: feedKeys.posts })
 		void queryClient.invalidateQueries({ queryKey: feedKeys.artists })
+	}
+
+	// The text holds its own links, so it can't be wrapped in one.
+	const openPost = () => {
+		if (window.getSelection()?.toString()) {
+			return
+		}
+
+		void navigate({ to: `/post/${post.id}/view` as never })
 	}
 
 	const onLike = () => {
@@ -186,12 +198,14 @@ export function PostCard({ post, onDeleted }: Props) {
 			</div>
 
 			{post.text && (
-				<Link
-					href={`/post/${post.id}/view`}
-					variant="unstyled"
-					className="mt-3 block whitespace-pre-line text-[15px] leading-relaxed">
-					{post.text}
-				</Link>
+				<div
+					role="link"
+					tabIndex={0}
+					onClick={openPost}
+					onKeyDown={(e) => e.key === "Enter" && openPost()}
+					className="mt-3 block cursor-pointer whitespace-pre-line break-words text-[15px] leading-relaxed">
+					<LinkifiedText text={post.text} />
+				</div>
 			)}
 
 			{post.media && (

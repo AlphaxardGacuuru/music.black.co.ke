@@ -5,6 +5,7 @@ import { UserAvatar } from "@/components/feed/user-avatar"
 import { Button } from "@/components/ui/button"
 import { Link } from "@/components/ui/link"
 import { Skeleton } from "@/components/ui/skeleton"
+import { LinkifiedText } from "@/components/ui/linkified-text"
 import { useApp } from "@/contexts/AppContext"
 import toast from "@/lib/toast"
 import { cn } from "@/lib/utils"
@@ -195,7 +196,7 @@ function CommentItem({
 					)}
 				</div>
 				<p className="mt-0.5 whitespace-pre-line break-words text-sm">
-					{comment.text}
+					<LinkifiedText text={comment.text} />
 				</p>
 				<div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
 					<span>{comment.createdAt ?? comment.created_at}</span>
