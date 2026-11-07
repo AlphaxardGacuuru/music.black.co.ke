@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAiAgentsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\FilePondController;
 use App\Http\Controllers\IntegrationController;
@@ -67,6 +68,8 @@ Route::middleware(['auth:sanctum', 'admin'])
         Route::post('kopokopo-transfers/initiate', [KopokopoTransferController::class, 'initiateTransfer'])->name('kopokopo-transfers.initiate');
         Route::get('kopokopo-recipients', [KopokopoRecipientController::class, 'index'])->name('kopokopo-recipients.index');
         Route::post('kopokopo-recipients', [KopokopoRecipientController::class, 'store'])->name('kopokopo-recipients.store');
+        Route::get('ai-agents', [AdminAiAgentsController::class, 'show'])->name('ai-agents.show');
+        Route::put('ai-agents', [AdminAiAgentsController::class, 'update'])->name('ai-agents.update');
     });
 
 // Public profiles, by "@username" or id, and musicians to discover.

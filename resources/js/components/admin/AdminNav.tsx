@@ -1,5 +1,6 @@
 import {
 	Activity,
+	Bot,
 	ChevronRight,
 	Gauge,
 	LayoutDashboard,
@@ -33,6 +34,7 @@ const ADMIN_ITEMS = [
 	{ title: "Users", href: "/admin/users", icon: Users },
 	{ title: "Music", href: "/admin/music", icon: Music },
 	{ title: "Payouts", href: "/admin/kopokopo-transfers", icon: Send },
+	{ title: "AI agents", href: "/admin/ai-agents", icon: Bot },
 	{ title: "Telescope", href: "/telescope", icon: Telescope, newTab: true },
 	{ title: "Horizon", href: "/horizon", icon: Activity, newTab: true },
 	{ title: "Pulse", href: "/pulse", icon: Gauge, newTab: true },

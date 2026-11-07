@@ -7,6 +7,7 @@ use App\Models\NewsArticle;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\User;
+use App\Services\AiAgents;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -39,6 +40,7 @@ class LocalArtistNewsPoster
     public function __construct(
         protected LocalArtistNewsFeed $feed,
         protected TextChunker $chunker,
+        protected AiAgents $ai,
     ) {}
 
     /**
@@ -159,14 +161,15 @@ class LocalArtistNewsPoster
     }
 
     /**
-     * The AI-written summary, "" when the AI is unavailable (the post is
-     * then just the headline and source), or null to skip the story.
+     * The AI-written summary, "" when the AI is unavailable or switched off
+     * by an admin (the post is then just the headline and source), or null
+     * to skip the story.
      *
      * @param  array{title: string, source: ?string, published_at: mixed}  $story
      */
     protected function summarise(array $story): ?string
     {
-        if (blank(config('ai.providers.'.config('ai.default').'.key'))) {
+        if (! $this->ai->available()) {
             return '';
         }
 

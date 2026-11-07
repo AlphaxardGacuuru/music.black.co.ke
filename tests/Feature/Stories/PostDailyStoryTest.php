@@ -11,6 +11,7 @@ use App\Models\NewsArticle;
 use App\Models\Post;
 use App\Models\Story;
 use App\Models\User;
+use App\Services\AiAgents;
 use App\Services\Stories\StoryCardRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -135,6 +136,22 @@ class PostDailyStoryTest extends TestCase
     public function test_without_an_ai_key_the_story_has_headlines_and_trending_only(): void
     {
         config(['ai.providers.gemini.key' => null]);
+
+        $this->postedNews('Bien Drops New Album', 'Mpasho');
+
+        UpcomingGigsFinder::fake();
+        MusicHistoryFinder::fake();
+
+        PostDailyStoryJob::dispatchSync();
+
+        $this->assertCount(1, Story::query()->sole()->media);
+        UpcomingGigsFinder::assertNeverPrompted();
+        MusicHistoryFinder::assertNeverPrompted();
+    }
+
+    public function test_when_an_admin_switches_ai_off_the_story_has_headlines_and_trending_only(): void
+    {
+        app(AiAgents::class)->setEnabled(false);
 
         $this->postedNews('Bien Drops New Album', 'Mpasho');
 

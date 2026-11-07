@@ -8,6 +8,7 @@ use App\Models\NewsArticle;
 use App\Models\Post;
 use App\Models\PostComment;
 use App\Models\User;
+use App\Services\AiAgents;
 use App\Services\News\LocalArtistNewsPoster;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
@@ -62,6 +63,24 @@ class PostLocalArtistNewsTest extends TestCase
             $post->text
         );
         $this->assertSame(0, $post->comments()->count());
+    }
+
+    public function test_when_an_admin_switches_ai_off_news_is_posted_without_a_summary(): void
+    {
+        app(AiAgents::class)->setEnabled(false);
+
+        LocalArtistNewsWriter::fake();
+
+        PostLocalArtistNewsJob::dispatchSync();
+
+        LocalArtistNewsWriter::assertNeverPrompted();
+
+        $post = NewsArticle::query()
+            ->where('title', 'Bien Drops New Album Ahead Of Nairobi Show')
+            ->firstOrFail()
+            ->post;
+
+        $this->assertStringStartsWith("Bien Drops New Album Ahead Of Nairobi Show\n\nSource: Mpasho.", $post->text);
     }
 
     public function test_stories_not_about_local_artists_are_skipped_but_remembered(): void

@@ -10,6 +10,7 @@ use App\Models\BoughtVideo;
 use App\Models\NewsArticle;
 use App\Models\Story;
 use App\Models\User;
+use App\Services\AiAgents;
 use App\Models\Video;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -33,7 +34,10 @@ class DailyStoryPoster
 
     public const MAX_HEADLINES = 3;
 
-    public function __construct(protected StoryCardRenderer $cards) {}
+    public function __construct(
+        protected StoryCardRenderer $cards,
+        protected AiAgents $ai,
+    ) {}
 
     public function run(): ?Story
     {
@@ -190,14 +194,15 @@ class DailyStoryPoster
     /**
      * Ask a research agent for its JSON list, keeping only items whose
      * source page actually loads (a cheap check against invented facts).
-     * Empty when the AI isn't configured or replies with something else.
+     * Empty when the AI isn't configured, is switched off by an admin, or
+     * replies with something else.
      *
      * @param  class-string<UpcomingGigsFinder|MusicHistoryFinder>  $agent
      * @return Collection<int, array<string, mixed>>
      */
     protected function research(string $agent, string $prompt): Collection
     {
-        if (blank(config('ai.providers.'.config('ai.default').'.key'))) {
+        if (! $this->ai->available()) {
             return collect();
         }
 

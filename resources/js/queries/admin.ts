@@ -204,3 +204,35 @@ export function useAddKopokopoRecipient() {
 		},
 	})
 }
+
+export type AdminAiAgents = {
+	/** The admin's on/off switch. */
+	enabled: boolean
+	/** Whether an AI API key is set on the server at all. */
+	configured: boolean
+}
+
+export function useAdminAiAgents() {
+	return useQuery({
+		queryKey: ["admin", "ai-agents"],
+		queryFn: () =>
+			Axios.get<{ data: AdminAiAgents }>("api/admin/ai-agents").then(
+				(res) => res.data.data
+			),
+	})
+}
+
+export function useToggleAiAgents() {
+	const queryClient = useQueryClient()
+
+	return useMutation({
+		mutationFn: (enabled: boolean) =>
+			Axios.put<{ message: string; data: AdminAiAgents }>(
+				"api/admin/ai-agents",
+				{ enabled }
+			).then((res) => res.data),
+		onSuccess: (response) => {
+			queryClient.setQueryData(["admin", "ai-agents"], response.data)
+		},
+	})
+}
