@@ -3,13 +3,13 @@
 namespace App\Notifications;
 
 use App\Models\MpesaTransaction;
+use App\Notifications\Messages\WebPushMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use NotificationChannels\WebPush\WebPushChannel;
-use NotificationChannels\WebPush\WebPushMessage;
 
 class MpesaTransactionCreatedNotification extends Notification implements ShouldQueue
 {
@@ -97,6 +97,7 @@ class MpesaTransactionCreatedNotification extends Notification implements Should
             ->icon('/notification-badge-192x192.png')
             ->badge('/notification-badge-192x192.png')
             ->body('Payment of KES '.number_format($this->mpesaTransaction->amount).' received.')
+            ->openAction('library', 'View your library', '/library')
             ->data(['url' => '/library']);
     }
 }

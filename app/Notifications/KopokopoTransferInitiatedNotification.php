@@ -4,12 +4,12 @@ namespace App\Notifications;
 
 use App\Events\KopokopoTransferInitiated;
 use App\Http\Services\Service;
+use App\Notifications\Messages\WebPushMessage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use NotificationChannels\WebPush\WebPushChannel;
-use NotificationChannels\WebPush\WebPushMessage;
 
 class KopokopoTransferInitiatedNotification extends Notification implements ShouldQueue
 {
@@ -63,6 +63,11 @@ class KopokopoTransferInitiatedNotification extends Notification implements Shou
 			->icon('/notification-badge-192x192.png')
 			->badge('/notification-badge-192x192.png')
 			->body($this->bodyLine())
+			->when(
+				$notifiable->account_type === 'musician',
+				fn ($message) => $message->openAction('payouts', 'View payouts', '/settings/payouts'),
+				fn ($message) => $message->openAction('notifications', 'View notifications', '/notifications')
+			)
 			->data(['url' => '/']);
 	}
 }

@@ -138,6 +138,17 @@ class UserService extends Service
 		return [$saved, 'Account Updated', $user->fresh()];
 	}
 
+	/**
+	 * Give $user the verified badge (what the admin users page's toggle
+	 * does through update()).
+	 */
+	public function verify(User $user): void
+	{
+		$user
+			->forceFill(['verified' => true])
+			->save();
+	}
+
 	public function destroy(int|string $id): array
 	{
 		$user = User::query()->findOrFail($id);

@@ -9,6 +9,7 @@ use App\Http\Controllers\KopokopoTransferController;
 use App\Http\Controllers\MPESATransactionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OnboardingController;
+use App\Http\Controllers\PushActionController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\SupportTicketController;
@@ -75,6 +76,17 @@ Route::middleware(['auth:sanctum', 'admin'])
 // Public profiles, by "@username" or id, and musicians to discover.
 Route::get('users/{id}', [UserController::class, 'show'])->name('users.show');
 Route::get('artists', [UserController::class, 'artists']);
+
+// Background buttons on web push notifications. The signature stands in
+// for the user's token, since the service worker doesn't have it.
+Route::prefix('push-actions/{user}')
+    ->middleware(['signed:relative', 'throttle:30,1'])
+    ->name('push-actions.')
+    ->controller(PushActionController::class)
+    ->group(function () {
+        Route::post('users/{subject}/verify', 'verifyUser')
+            ->name('users.verify');
+    });
 
 // Kopokopo's send_money callback — hit by Kopokopo itself, not the admin UI.
 Route::post('kopokopo-transfers', [KopokopoTransferController::class, 'store'])->middleware(VerifyKopokopoSignature::class);
