@@ -69,6 +69,23 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         'created_at' => 'datetime:d M Y h:i:s',
     ];
 
+    /**
+     * The largest profile picture a user can upload, in kilobytes.
+     */
+    public const MAX_AVATAR_KB = 5120;
+
+    /**
+     * Where uploaded profile pictures live on the public disk.
+     */
+    public const AVATAR_DIRECTORY = 'avatars';
+
+    /**
+     * The shared default pictures, which belong to every account without
+     * one and must never be deleted. The underscore spelling comes from
+     * the legacy app's data.
+     */
+    public const DEFAULT_AVATARS = ['avatars/male-avatar.png', 'avatars/male_avatar.png'];
+
     protected string $guard_name = 'web';
 
     /**
@@ -116,6 +133,19 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         return Attribute::make(
             get: fn($value) => preg_match("/https/", $value) ? $value : "/storage/" . $value
         );
+    }
+
+    /**
+     * Whether the user picked their own profile picture (a file on the
+     * public disk rather than a Google URL or the shared default), which
+     * Google sign-in then leaves alone and a new upload deletes.
+     */
+    public function hasUploadedAvatar(): bool
+    {
+        $avatar = (string) $this->getRawOriginal('avatar');
+
+        return Str::startsWith($avatar, static::AVATAR_DIRECTORY . '/')
+            && ! in_array($avatar, static::DEFAULT_AVATARS, true);
     }
 
     protected function backdrop(): Attribute

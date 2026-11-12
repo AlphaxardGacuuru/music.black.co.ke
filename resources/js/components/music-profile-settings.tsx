@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { useState, type FormEvent } from "react"
+import { AvatarUploadField } from "@/components/avatar-upload-field"
 import Heading from "@/components/heading"
-import { FileUpload } from "@/components/music/file-upload"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { useInitials } from "@/hooks/use-initials"
 import toast from "@/lib/toast"
 import { apiErrorMessage, feedKeys } from "@/queries/feed"
 import { socialActions, socialKeys } from "@/queries/social"
@@ -29,6 +30,7 @@ const BIO_MAX = 50
  */
 export default function MusicProfileSettings({ auth }: { auth: User }) {
 	const queryClient = useQueryClient()
+	const getInitials = useInitials()
 	const [bio, setBio] = useState(auth.bio ?? "")
 	const [withdrawal, setWithdrawal] = useState("")
 	const [saving, setSaving] = useState(false)
@@ -85,25 +87,14 @@ export default function MusicProfileSettings({ auth }: { auth: User }) {
 					title="Profile picture"
 					description="Shown on your profile, posts and comments"
 				/>
-				<div className="flex items-center gap-4">
-					<img
-						src={auth.avatar}
-						alt={auth.name}
-						className="size-20 shrink-0 rounded-full border border-border object-cover"
-					/>
-					<FileUpload
-						endpoint={`avatar/${auth.id}`}
-						field="filepond-avatar"
-						acceptedFileTypes={["image/*"]}
-						maxFileSize="10MB"
-						label='Drop a new picture or <span class="filepond--label-action">browse</span>'
-						className="min-w-0 flex-1"
-						onUploaded={() => {
-							toast.success("Profile picture updated")
-							refreshUser()
-						}}
-					/>
-				</div>
+				{/* Avatar Start */}
+				<AvatarUploadField
+					userId={auth.id}
+					avatar={auth.avatar}
+					initials={getInitials(auth.name)}
+					onSaved={refreshUser}
+				/>
+				{/* Avatar End */}
 			</div>
 
 			<hr />

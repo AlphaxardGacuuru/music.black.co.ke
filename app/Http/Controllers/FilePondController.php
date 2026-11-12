@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Services\TemporaryUploadService;
 use App\Http\Services\UserService;
 use App\Models\Submission;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
@@ -19,8 +21,10 @@ class FilePondController extends Controller
     }
 
     /*
-     * Handle Profile Pic Upload */
-    public function updateAvatar(Request $request, int|string $id): Response
+     * Handle Profile Pic Upload. The settings page's round picture field
+     * posts here once the user taps Save, and shows the returned avatar
+     * straight away. */
+    public function updateAvatar(Request $request, int|string $id): JsonResponse
     {
         // Users change their own avatar; the admin can change anyone's.
         abort_unless(
@@ -30,14 +34,18 @@ class FilePondController extends Controller
         );
 
         $this->validate($request, [
-            'filepond-avatar' => 'required|image',
+            'filepond-avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:' . User::MAX_AVATAR_KB],
+        ], [
+            'filepond-avatar.mimes' => 'Use a JPG, PNG or WebP picture.',
+            'filepond-avatar.max' => 'Your profile picture must be ' . (User::MAX_AVATAR_KB / 1024) . ' MB or smaller.',
         ]);
 
-        $avatar = $request->file('filepond-avatar')->store('avatars', 'public');
+        $user = $this->userService->updateAvatar($id, $request->file('filepond-avatar'));
 
-        $this->userService->updateAvatar($id, $avatar);
-
-        return response("Account updated", 200);
+        return response()->json([
+            'message' => 'Profile picture updated',
+            'avatar' => $user->avatar,
+        ], 200);
     }
 
     /*
