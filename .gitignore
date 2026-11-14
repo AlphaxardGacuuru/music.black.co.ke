@@ -27,4 +27,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+/playwright-report
+/test-results
+/tests/e2e/.auth
 /storage/*.key
