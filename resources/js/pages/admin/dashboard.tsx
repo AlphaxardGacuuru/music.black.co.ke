@@ -1,4 +1,11 @@
-import { Clapperboard, Headphones, MicVocal, ShoppingBag, Users } from "lucide-react"
+import {
+	Activity,
+	Clapperboard,
+	Headphones,
+	MicVocal,
+	ShoppingBag,
+	Users,
+} from "lucide-react"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { Head } from "@/lib/spa"
 import AdminStatCard from "@/components/admin/AdminStatCard"
@@ -9,6 +16,8 @@ import {
 	ChartTooltipContent,
 	type ChartConfig,
 } from "@/components/ui/chart"
+import { Card, CardContent } from "@/components/ui/card"
+import { Link } from "@/components/ui/link"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAdminDashboard } from "@/queries/admin"
 
@@ -70,6 +79,8 @@ export default function AdminDashboard() {
 							/>
 						</div>
 
+						<ActiveUsersCard counts={data.activeUsers} />
+
 						<div className="rounded-lg border p-4">
 							<Heading
 								variant="small"
@@ -112,5 +123,53 @@ export default function AdminDashboard() {
 				)}
 			</div>
 		</>
+	)
+}
+
+/** Users who used the app recently, linking through to the logins page. */
+function ActiveUsersCard({
+	counts,
+}: {
+	counts: { day: number; week: number; month: number }
+}) {
+	const periods = [
+		{ label: "Last 24 hours", value: counts.day },
+		{ label: "Last 7 days", value: counts.week },
+		{ label: "Last 30 days", value: counts.month },
+	]
+
+	return (
+		<Card>
+			<CardContent className="space-y-4">
+				<div className="flex items-center justify-between gap-4">
+					<div className="flex items-center gap-3">
+						<div className="flex size-10 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+							<Activity className="size-5" />
+						</div>
+						<p className="text-sm font-medium">Active users</p>
+					</div>
+					<Link
+						href="/admin/logins"
+						variant="muted"
+						size="none">
+						See logins
+					</Link>
+				</div>
+				<dl className="grid grid-cols-3 gap-4">
+					{periods.map((period) => (
+						<div
+							key={period.label}
+							className="flex flex-col-reverse">
+							<dt className="text-sm leading-tight text-muted-foreground">
+								{period.label}
+							</dt>
+							<dd className="text-2xl font-semibold tracking-tight tabular-nums">
+								{period.value.toLocaleString()}
+							</dd>
+						</div>
+					))}
+				</dl>
+			</CardContent>
+		</Card>
 	)
 }

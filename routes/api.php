@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminAiAgentsController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminUserLoginController;
 use App\Http\Controllers\FilePondController;
 use App\Http\Controllers\IntegrationController;
 use App\Http\Controllers\KopokopoRecipientController;
@@ -64,6 +65,7 @@ Route::middleware(['auth:sanctum', 'admin'])
     ->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
         Route::get('users', [UserController::class, 'index'])->name('users.index');
+        Route::get('user-logins', [AdminUserLoginController::class, 'index'])->name('user-logins.index');
         Route::patch('users/{id}/verify', [UserController::class, 'update'])->name('users.verify');
         Route::get('kopokopo-transfers', [KopokopoTransferController::class, 'index'])->name('kopokopo-transfers.index');
         Route::post('kopokopo-transfers/initiate', [KopokopoTransferController::class, 'initiateTransfer'])->name('kopokopo-transfers.initiate');

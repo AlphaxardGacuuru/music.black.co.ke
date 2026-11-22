@@ -4,6 +4,7 @@ use App\Jobs\DeleteStaleTemporaryUploadsJob;
 use App\Jobs\PostDailyStoryJob;
 use App\Jobs\PostLocalArtistNewsJob;
 use App\Models\Story;
+use App\Models\UserLogin;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
@@ -28,6 +29,10 @@ Schedule::job(new DeleteStaleTemporaryUploadsJob)
 
 // Delete stories (and their media files) once they're 24 hours old
 Schedule::command('model:prune', ['--model' => [Story::class]])->hourly();
+
+// Sign-in records older than UserLogin::RETENTION_DAYS.
+Schedule::command('model:prune', ['--model' => [UserLogin::class]])
+    ->daily();
 
 // Post local artist news from the house account at 8am, 1pm and 6pm
 // (Nairobi time, the app timezone)

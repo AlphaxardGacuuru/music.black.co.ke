@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -65,6 +66,7 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         'settings' => 'object',
         'email_verified_at' => 'datetime',
         'verified' => 'boolean',
+        'last_active_at' => 'datetime',
         'updated_at' => 'datetime:d M Y',
         'created_at' => 'datetime:d M Y h:i:s',
     ];
@@ -365,9 +367,72 @@ class User extends Authenticatable implements CanResetPassword, MustVerifyEmail
         return $this->hasMany(Follow::class, 'followed_id');
     }
 
+    public function logins(): HasMany
+    {
+        return $this->hasMany(UserLogin::class);
+    }
+
+    /*
+     * Scopes
+     */
+
+    /**
+     * Users whose name or email contains the term, grouped so it can be
+     * combined with other conditions.
+     */
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        return $query->where(fn (Builder $query) => $query
+            ->where('name', 'like', "%{$term}%")
+            ->orWhere('email', 'like', "%{$term}%"));
+    }
+
     /*
      * Custom functions
      */
+
+    /**
+     * How long last_active_at may lag behind, so an active user only costs
+     * one write every few minutes (see TrackUserActivity).
+     */
+    public const ACTIVITY_INTERVAL_MINUTES = 5;
+
+    /**
+     * Note that the user is using the app, at most once every
+     * ACTIVITY_INTERVAL_MINUTES. Leaves updated_at alone, since nothing
+     * about the account itself changed.
+     */
+    public function markActive(): void
+    {
+        if ($this->last_active_at?->gt(now()->subMinutes(self::ACTIVITY_INTERVAL_MINUTES))) {
+            return;
+        }
+
+        static::withoutTimestamps(fn () => $this
+            ->forceFill(['last_active_at' => now()])
+            ->saveQuietly());
+    }
+
+    /**
+     * Users who used the app in the last day, week and month.
+     *
+     * @return array{day: int, week: int, month: int}
+     */
+    public static function activeCounts(): array
+    {
+        $counts = static::query()
+            ->toBase()
+            ->selectRaw('SUM(CASE WHEN last_active_at >= ? THEN 1 ELSE 0 END) as day', [now()->subDay()])
+            ->selectRaw('SUM(CASE WHEN last_active_at >= ? THEN 1 ELSE 0 END) as week', [now()->subWeek()])
+            ->selectRaw('SUM(CASE WHEN last_active_at >= ? THEN 1 ELSE 0 END) as month', [now()->subMonth()])
+            ->first();
+
+        return [
+            'day' => (int) $counts->day,
+            'week' => (int) $counts->week,
+            'month' => (int) $counts->month,
+        ];
+    }
 
     /**
      * A unique "@handle" built from a display name or email, e.g. "@janedoe"

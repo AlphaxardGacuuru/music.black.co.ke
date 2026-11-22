@@ -38,6 +38,7 @@ class AdminDashboardController extends Controller
             'data' => [
                 'totals' => $totals,
                 'dailyVolume' => $dailyVolume,
+                'activeUsers' => User::activeCounts(),
             ],
         ]);
     }

@@ -4,6 +4,7 @@ import {
 	ChevronRight,
 	Gauge,
 	LayoutDashboard,
+	LogIn,
 	Music,
 	Send,
 	ShieldCheck,
@@ -32,6 +33,7 @@ import { useCurrentUrl } from "@/hooks/use-current-url"
 const ADMIN_ITEMS = [
 	{ title: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
 	{ title: "Users", href: "/admin/users", icon: Users },
+	{ title: "Logins", href: "/admin/logins", icon: LogIn },
 	{ title: "Music", href: "/admin/music", icon: Music },
 	{ title: "Payouts", href: "/admin/kopokopo-transfers", icon: Send },
 	{ title: "AI agents", href: "/admin/ai-agents", icon: Bot },
