@@ -15,7 +15,7 @@ import {
 import { AdminNav } from "@/components/admin/AdminNav"
 import AppLogo from "@/components/app-logo"
 import { NavFooter } from "@/components/nav-footer"
-import { NavUser } from "@/components/nav-user"
+import { AVATAR_ALIGNED_ITEM, NavUser } from "@/components/nav-user"
 import { useApp } from "@/contexts/AppContext"
 import { useCurrentUrl } from "@/hooks/use-current-url"
 import { usePwaInstall } from "@/hooks/use-pwa-install"
@@ -105,7 +105,8 @@ export function AppSidebar() {
 				<SidebarMenuButton
 					asChild
 					isActive={toUrl(item.href) === activeNavHref}
-					tooltip={item.title}>
+					tooltip={item.title}
+					className={AVATAR_ALIGNED_ITEM}>
 					<Link
 						variant="unstyled"
 						href={toUrl(item.href)}>
@@ -166,7 +167,7 @@ export function AppSidebar() {
 				{!isInstalled && (
 					<NavFooter
 						items={footerNavItems}
-						className="mt-auto"
+						className="mt-auto p-0"
 					/>
 				)}
 				<NavUser />
